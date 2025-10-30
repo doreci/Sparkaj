@@ -12,32 +12,27 @@
 .background img {
     height: 100vh;
     width: 100vw;
-    background-size: cover;
-    background-position: center;
     position: absolute;
+    object-fit: cover;
+    filter: brightness(25%);
 }
 
-.overlay {
-    width: 100%;
-    height: 100%;
-    background-color: black;
-    opacity: 0.85;
+.center {
     position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
 }
 
 .logo img {
-    height: 30vh;
-    width: 30vw;
-    position: absolute;
-    transform: translateY(420px);
-    margin-left: 520px;
+    width: 300px;
+    padding-bottom: 35px;
 }
 
 .login-container {
-  position: absolute;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  color: white;
+    align-self: center;
+    width: 200px;
+    color: white;
 }
