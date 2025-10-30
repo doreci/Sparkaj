@@ -8,10 +8,10 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
         <div className="background">
-              <img src="/SLIKE/background.jpg"  alt="" />
+              <img src="/background.jpg"  alt="" />
               <div className="overlay"></div>
               <div className="logo">
-                  <img src="/SLIKE/logozad.png" alt="" />
+                  <img src="/logozad.png" alt="" />
               </div>
         <div className="login-container">
           <Login />
