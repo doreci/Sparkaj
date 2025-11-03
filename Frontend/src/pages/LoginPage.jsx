@@ -1,5 +1,5 @@
-import "./App.css";
-import Login from "./components/login";
+import "./loginpage.css";
+import Login from "../components/login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const clientId =
