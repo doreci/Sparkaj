@@ -1,0 +1,134 @@
+
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+.background{
+    height: 100vh;
+    width: 100vw;
+    
+}
+
+.background {
+    height: 100vh;
+    width: 100vw;
+}
+
+.background img {
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    object-fit: cover;
+    filter: brightness(20%);
+}
+
+.background .logo {
+    width: 300px;
+    height: 300px;
+    margin-left: 620px;
+    transform: translateY(-100px);
+    filter: brightness(50%);
+}
+
+.registerblock {
+    height: 500px;
+    width: 300px;
+    background: white;
+    border: 5px solid rgb(126, 120, 120);
+    margin-left: 40%;
+    transform: translateY(120px);
+    position: relative;
+    filter: brightness(90%);
+}
+
+.registerblock .register {
+    font-weight: bold;
+    margin-left: 20px;
+    transform: translateY(20px);
+    font-size: 18px;
+    position: absolute;
+}
+
+.registerblock .name {
+    transform: translateY(90px);
+    margin-left: 20px;
+    width: 250px;
+    height: 30px;
+    border-radius: 7%;
+    border: 2px solid gray;
+    position: absolute;
+    font-size: 15px;
+}
+
+.registerblock .lastname {
+    transform: translateY(170px);
+    height: 30px;
+    width: 250px;
+    border-radius: 7%;
+    border: 2px solid gray;
+    margin-left: 20px;
+    position: absolute;
+    font-size: 15px;
+}
+
+.registerblock .firstname {
+    margin-left: 20px;
+    color: gray;
+    transform: translateY(130px);
+    position: absolute;
+}
+
+.registerblock .secondname {
+    margin-left: 20px;
+    color: gray;
+    transform: translateY(210px);
+    position: absolute;
+}
+
+.registerblock .become {
+    margin-left: 20px;
+    color: gray;
+    transform: translateY(40px);
+    position: absolute;
+}
+
+.registerblock .address {
+    transform: translateY(250px);
+    margin-left: 20px;
+    width: 250px;
+    height: 30px;
+    border-radius: 7%;
+    border: 2px solid gray;
+    position: absolute;
+    font-size: 15px;
+}
+
+.registerblock .adresa {
+    margin-left: 20px;
+    color: gray;
+    transform: translateY(290px);
+    position: absolute;
+}
+
+.registerblock #role {
+    transform: translateY(325px);
+    margin-left: 20px;
+    width: 130px;
+    height: 30px;
+    font-size: 15px;
+    border-radius: 7%;
+    border: 2px solid gray;
+    position: absolute;
+    color: gray;
+}
+
+.registerblock .uloga {
+    margin-left: 20px;
+    color: gray;
+    transform: translateY(365px);
+    position: absolute;
+}
+
