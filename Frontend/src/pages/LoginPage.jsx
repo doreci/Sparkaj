@@ -1,6 +1,7 @@
 import "./loginpage.css";
 import Login from "../components/login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Link } from "react-router-dom";
 
 const clientId =
     "1037227751449-vnk1ihmcvnbje5sq3b6e67u4o1klfqrv.apps.googleusercontent.com";
@@ -14,7 +15,9 @@ function LoginPage() {
             </div>
             <div className="center">
                 <div className="logo">
-                    <img src="/logo.png" alt="logo.png" />
+                    <Link to="/">
+                        <img src="/logo.png" alt="logo.png" />
+                    </Link>
                 </div>
                 <div className="slogan">Brzo i jednostavno rezervirajte parking!</div>
                 <div className="login-container">
