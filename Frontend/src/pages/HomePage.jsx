@@ -6,6 +6,10 @@ function HomePage() {
         <div className="container">
             <div className="header">
                 <img src="/logo.png" alt="logo" />
+                <div className="search-bar">
+                    <input type="text" placeholder="Search..." />
+                    <img src="/search-icon.jpg" alt="search icon" />
+                </div>
                 <div className="header-buttons">
                     <Link to="/register">
                         <button>Register</button>

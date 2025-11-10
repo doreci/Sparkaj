@@ -51,12 +51,37 @@
 }
 
 .content{
+    background-color: white;
+    color:rgb(0, 0, 61);
     display: flex;
     justify-content: center;
     margin-top: 100px;
     padding: none;
- /*    min-height: 1000px; */
+    min-height: 1000px;
     width: 100vw;
+}
+
+.search-bar{
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input{
+    background-color: white;
+    color: rgb(0, 0, 61);
+    width: 20vw;
+    height: 35px;
+    border-radius: 5px;
+    border: none;
+    padding: 0 10px;
+    font-size: 16px;
+}
+
+.search-bar img{
+    width: 25px;
+    height: 25px;
+    margin-left: -50px;
+    cursor: pointer;
 }
 
 .footer{
