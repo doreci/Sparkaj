@@ -8,7 +8,7 @@ function HomePage() {
                 <img src="/logo.png" alt="logo" />
                 <div className="search-bar">
                     <input type="text" placeholder="Search..." />
-                    <img src="/search-icon.jpg" alt="search icon" />
+                    <img id="povecalo" src="/search-icon.jpg" alt="search icon" />
                 </div>
                 <div className="header-buttons">
                     <Link to='/editprofile'>
