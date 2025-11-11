@@ -1,15 +1,14 @@
-import { supabase } from "../supabaseClient";
-import "./App.css";
-import Login from "./components/login";
+import { supabase } from "../../supabaseClient";
+import "./loginpage.css";
+import Login from "../components/login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useEffect, useState } from "react";
 
 const clientId =
     "1037227751449-vnk1ihmcvnbje5sq3b6e67u4o1klfqrv.apps.googleusercontent.com";
 
-function App() {
+function LoginPage() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
@@ -59,4 +58,4 @@ function App() {
   }
 }
 
-export default App;
+export default LoginPage;
