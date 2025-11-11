@@ -38,6 +38,9 @@ function LoginPage() {
               <div className="logo">
                   <img src="/logo.png" alt="logo.png" />
               </div>
+              <div className="slogan">
+                  Brzo i jednostavno rezervirajte parkirno mjesto!
+              </div>
               <div className="login-container">
                   <Login />
               </div>

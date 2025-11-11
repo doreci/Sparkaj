@@ -29,6 +29,7 @@
 .logo img {
     width: 300px;
     padding-bottom: 35px;
+    margin-left: 35px;
 }
 
 .login-container {
@@ -36,6 +37,7 @@
     width: 200px;
     color: white;
     transform: translateY(70px);
+    margin-left: 15px;
 }
 
 .slogan {
