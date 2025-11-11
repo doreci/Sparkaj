@@ -1,27 +1,22 @@
+import { useState } from "react";
+import { Auth } from '@supabase/auth-ui-react'
+import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { supabase } from "../../supabaseClient";
 
-import { GoogleLogin } from "@react-oauth/google";
-
-const clientId = "1037227751449-vnk1ihmcvnbje5sq3b6e67u4o1klfqrv.apps.googleusercontent.com"; 
 
 function Login() {
+    const [session, setSession] = useState(null);
 
-    const onSuccess = (credentialResponse) => {
-        console.log("LOGIN SUCCESS!", credentialResponse);
-        console.log("Credential:", credentialResponse.credential);
-    }
-
-    const onError = () => {
-        console.log("LOGIN FAILED!");
-    }
+    const signUp = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: "google",
+        });
+    };
 
     return(
-        <div id="signInButton">
-            <GoogleLogin
-                onSuccess={onSuccess}
-                onError={onError}
-                useOneTap
-            />
-        </div>
+        <>
+            <button onClick={signUp}>Sign in with Google</button>
+        </>
     )
 }
 
