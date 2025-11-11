@@ -11,6 +11,9 @@ function HomePage() {
                     <img src="/search-icon.jpg" alt="search icon" />
                 </div>
                 <div className="header-buttons">
+                    <Link to='/editprofile'>
+                        <button>Edit Profile</button>
+                    </Link>
                     <Link to="/register">
                         <button>Register</button>
                     </Link>

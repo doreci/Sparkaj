@@ -5,7 +5,8 @@ import "./index.css";
 
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
+import RegisterPage from "./pages/registerPage.jsx";
+import EditProfilePage from "./pages/EditProfilePage.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -14,6 +15,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/editprofile" element={<EditProfilePage/>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
