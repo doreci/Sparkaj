@@ -28,6 +28,10 @@
     padding: 15px;
 }
 
+#povecalo {
+	height: 25px;
+}
+
 .header-buttons{
     display: flex;
     align-items: center;
