@@ -25,13 +25,13 @@ Backend: Spring Boot, Java 21
 
 
 # Članovi tima 
-Dorian Ceci
-Tonka Heckel
-Luka Oslić
-Marko Kovačev
-Karlo Piškorić
-Lovro Klanac
-Sven Oužecky
+Dorian Ceci  
+Tonka Heckel  
+Luka Oslić  
+Marko Kovačev  
+Karlo Piškorić  
+Lovro Klanac  
+Sven Oužecky  
 
 
 # Kontribucije
