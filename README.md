@@ -1,37 +1,37 @@
 # Programsko inženjerstvo
 # Opis projekta
->Ovaj projekt je rezultat timskog rada u sklopu projeknog zadatka kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
+Ovaj projekt je rezultat timskog rada u sklopu projeknog zadatka kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
 
->Cilj projekta je razviti web platformu koja povezuje vlasnike privatnih parkirnih mjesta s korisnicima koji traže parking. Na taj način rješava se problem nedostatka parkirnih mjesta i gubitka vremena pri traženju slobodnog mjesta. Motivacija za projekt proizlazi iz želje da se proces najma parkirnih mjesta digitalizira i učini jednostavnijim, sigurnijim i bržim.
+Cilj projekta je razviti web platformu koja povezuje vlasnike privatnih parkirnih mjesta s korisnicima koji traže parking. Na taj način rješava se problem nedostatka parkirnih mjesta i gubitka vremena pri traženju slobodnog mjesta. Motivacija za projekt proizlazi iz želje da se proces najma parkirnih mjesta digitalizira i učini jednostavnijim, sigurnijim i bržim.
 
->Kroz rad na projektu naučili smo kako integrirati različite tehnologije, poput Reacta, Springa, OAuth 2.0, Google Mapsa i Stripea, te kako frontend i backend surađuju u cjelovitom sustavu. Projekt nam je omogućio da steknemo praktično iskustvo u izradi modernih web aplikacija i razumijemo važnost sigurnosti i pouzdanosti sustava.
+Kroz rad na projektu naučili smo kako integrirati različite tehnologije, poput Reacta, Springa, OAuth 2.0, Google Mapsa i Stripea, te kako frontend i backend surađuju u cjelovitom sustavu. Projekt nam je omogućio da steknemo praktično iskustvo u izradi modernih web aplikacija i razumijemo važnost sigurnosti i pouzdanosti sustava.
 
 # Funkcijski zahtjevi
->Sustav omogućuje registraciju i prijavu putem OAuth 2.0 autentifikacije, čime se osigurava siguran pristup aplikaciji. Vlasnici parkirnih mjesta mogu kreirati, uređivati i brisati oglase, dok korisnici imaju mogućnost pregledavanja i filtriranja oglasa prema lokaciji, cijeni i dostupnosti.
+Sustav omogućuje registraciju i prijavu putem OAuth 2.0 autentifikacije, čime se osigurava siguran pristup aplikaciji. Vlasnici parkirnih mjesta mogu kreirati, uređivati i brisati oglase, dok korisnici imaju mogućnost pregledavanja i filtriranja oglasa prema lokaciji, cijeni i dostupnosti.
 
->Korisnici mogu rezervirati parkirno mjesto i izvršiti plaćanje putem Stripe API-ja, čime se omogućuje sigurna i brza transakcija. Nakon korištenja usluge, korisnici mogu ostaviti ocjenu i recenziju za parkirno mjesto, a na profilima oglašivača prikazuju se svi njihovi aktivni oglasi i prosječna ocjena.
+Korisnici mogu rezervirati parkirno mjesto i izvršiti plaćanje putem Stripe API-ja, čime se omogućuje sigurna i brza transakcija. Nakon korištenja usluge, korisnici mogu ostaviti ocjenu i recenziju za parkirno mjesto, a na profilima oglašivača prikazuju se svi njihovi aktivni oglasi i prosječna ocjena.
 
->Administrator ima mogućnost upravljanja korisničkim računima i moderiranja oglasa, uključujući provjeru, odobravanje ili uklanjanje sadržaja te reagiranje na prijave nepravilnosti. Sustav također omogućuje korisnicima promjenu ili oporavak lozinke, kao i pregled povijesti transakcija.
+Administrator ima mogućnost upravljanja korisničkim računima i moderiranja oglasa, uključujući provjeru, odobravanje ili uklanjanje sadržaja te reagiranje na prijave nepravilnosti. Sustav također omogućuje korisnicima promjenu ili oporavak lozinke, kao i pregled povijesti transakcija.
 
 
 # Tehnologije
->Operativni sustav: Linux (Render hosting)
+Operativni sustav: Linux (Render hosting)
 
->Poslužiteljska strana: Supabase
+Poslužiteljska strana: Supabase
 
->Frontend: React.js
+Frontend: React.js
 
->Backend: Spring Boot, Java 21
+Backend: Spring Boot, Java 21
 
 
 # Članovi tima 
->Dorian Ceci
->Tonka Heckel
->Luka Oslić
->Marko Kovačev
->Karlo Piškorić
->Lovro Klanac
->Sven Oužecky
+Dorian Ceci
+Tonka Heckel
+Luka Oslić
+Marko Kovačev
+Karlo Piškorić
+Lovro Klanac
+Sven Oužecky
 
 
 # Kontribucije
