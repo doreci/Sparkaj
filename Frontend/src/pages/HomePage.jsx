@@ -1,7 +1,20 @@
+import { supabase } from "../../supabaseClient";
 import "./homepage.css";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 function HomePage() {
+	
+	const [session, setSession] = useState(null);
+	
+	useEffect(() => {
+		supabase.auth.getSession().then(({ data: { session } }) => {
+		  setSession(session);
+		})
+    }, []);
+    
+    //console.log(session);
+    
     return (
         <div className="container">
             <div className="header">
@@ -11,9 +24,11 @@ function HomePage() {
                     <img id="povecalo" src="/search-icon.jpg" alt="search icon" />
                 </div>
                 <div className="header-buttons">
+                	{ session != null &&
                     <Link to='/editprofile'>
                         <button>Edit Profile</button>
                     </Link>
+                    }
                     <Link to="/register">
                         <button>Register</button>
                     </Link>
