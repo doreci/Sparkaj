@@ -13,6 +13,11 @@ function HomePage() {
 		})
     }, []);
     
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setSession(null);
+    };
+    
     //console.log(session);
     
     return (
@@ -29,12 +34,19 @@ function HomePage() {
                         <button>Edit Profile</button>
                     </Link>
                     }
+                    { session == null &&
                     <Link to="/register">
                         <button>Register</button>
                     </Link>
+                    }
+                    { session != null &&
+                    <button onClick={handleLogout}>Logout</button>
+                    }
+                    { session == null &&
                     <Link to="/login">
                         <button>Login</button>
                     </Link>
+                    }
                 </div>
             </div>
             <div className="content">
