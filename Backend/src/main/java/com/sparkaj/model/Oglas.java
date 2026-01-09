@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Oglas {
 
     @JsonProperty("id_oglasa")
-    private int idOglasa;
+    private Integer idOglasa;
 
     @JsonProperty("naziv_oglasa")
     private String nazivOglasa;
@@ -13,13 +13,13 @@ public class Oglas {
     @JsonProperty("opis_oglasa")
     private String opisOglasa;
 
-    private double cijena;
+    private Double cijena;
 
     @JsonProperty("prosj_ocjena")
-    private double prosjOcjena;
+    private Double prosjOcjena;
 
     @JsonProperty("id_korisnika")
-    private int idKorisnika;
+    private Integer idKorisnika;
 
     public Oglas() {}
 
