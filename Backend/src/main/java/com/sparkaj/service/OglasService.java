@@ -37,10 +37,32 @@ public class OglasService {
                 });
     }
 
+    public Mono<Oglas> getOglasById(Integer id) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*")
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(this::parseSingleOglasResponse);
+    }
+
     private Mono<List<Oglas>> parseOglasiResponse(String response) {
         try {
             Oglas[] oglasi = objectMapper.readValue(response, Oglas[].class);
             return Mono.just(Arrays.asList(oglasi));
+        } catch (JsonProcessingException e) {
+            System.out.println(" Greška pri parsiranju JSON: " + e.getMessage());
+            return Mono.error(e);
+        }
+    }
+
+    private Mono<Oglas> parseSingleOglasResponse(String response) {
+        try {
+            Oglas[] oglasi = objectMapper.readValue(response, Oglas[].class);
+            if (oglasi.length > 0) {
+                return Mono.just(oglasi[0]);
+            } else {
+                return Mono.empty();
+            }
         } catch (JsonProcessingException e) {
             System.out.println(" Greška pri parsiranju JSON: " + e.getMessage());
             return Mono.error(e);
