@@ -73,7 +73,7 @@ public class PaymentController {
 
                             PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                                     .setAmount(amount)
-                                    .setCurrency("usd")
+                                    .setCurrency("eur")
                                     .build();
 
                             PaymentIntent paymentIntent = PaymentIntent.create(params);
