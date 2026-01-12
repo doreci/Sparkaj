@@ -1,6 +1,7 @@
 package com.sparkaj.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sparkaj.model.Korisnik;
 
 public class Oglas {
 
@@ -21,6 +22,8 @@ public class Oglas {
     @JsonProperty("id_korisnika")
     private Integer idKorisnika;
 
+    private Korisnik korisnik;
+
     public Oglas() {}
 
     public Oglas(String nazivOglasa, String opisOglasa, Double cijena, Integer idKorisnika) {
@@ -28,6 +31,14 @@ public class Oglas {
         this.opisOglasa = opisOglasa;
         this.cijena = cijena;
         this.idKorisnika = idKorisnika;
+    }
+
+    public Korisnik getKorisnik(){
+        return korisnik;
+    }
+
+    public void setKorisnik(Korisnik korisnik) {
+        this.korisnik = korisnik;
     }
 
     public Integer getIdOglasa() {

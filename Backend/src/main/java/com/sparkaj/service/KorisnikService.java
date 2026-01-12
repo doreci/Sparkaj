@@ -1,0 +1,25 @@
+package com.sparkaj.service;
+
+import com.sparkaj.model.Korisnik;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class KorisnikService {
+
+    private final WebClient webClient;
+
+    public KorisnikService(WebClient webClient) {
+        this.webClient = webClient;
+    }
+
+    // Salje upit Supabase-u, natrag dobiva podatke o korisniku
+    public Mono<Korisnik> getKorisnikByNadimak(String nadimak) {
+        return webClient.get()
+                .uri("/rest/v1/korisnik?nadimak=eq." + nadimak + "&select=*")
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
+    }
+}
