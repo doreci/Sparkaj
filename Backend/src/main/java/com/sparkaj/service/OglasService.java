@@ -27,6 +27,15 @@ public class OglasService {
                 .map(Arrays::asList);
     }
 
+    // Dohvati podatke o oglasu
+    public Mono<Oglas> getOglasById(Integer id) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(niz -> niz.length > 0 ? niz[0] : null);
+    }
+
     // Dohvat svih oglasa jednog korisnika
     public Mono<List<Oglas>> getOglasiByKorisnikNadimak(String nadimak) {
         return korisnikService.getKorisnikByNadimak(nadimak)

@@ -19,9 +19,16 @@ public class OglasController {
         System.out.println(" OglasController created");
     }
 
+    // Dohvat svih oglasa
     @GetMapping
     public Mono<ResponseEntity<List<Oglas>>> getAllOglasi() {
         return oglasService.getAllOglasi()
                 .map(ResponseEntity::ok);
+    }
+
+    // Dohvat jednog oglasa po id-u
+    @GetMapping("/{id}")
+    public Mono<Oglas> getOglasById(@PathVariable Integer id) {
+        return oglasService.getOglasById(id);
     }
 }
