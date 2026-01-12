@@ -36,6 +36,71 @@ public class OglasService {
                     System.out.println(" Greška: " + error.getMessage());
                 });
     }
+    
+    public Mono<List<Oglas>> getOglasId(Long id) {
+        System.out.println(" Dohvaćam oglas " + id.toString() + " iz baze...");
+
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(this::parseOglasiResponse)
+                .doOnNext(oglasi -> {
+                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
+                })
+                .doOnError(error -> {
+                    System.out.println(" Greška: " + error.getMessage());
+                });
+    }
+    
+    public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
+        System.out.println(" Kreiram oglas");
+
+        return webClient.post()
+                .uri("/rest/v1/oglas")
+                .bodyValue(oglas)
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(this::parseOglasiResponse)
+                .doOnNext(oglasi -> {
+                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
+                })
+                .doOnError(error -> {
+                    System.out.println(" Greška: " + error.getMessage());
+                });
+    }
+    
+    public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
+        System.out.println(" Azuriram oglas " + id.toString());
+        oglas.setIdOglasa(id.intValue());
+        return webClient.put()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .bodyValue(oglas)
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(this::parseOglasiResponse)
+                .doOnNext(oglasi -> {
+                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
+                })
+                .doOnError(error -> {
+                    System.out.println(" Greška: " + error.getMessage());
+                });
+    }
+    
+    public Mono<List<Oglas>> obrisiOglas(Long id) {
+        System.out.println(" Brisem oglas " + id.toString());
+        return webClient.delete()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(this::parseOglasiResponse)
+                .doOnNext(oglasi -> {
+                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
+                })
+                .doOnError(error -> {
+                    System.out.println(" Greška: " + error.getMessage());
+                });
+    }
 
     private Mono<List<Oglas>> parseOglasiResponse(String response) {
         try {

@@ -24,4 +24,28 @@ public class OglasController {
         return oglasService.getAllOglasi()
                 .map(ResponseEntity::ok);
     }
+    
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<List<Oglas>>> getOglasId(@PathVariable("id") Long id) {
+        return oglasService.getOglasId(id)
+                .map(ResponseEntity::ok);
+    }
+    
+    @PostMapping
+    public Mono<ResponseEntity<List<Oglas>>> kreirajOglas(@RequestBody Oglas oglas) {
+        return oglasService.kreirajOglas(oglas)
+                .map(ResponseEntity::ok);
+    }
+    
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<List<Oglas>>> azurirajOglas(@PathVariable("id") Long id, @RequestBody Oglas oglas) {
+        return oglasService.azurirajOglas(id, oglas)
+                .map(ResponseEntity::ok);
+    }
+    
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<List<Oglas>>> obrisiOglas(@PathVariable("id") Long id) {
+        return oglasService.obrisiOglas(id)
+                .map(ResponseEntity::ok);
+    }
 }
