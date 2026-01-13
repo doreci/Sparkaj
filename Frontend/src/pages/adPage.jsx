@@ -56,6 +56,7 @@ function AdPage() {
     const korisnik = ad.korisnik || {};
     const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} KM` : "Nije dostupno";
     const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
+    const testLokacija = ad.lokacija || "Vukovarska 58, Zagreb";
 
     return (
         <div className="ad-page-container">
@@ -202,6 +203,28 @@ function AdPage() {
                             🚩 Prijavi oglas
                         </button>
                     </div>
+                </div>
+            </div>
+
+            {/* Lokacija */}
+            <div className="ad-location-section">
+                <h2>Lokacija parkinga</h2>
+
+                <div className="location-address">
+        📍             {testLokacija}
+                </div>
+
+                <div className="map-container">
+                    <iframe
+                        title="Lokacija parkinga"
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(testLokacija)}&output=embed`}
+                        width="100%"
+                        height="350"
+                        style={{ border: 0, borderRadius: "10px" }}
+                        allowFullScreen=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
                 </div>
             </div>
 

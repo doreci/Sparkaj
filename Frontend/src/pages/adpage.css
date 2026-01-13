@@ -473,3 +473,30 @@
         padding: 20px;
     }
 }
+
+.ad-location-section {
+    margin-top: 60px;
+    padding: 30px;
+    background: #f9f9f9;
+    border-radius: 12px;
+}
+
+.ad-location-section h2 {
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.location-address {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.map-container {
+    width: 100%;
+    height: 350px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
