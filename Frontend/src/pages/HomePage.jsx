@@ -49,6 +49,11 @@ function HomePage() {
                 </div>
                 <div className="header-buttons">
                     {session != null && (
+                        <Link to="/napravi-oglas">
+                            <button>Napravi oglas</button>
+                        </Link>
+                    )}
+                    {session != null && (
                         <Link to="/editprofile">
                             <button>Edit Profile</button>
                         </Link>

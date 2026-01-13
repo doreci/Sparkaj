@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import EditProfilePage from "./pages/EditProfilePage.jsx";
 import AdPage from "./pages/adPage.jsx";
+import CreateAdPage from "./pages/CreateAdPage.jsx"
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/editprofile" element={<EditProfilePage />} />
                     <Route path="/ad/:id" element={<AdPage />} />
+                    <Route path="/napravi-oglas" element={<CreateAdPage/>} />
                 </Routes>
             </BrowserRouter>
         </Provider>
