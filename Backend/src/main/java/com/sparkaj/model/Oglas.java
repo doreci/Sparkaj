@@ -33,8 +33,8 @@ public class Oglas {
     @JsonProperty("id_korisnika")
     private Integer idKorisnika;
 
-    //@JsonIgnore
-    private Korisnik korisnik;
+    @JsonProperty("korisnik")
+    public Korisnik korisnik;
 
     public Oglas() {}
 
@@ -49,6 +49,7 @@ public class Oglas {
         this.slika = slika;
     }
 
+    @JsonProperty("korisnik")
     public Korisnik getKorisnik(){
         return korisnik;
     }
