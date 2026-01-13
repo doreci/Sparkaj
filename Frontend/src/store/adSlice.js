@@ -14,6 +14,7 @@ export const fetchAllAds = createAsyncThunk(
             }
 
             const data = await res.json();
+            console.log("Fetched ads data:", data);
             return Array.isArray(data) ? data : data.data || [];
         } catch (error) {
             return rejectWithValue(error.message || "Neuspješan dohvat oglasa");

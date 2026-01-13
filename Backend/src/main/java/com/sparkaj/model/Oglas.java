@@ -7,7 +7,6 @@ import com.sparkaj.model.Korisnik;
 public class Oglas {
 
     @JsonProperty("id_oglasa")
-    @JsonIgnore
     private Integer idOglasa;
 
     @JsonProperty("naziv_oglasa")
@@ -50,8 +49,7 @@ public class Oglas {
         this.slika = slika;
     }
 
-    @JsonIgnore
-    public Korisnik getKorisnikObject(){
+    public Korisnik getKorisnik(){
         return korisnik;
     }
 

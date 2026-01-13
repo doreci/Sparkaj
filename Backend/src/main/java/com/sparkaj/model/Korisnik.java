@@ -14,7 +14,6 @@ public class Korisnik {
 
     private String nadimak;
 
-    @JsonIgnore
     private String email;
 
     @JsonProperty("broj_mobitela")
