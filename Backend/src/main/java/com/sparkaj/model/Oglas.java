@@ -19,6 +19,16 @@ public class Oglas {
     @JsonProperty("prosj_ocjena")
     private Double prosjOcjena;
 
+    private String grad;
+
+    @JsonProperty("ulica_broj")
+    private String ulicaBroj;
+
+    @JsonProperty("postanski_broj")
+    private Integer postanskiBroj;
+
+    private String slika;
+
     @JsonProperty("id_korisnika")
     private Integer idKorisnika;
 
@@ -26,11 +36,15 @@ public class Oglas {
 
     public Oglas() {}
 
-    public Oglas(String nazivOglasa, String opisOglasa, Double cijena, Integer idKorisnika) {
+    public Oglas(String nazivOglasa, String opisOglasa, Double cijena, String grad, String ulicaBroj, Integer postanskiBroj, Integer idKorisnika, String slika) {
         this.nazivOglasa = nazivOglasa;
         this.opisOglasa = opisOglasa;
         this.cijena = cijena;
+        this.grad = grad;
+        this.ulicaBroj = ulicaBroj;
+        this.postanskiBroj = postanskiBroj;
         this.idKorisnika = idKorisnika;
+        this.slika = slika;
     }
 
     public Korisnik getKorisnik(){
@@ -81,5 +95,37 @@ public class Oglas {
     }
     public void setIdKorisnika(Integer idKorisnika) {
         this.idKorisnika = idKorisnika;
+    }
+
+    public String getGrad() {
+        return grad;
+    }
+
+    public void setGrad(String grad) {
+        this.grad = grad;
+    }
+
+    public String getUlicaBroj() {
+        return ulicaBroj;
+    }
+
+    public void setUlicaBroj(String ulicaBroj) {
+        this.ulicaBroj = ulicaBroj;
+    }
+
+    public Integer getPostanskiBroj() {
+        return postanskiBroj;
+    }
+
+    public void setPostanskiBroj(Integer postanskiBroj) {
+        this.postanskiBroj = postanskiBroj;
+    }
+
+    public String getSlika() {
+        return slika;
+    }
+
+    public void setSlika(String slika) {
+        this.slika = slika;
     }
 }
