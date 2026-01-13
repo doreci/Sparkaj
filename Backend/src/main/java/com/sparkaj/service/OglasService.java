@@ -1,22 +1,17 @@
 package com.sparkaj.service;
 
-<<<<<<< Updated upstream
+
 import com.sparkaj.model.GradBody;
-=======
 import com.sparkaj.model.CreateOglasRequest;
->>>>>>> Stashed changes
 import com.sparkaj.model.Oglas;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
-<<<<<<< Updated upstream
 import java.util.stream.Collectors;
-=======
 import java.util.HashMap;
 import java.util.Map;
->>>>>>> Stashed changes
 
 @Service
 public class OglasService {
