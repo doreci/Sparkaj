@@ -98,4 +98,219 @@
     color: white;
 }
 
+/* Oglasi sekcija */
+.ads-section {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
+.section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: rgb(0, 0, 61);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Ads Grid - Flex layout */
+.ads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+@supports (display: flex) {
+    .ads-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .ads-grid > * {
+        flex: 0 1 calc(20% - 16px);
+        min-width: 220px;
+        max-width: 280px;
+    }
+}
+
+/* Loading i error poruke */
+.loading-message,
+.no-ads-message {
+    width: 100%;
+    padding: 60px 20px;
+    text-align: center;
+    color: #666;
+    font-size: 18px;
+}
+
+.loading-message p::after {
+    content: "";
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+    0%,
+    20% {
+        content: ".";
+    }
+    40% {
+        content: "..";
+    }
+    60%,
+    100% {
+        content: "...";
+    }
+}
+
+/* View all dugme */
+.view-all {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 30px 0;
+}
+
+.btn-view-all {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 14px 40px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-view-all:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive za tablet */
+@media (max-width: 1024px) {
+    @supports (display: flex) {
+        .ads-grid > * {
+            flex: 0 1 calc(25% - 15px);
+            min-width: 200px;
+            max-width: 250px;
+        }
+    }
+
+    .content h1 {
+        font-size: 36px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+}
+
+/* Responsive za mobilne uređaje */
+@media (max-width: 768px) {
+    @supports (display: flex) {
+        .ads-grid > * {
+            flex: 0 1 calc(33.333% - 14px);
+            min-width: 160px;
+            max-width: 200px;
+        }
+    }
+
+    .content {
+        padding: 30px 15px;
+        margin-top: 80px;
+    }
+
+    .content h1 {
+        font-size: 28px;
+    }
+
+    .subtitle {
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .search-bar {
+        margin: 0 10px;
+    }
+
+    .search-bar input {
+        width: 60vw;
+        min-width: 120px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .ads-grid {
+        gap: 15px;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        height: auto;
+    }
+}
+
+/* Responsive za mali mobilni */
+@media (max-width: 480px) {
+    @supports (display: flex) {
+        .ads-grid > * {
+            flex: 0 1 calc(50% - 10px);
+            min-width: 140px;
+            max-width: 180px;
+        }
+    }
+
+    .content {
+        padding: 20px 10px;
+        margin-top: 100px;
+    }
+
+    .content h1 {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .search-bar {
+        gap: 5px;
+        margin: 0 5px;
+    }
+
+    .search-bar input {
+        width: 50vw;
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+
+    .ads-grid {
+        gap: 12px;
+    }
+
+    .header-buttons {
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .header-buttons button {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    .btn-view-all {
+        padding: 12px 30px;
+        font-size: 14px;
+    }
+}
