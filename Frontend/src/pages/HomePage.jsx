@@ -98,14 +98,14 @@ function HomePage() {
                             ))}
                         </div>
                     )}
-
+{/* 
                     {!isLoading && topFiveAds.length > 0 && (
                         <div className="view-all">
                             <Link to="/oglasi" className="btn-view-all">
                                 Pogledaj sve oglase →
                             </Link>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
 

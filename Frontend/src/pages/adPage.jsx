@@ -54,7 +54,7 @@ function AdPage() {
     }
 
     const korisnik = ad.korisnik || {};
-    const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} KM` : "Nije dostupno";
+    const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} €` : "Nije dostupno";
     const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
     const testLokacija = ad.lokacija || "Vukovarska 58, Zagreb";
 
@@ -100,7 +100,7 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Informacije o prodavačу */}
+                    {/* Informacije o prodavaču */}
                     <div className="ad-seller-section">
                         <h2>O prodavaču</h2>
                         <div className="seller-card">
@@ -193,14 +193,8 @@ function AdPage() {
 
                     {/* Akcije */}
                     <div className="ad-actions">
-                        <button className="btn-primary btn-large">
-                            📞 Kontaktiraj prodavača
-                        </button>
                         <button className="btn-secondary btn-large">
-                            ❤️ Spremi oglas
-                        </button>
-                        <button className="btn-secondary btn-large">
-                            🚩 Prijavi oglas
+                            Prijavi oglas
                         </button>
                     </div>
                 </div>
@@ -211,7 +205,7 @@ function AdPage() {
                 <h2>Lokacija parkinga</h2>
 
                 <div className="location-address">
-        📍             {testLokacija}
+                    {testLokacija}
                 </div>
 
                 <div className="map-container">

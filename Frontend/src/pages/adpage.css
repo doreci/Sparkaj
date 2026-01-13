@@ -4,20 +4,20 @@
     flex-direction: column;
     width: 100vw;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: white;
 }
 
 /* Header sa dugme za nazad */
 .ad-page-header {
-    background-color: #fff;
+    background-color: rgb(0, 0, 61);
     padding: 20px 40px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid #e0e0e0;
 }
 
 .btn-back {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: rgb(0, 0, 61);
     border: none;
     padding: 10px 20px;
     border-radius: 25px;
@@ -29,7 +29,7 @@
 
 .btn-back:hover {
     transform: translateX(-5px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 61, 0.4);
 }
 
 /* Glavni sadržaj */
@@ -58,7 +58,7 @@
 .ad-title {
     font-size: 32px;
     font-weight: 700;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     margin: 0 0 15px 0;
     letter-spacing: -0.5px;
 }
@@ -74,7 +74,7 @@
     background-color: #f0f0f0;
     padding: 8px 15px;
     border-radius: 20px;
-    color: #667eea;
+    color: rgb(0, 0, 61);
     font-weight: 600;
     font-size: 14px;
 }
@@ -92,7 +92,7 @@
 .ad-price-section {
     margin-bottom: 30px;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgb(0, 0, 61);
     border-radius: 12px;
 }
 
@@ -122,10 +122,10 @@
 
 .ad-description-section h2 {
     font-size: 22px;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     margin-bottom: 15px;
     font-weight: 700;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid rgb(0, 0, 61);
     padding-left: 15px;
 }
 
@@ -145,10 +145,10 @@
 
 .ad-seller-section h2 {
     font-size: 22px;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     margin-bottom: 20px;
     font-weight: 700;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid rgb(0, 0, 61);
     padding-left: 15px;
 }
 
@@ -159,7 +159,7 @@
     background-color: #f9f9f9;
     padding: 25px;
     border-radius: 12px;
-    border-left: 5px solid #667eea;
+    border-left: 5px solid rgb(0, 0, 61);
 }
 
 .seller-avatar {
@@ -171,8 +171,8 @@
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #667eea;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    border: 4px solid rgb(0, 0, 61);
+    box-shadow: 0 4px 15px rgba(0, 0, 61, 0.2);
 }
 
 .seller-info {
@@ -184,13 +184,13 @@
 
 .seller-name h3 {
     font-size: 20px;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     margin: 0;
     font-weight: 700;
 }
 
 .seller-nickname {
-    color: #667eea;
+    color: rgb(0, 0, 61);
     font-size: 14px;
     margin: 5px 0 0 0;
     font-weight: 600;
@@ -212,7 +212,7 @@
 
 .detail-item .label {
     font-weight: 600;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
 }
 
 .detail-item .value {
@@ -220,7 +220,7 @@
 }
 
 .profile-link {
-    color: #667eea;
+    color: rgb(0, 0, 61);
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
@@ -230,7 +230,7 @@
 }
 
 .profile-link:hover {
-    color: #764ba2;
+    color: rgb(0, 0, 61);
     transform: translateX(5px);
 }
 
@@ -241,10 +241,10 @@
 
 .ad-details-section h2 {
     font-size: 22px;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     margin-bottom: 20px;
     font-weight: 700;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid rgb(0, 0, 61);
     padding-left: 15px;
 }
 
@@ -260,7 +260,7 @@
     background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
     padding: 20px;
     border-radius: 10px;
-    border-top: 3px solid #667eea;
+    border-top: 3px solid rgb(0, 0, 61);
     text-align: center;
 }
 
@@ -275,7 +275,7 @@
 
 .detail-value {
     font-size: 18px;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     font-weight: 700;
 }
 
@@ -305,7 +305,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgb(0, 0, 61);
     color: white;
     flex: 1;
     min-width: 200px;
@@ -313,12 +313,12 @@
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(0, 0, 61, 0.4);
 }
 
 .btn-secondary {
     background-color: #f0f0f0;
-    color: #2c3e50;
+    color: rgb(0, 0, 61);
     flex: 1;
     min-width: 180px;
     border: 2px solid #e0e0e0;
@@ -326,12 +326,13 @@
 
 .btn-secondary:hover {
     background-color: #e8e8e8;
-    border-color: #667eea;
-    color: #667eea;
+    border-color: rgb(0, 0, 61);
+    color: rgb(0, 0, 61);
     transform: translateY(-2px);
 }
 
 .btn-large {
+    text-align: center;
     padding: 16px 32px;
     font-size: 16px;
 }
@@ -343,7 +344,7 @@
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    color: #667eea;
+    color: rgb(0, 0, 61);
     font-size: 18px;
     font-weight: 600;
 }
@@ -390,7 +391,7 @@
 
 /* Footer */
 .ad-page-footer {
-    background-color: #2c3e50;
+    background-color: rgb(0, 0, 61);
     color: white;
     text-align: center;
     padding: 25px;
