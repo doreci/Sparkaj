@@ -1,11 +1,13 @@
 package com.sparkaj.service;
 
+import com.sparkaj.model.GradBody;
 import com.sparkaj.model.Oglas;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OglasService {
@@ -33,14 +35,39 @@ public class OglasService {
         return webClient.get()
                 .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
                 .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(this::parseOglasiResponse)
-                .doOnNext(oglasi -> {
-                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
-                })
-                .doOnError(error -> {
-                    System.out.println(" Greška: " + error.getMessage());
-                });
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
+    
+    public Mono<List<GradBody>> getLokacije() {
+        System.out.println(" Dohvaćam oglase iz baze...");        
+        
+        return webClient.get()
+                .uri("/rest/v1/oglas?select=grad")
+                .retrieve()
+                .bodyToMono(GradBody[].class)
+                .map(Arrays::asList).map(list -> list.stream().distinct().collect(Collectors.toList()));
+                
+    }
+    
+    public Mono<List<Oglas>> pretraziOglaseLok(String lokacija) {
+        System.out.println(" Dohvaćam oglase iz baze...");
+
+        return webClient.get()
+                .uri("/rest/v1/oglas?ulica_broj=ilike.*" + lokacija + "*")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
+    
+    public Mono<List<Oglas>> pretraziOglaseCij(String cijenaOd, String cijenaDo) {
+        System.out.println(" Dohvaćam oglase iz baze...");
+
+        return webClient.get()
+                .uri("/rest/v1/oglas?cijena=gte." + cijenaOd + "&cijena=lte." + cijenaDo)
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
     }
     
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
@@ -50,14 +77,8 @@ public class OglasService {
                 .uri("/rest/v1/oglas")
                 .bodyValue(oglas)
                 .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(this::parseOglasiResponse)
-                .doOnNext(oglasi -> {
-                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
-                })
-                .doOnError(error -> {
-                    System.out.println(" Greška: " + error.getMessage());
-                });
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
     }
     
     public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
@@ -67,14 +88,8 @@ public class OglasService {
                 .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
                 .bodyValue(oglas)
                 .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(this::parseOglasiResponse)
-                .doOnNext(oglasi -> {
-                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
-                })
-                .doOnError(error -> {
-                    System.out.println(" Greška: " + error.getMessage());
-                });
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
     }
     
     public Mono<List<Oglas>> obrisiOglas(Long id) {
@@ -82,14 +97,8 @@ public class OglasService {
         return webClient.delete()
                 .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
                 .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(this::parseOglasiResponse)
-                .doOnNext(oglasi -> {
-                    System.out.println(" Pronađeno " + oglasi.size() + " oglasa");
-                })
-                .doOnError(error -> {
-                    System.out.println(" Greška: " + error.getMessage());
-                });
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
     }
 
     // Dohvati podatke o oglasu
