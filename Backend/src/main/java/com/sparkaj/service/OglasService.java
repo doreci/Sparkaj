@@ -27,10 +27,14 @@ public class OglasService {
     // Dohvat svih oglasa za glavnu stranicu
     public Mono<List<Oglas>> getAllOglasi() {
         return webClient.get()
-                .uri("/rest/v1/oglas?select=*")
+                .uri("/rest/v1/oglas?select=*,korisnik!id_korisnika(*)")
                 .retrieve()
                 .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
+                .map(Arrays::asList)
+                .doOnNext(oglasi -> {
+                    System.out.println("Fetched oglasi: " + oglasi.size());
+                    oglasi.forEach(o -> System.out.println("Oglas: " + o.getNazivOglasa() + ", Korisnik: " + (o.getKorisnik() != null ? o.getKorisnik().getEmail() : "null")));
+                });
     }
     
     public Mono<List<Oglas>> getOglasId(Long id) {
@@ -108,7 +112,7 @@ public class OglasService {
     // Dohvati podatke o oglasu
     public Mono<Oglas> getOglasById(Integer id) {
         return webClient.get()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*")
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*,korisnik!id_korisnika(*)")
                 .retrieve()
                 .bodyToMono(Oglas[].class)
                 .map(niz -> niz.length > 0 ? niz[0] : null);
