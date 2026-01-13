@@ -22,4 +22,12 @@ public class KorisnikService {
                 .bodyToMono(Korisnik[].class)
                 .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
     }
+
+    public Mono<Korisnik> getKorisnikByUuid(String uuid) {
+        return webClient.get()
+                .uri("/rest/v1/korisnik?uuid=eq." + uuid + "&select=*")
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
+    }
 }
