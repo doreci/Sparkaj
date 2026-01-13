@@ -1,0 +1,502 @@
+/* Ad Page Container */
+.ad-page-container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Header sa dugme za nazad */
+.ad-page-header {
+    background-color: #fff;
+    padding: 20px 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.btn-back {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Glavni sadržaj */
+.ad-page-content {
+    flex: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    width: 100%;
+}
+
+.ad-main-section {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Header sa naslovom */
+.ad-header-info {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.ad-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+    letter-spacing: -0.5px;
+}
+
+.ad-meta {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.ad-id {
+    background-color: #f0f0f0;
+    padding: 8px 15px;
+    border-radius: 20px;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.ad-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #f39c12;
+}
+
+/* Cijena - istaknuta sekcija */
+.ad-price-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+}
+
+.price-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.price-label {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.price-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -1px;
+}
+
+/* Opis sekcija */
+.ad-description-section {
+    margin-bottom: 40px;
+}
+
+.ad-description-section h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 700;
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+}
+
+.ad-description {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    line-height: 1.8;
+    color: #555;
+    font-size: 16px;
+}
+
+/* Prodavač sekcija */
+.ad-seller-section {
+    margin-bottom: 40px;
+}
+
+.ad-seller-section h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: 700;
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+}
+
+.seller-card {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+    background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 5px solid #667eea;
+}
+
+.seller-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.seller-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.seller-name h3 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: 700;
+}
+
+.seller-nickname {
+    color: #667eea;
+    font-size: 14px;
+    margin: 5px 0 0 0;
+    font-weight: 600;
+}
+
+.seller-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+}
+
+.detail-item .label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.detail-item .value {
+    color: #555;
+}
+
+.profile-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.profile-link:hover {
+    color: #764ba2;
+    transform: translateX(5px);
+}
+
+/* Dodatne informacije */
+.ad-details-section {
+    margin-bottom: 40px;
+}
+
+.ad-details-section h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: 700;
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.detail-box {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+    padding: 20px;
+    border-radius: 10px;
+    border-top: 3px solid #667eea;
+    text-align: center;
+}
+
+.detail-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.detail-value {
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* Akcije */
+.ad-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+    justify-content: center;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    flex: 1;
+    min-width: 200px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background-color: #f0f0f0;
+    color: #2c3e50;
+    flex: 1;
+    min-width: 180px;
+    border: 2px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background-color: #e8e8e8;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.btn-large {
+    padding: 16px 32px;
+    font-size: 16px;
+}
+
+/* Loading stanje */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #667eea;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.loading p::after {
+    content: "";
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+    0%,
+    20% {
+        content: ".";
+    }
+    40% {
+        content: "..";
+    }
+    60%,
+    100% {
+        content: "...";
+    }
+}
+
+/* Greška */
+.error-container {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.error-container h2 {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.error-container p {
+    color: #555;
+    margin-bottom: 25px;
+    font-size: 16px;
+}
+
+/* Footer */
+.ad-page-footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 25px;
+    margin-top: auto;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ad-page-header {
+        padding: 15px 20px;
+    }
+
+    .ad-page-content {
+        padding: 20px 15px;
+    }
+
+    .ad-main-section {
+        padding: 25px;
+    }
+
+    .ad-title {
+        font-size: 24px;
+    }
+
+    .price-value {
+        font-size: 28px;
+    }
+
+    .seller-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .avatar-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ad-actions {
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .ad-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-title {
+        font-size: 20px;
+    }
+
+    .price-value {
+        font-size: 24px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ad-page-header {
+        padding: 10px 15px;
+    }
+
+    .ad-main-section {
+        border-radius: 10px;
+        padding: 20px;
+    }
+}
+
+.ad-location-section {
+    margin-top: 60px;
+    padding: 30px;
+    background: #f9f9f9;
+    border-radius: 12px;
+}
+
+.ad-location-section h2 {
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.location-address {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.map-container {
+    width: 100%;
+    height: 350px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+

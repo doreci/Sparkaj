@@ -19,6 +19,7 @@ public class OglasController {
         System.out.println(" OglasController created");
     }
 
+    // Dohvat svih oglasa
     @GetMapping
     public Mono<ResponseEntity<List<Oglas>>> getAllOglasi() {
         return oglasService.getAllOglasi()
