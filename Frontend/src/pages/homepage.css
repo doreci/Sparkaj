@@ -1,10 +1,10 @@
-*{
+* {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
 }
 
-.container{
+.container {
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -12,7 +12,7 @@
     align-items: center;
 }
 
-.header{
+.header {
     position: fixed;
     top: 0;
     left: 0;
@@ -23,40 +23,40 @@
     width: 100%;
 }
 
-.header img{
+.header img {
     height: 70px;
     padding: 15px;
 }
 
 #povecalo {
-	height: 25px;
+    height: 25px;
 }
 
-.header-buttons{
+.header-buttons {
     display: flex;
     align-items: center;
     gap: 20px;
     padding: 15px;
 }
 
-.header-buttons button{
+.header-buttons button {
     background: white;
     color: rgb(0, 0, 61);
     border: none;
     padding: 10px 20px;
     cursor: pointer;
-    border-radius: 5px; 
+    border-radius: 5px;
     transition: background 0.3s, color 0.3s;
 }
 
-.header-buttons button:hover{
+.header-buttons button:hover {
     background: rgba(255, 255, 255, 0.25);
     color: white;
 }
 
-.content{
+.content {
     background-color: white;
-    color:rgb(0, 0, 61);
+    color: rgb(0, 0, 61);
     display: flex;
     justify-content: center;
     margin-top: 100px;
@@ -65,12 +65,13 @@
     width: 100vw;
 }
 
-.search-bar{
+.search-bar {
     display: flex;
     align-items: center;
+    position: relative;
 }
 
-.search-bar input{
+.search-bar input {
     background-color: white;
     color: rgb(0, 0, 61);
     width: 20vw;
@@ -81,14 +82,167 @@
     font-size: 16px;
 }
 
-.search-bar img{
+.search-bar img {
     width: 25px;
     height: 25px;
     margin-left: -50px;
     cursor: pointer;
 }
 
-.footer{
+/* Filter Dropdown */
+.filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 2px solid rgb(0, 0, 61);
+    border-radius: 10px;
+    padding: 15px 20px;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    margin-top: 10px;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-header h3 {
+    color: rgb(0, 0, 61);
+    font-size: 16px;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: rgb(0, 0, 61);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #666;
+}
+
+.filter-section {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-section label {
+    color: rgb(0, 0, 61);
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-section input {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 13px;
+    color: rgb(0, 0, 61);
+    transition: border-color 0.3s;
+}
+
+.filter-section input:focus {
+    outline: none;
+    border-color: rgb(0, 0, 61);
+    box-shadow: 0 0 0 3px rgba(0, 0, 61, 0.1);
+}
+
+.price-inputs,
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-inputs input,
+.date-inputs input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 13px;
+    color: rgb(0, 0, 61);
+}
+
+.price-inputs input:focus,
+.date-inputs input:focus {
+    outline: none;
+    border-color: rgb(0, 0, 61);
+    box-shadow: 0 0 0 3px rgba(0, 0, 61, 0.1);
+}
+
+.separator {
+    color: #999;
+    font-weight: 600;
+}
+
+.filter-btn-search {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgb(0, 0, 61);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn-search:hover {
+    background: rgba(0, 0, 61, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 61, 0.3);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.filter-btn-clear {
+    flex: 1;
+    padding: 10px 12px;
+    background: white;
+    color: rgb(0, 0, 61);
+    border: 2px solid rgb(0, 0, 61);
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn-clear:hover {
+    background: #f5f5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 61, 0.2);
+}
+
+.footer {
     width: 100vw;
     height: 60px;
     background: rgb(0, 0, 61);
@@ -175,7 +329,7 @@
 }
 
 .btn-view-all {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgb(0, 0, 61);
     color: white;
     padding: 14px 40px;
     border-radius: 25px;
@@ -183,16 +337,20 @@
     font-weight: 700;
     font-size: 16px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 61, 0.3);
 }
 
 .btn-view-all:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 61, 0.4);
 }
 
 /* Responsive za tablet */
 @media (max-width: 1024px) {
+    .filter-dropdown {
+        min-width: 280px;
+    }
+
     @supports (display: flex) {
         .ads-grid > * {
             flex: 0 1 calc(25% - 15px);
@@ -212,6 +370,12 @@
 
 /* Responsive za mobilne uređaje */
 @media (max-width: 768px) {
+    .filter-dropdown {
+        min-width: 90vw;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
     @supports (display: flex) {
         .ads-grid > * {
             flex: 0 1 calc(33.333% - 14px);
@@ -260,6 +424,38 @@
 
 /* Responsive za mali mobilni */
 @media (max-width: 480px) {
+    .filter-dropdown {
+        min-width: 85vw;
+        padding: 12px 15px;
+    }
+
+    .filter-header h3 {
+        font-size: 14px;
+    }
+
+    .filter-section label {
+        font-size: 11px;
+    }
+
+    .filter-section input {
+        font-size: 12px;
+    }
+
+    .price-inputs input,
+    .date-inputs input {
+        font-size: 12px;
+    }
+
+    .filter-btn-search {
+        font-size: 13px;
+        padding: 9px 10px;
+    }
+
+    .filter-btn-clear {
+        font-size: 13px;
+        padding: 9px 10px;
+    }
+
     @supports (display: flex) {
         .ads-grid > * {
             flex: 0 1 calc(50% - 10px);
@@ -312,5 +508,14 @@
     .btn-view-all {
         padding: 12px 30px;
         font-size: 14px;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+    }
+
+    .filter-btn-search,
+    .filter-btn-clear {
+        width: 100%;
     }
 }
