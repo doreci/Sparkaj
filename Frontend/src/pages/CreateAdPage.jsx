@@ -7,18 +7,59 @@ function CreateAdPage() {
 
     const [session, setSession] = useState(null);
     const [imagePreview, setImagePreview] = useState("./parking-placeholder.png");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
         naziv_oglasa: "",
         opis_oglasa: "",
         lokacija: "",
+        cijena: "",
         slika: null
     });
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
+            if (session?.user) {
+                // Parse name into ime and prezime
+                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
+                const nameParts = fullName.split(' ');
+                const ime = nameParts[0] || 'Unknown';
+                const prezime = nameParts.slice(1).join(' ') || null;
+
+                // Upsert korisnik
+                supabase.from('korisnik').upsert({
+                    uuid: session.user.id,
+                    ime: ime,
+                    prezime: prezime,
+                    email: session.user.email
+                }, { onConflict: 'uuid' }).then(({ error }) => {
+                    if (error) console.error('Error upserting korisnik:', error);
+                });
+            }
         });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            setSession(session);
+            if (event === 'SIGNED_IN' && session?.user) {
+                // Parse name into ime and prezime
+                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
+                const nameParts = fullName.split(' ');
+                const ime = nameParts[0] || 'Unknown';
+                const prezime = nameParts.slice(1).join(' ') || null;
+
+                // Upsert korisnik on sign in
+                const { error } = await supabase.from('korisnik').upsert({
+                    uuid: session.user.id,
+                    ime: ime,
+                    prezime: prezime,
+                    email: session.user.email
+                }, { onConflict: 'uuid' });
+                if (error) console.error('Error upserting korisnik:', error);
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const handleInputChange = (e) => {
@@ -50,19 +91,105 @@ function CreateAdPage() {
             return;
         }
 
+        setIsSubmitting(true);
+
+        // Safety timeout to reset button after 15 seconds
+        const safetyTimeout = setTimeout(() => setIsSubmitting(false), 15000);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+
+        // Parse lokacija: "Ulica broj, postanski, grad"
+        const lokacijaParts = formData.lokacija.split(',').map(s => s.trim());
+        if (lokacijaParts.length !== 3) {
+            alert("Lokacija mora biti u formatu: Ulica broj, postanski broj, grad");
+            return;
+        }
+        const ulicaBroj = lokacijaParts[0];
+        const postanskiBroj = parseInt(lokacijaParts[1]);
+        const grad = lokacijaParts[2];
+
+        if (isNaN(postanskiBroj)) {
+            alert("Postanski broj mora biti broj");
+            return;
+        }
+
+        let imageUrl = null;
+        if (formData.slika) {
+            // Upload image to Supabase storage
+            const fileName = `ads/${Date.now()}_${formData.slika.name}`;
+            const { data, error } = await supabase.storage
+                .from('slika_oglasa')
+                .upload(fileName, formData.slika);
+
+            if (error) {
+                console.error("Error uploading image:", error);
+                alert("Greška pri uploadu slike: " + error.message + ". Slika neće biti spremljena.");
+                // Continue without image
+            } else {
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('slika_oglasa')
+                    .getPublicUrl(fileName);
+                imageUrl = urlData.publicUrl;
+            }
+        }
+
+        // Get korisnik uuid
+        const uuid = session.user.id;
+
         const payload = {
             naziv_oglasa: formData.naziv_oglasa,
             opis_oglasa: formData.opis_oglasa,
-            id_korisnika: session.user.id,
-            // cijena i prosj_ocjena se NE šalju
+            cijena: parseFloat(formData.cijena) || null,
+            grad: grad,
+            ulica_broj: ulicaBroj,
+            postanski_broj: postanskiBroj,
+            slika: imageUrl,
+            uuid: uuid,
         };
 
         console.log("Oglas payload:", payload);
-        console.log("Lokacija:", formData.lokacija);
-        console.log("Slika:", formData.slika);
 
-        // Ovdje ćeš kasnije povezati upload slike i insert u bazu
-        alert("Oglas spremljen (demo)");
+        try {
+            const response = await fetch('http://localhost:8080/api/oglasi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+                signal: controller.signal,
+            });
+
+            if (response.ok) {
+                alert("Oglas uspješno spremljen!");
+                // Reset form or redirect
+                setFormData({
+                    naziv_oglasa: "",
+                    opis_oglasa: "",
+                    lokacija: "",
+                    cijena: "",
+                    slika: null
+                });
+                setImagePreview("./parking-placeholder.png");
+                setImagePreview("./parking-placeholder.png");
+            } else {
+                const errorText = await response.text();
+                console.error("Error creating ad:", errorText);
+                alert("Greška pri spremanju oglasa: " + errorText);
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                alert("Zahtjev je istekao. Pokušajte ponovo.");
+            } else {
+                console.error("Network error:", error);
+                alert("Mrežna greška");
+            }
+        } finally {
+            setIsSubmitting(false);
+            clearTimeout(timeoutId);
+            clearTimeout(safetyTimeout);
+        }
     };
 
     return (
@@ -77,7 +204,7 @@ function CreateAdPage() {
 
                 <div className="profile-section">
                     <div className="profilna">
-                        <img src={imagePreview} alt="Slika parkinga" />
+                        <img src={imagePreview} alt="" />
                     </div>
 
                     <div className="prijenos">
@@ -106,13 +233,18 @@ function CreateAdPage() {
                     </div>
 
                     <div className="form-group">
+                        <label htmlFor="cijena">Cijena</label>
+                        <input type="number" id="cijena" value={formData.cijena} onChange={handleInputChange} />
+                    </div>
+
+                    <div className="form-group">
                         <label htmlFor="lokacija">Lokacija</label>
                         <input type="text" id="lokacija" value={formData.lokacija} onChange={handleInputChange} />
                     </div>
 
                     <div className="submit-button">
-                        <button type="submit">
-                            Spremi oglas
+                        <button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Spremanje..." : "Spremi oglas"}
                         </button>
                     </div>
                 </form>

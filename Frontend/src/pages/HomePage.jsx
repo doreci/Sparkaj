@@ -259,8 +259,8 @@ function HomePage() {
 
                     {!isLoading && topFiveAds.length > 0 && (
                         <div className="ads-grid">
-                            {topFiveAds.map((ad) => (
-                                <AdCard key={ad.id_oglasa} ad={ad} />
+                            {topFiveAds.map((ad, index) => (
+                                <AdCard key={ad.id_oglasa || index} ad={ad} />
                             ))}
                         </div>
                     )}

@@ -22,18 +22,16 @@ public class Korisnik {
 
     private String profilna;
 
-    @JsonIgnore
-    private String uuid = UUID.randomUUID().toString();
+    private String uuid;
 
     public Korisnik() {}
 
-    public Korisnik(int idKorisnika, String ime, String prezime, String nadimak, String email, int brojMobitela, String profilna, String uuid) {
+    public Korisnik(int idKorisnika, String ime, String prezime, String nadimak, String email, int brojMobitela, String profilna) {
         this.ime = ime;
         this.prezime = prezime;
         this.nadimak = nadimak;
         this.email = email;
         this.brojMobitela = brojMobitela;
-        this.uuid = uuid;
     }
 
     public int getIdKorisnika() {
@@ -100,3 +98,4 @@ public class Korisnik {
         this.uuid = uuid;
     }
 }
+

@@ -1,6 +1,10 @@
 package com.sparkaj.controller;
 
+<<<<<<< Updated upstream
 import com.sparkaj.model.GradBody;
+=======
+import com.sparkaj.model.CreateOglasRequest;
+>>>>>>> Stashed changes
 import com.sparkaj.model.Oglas;
 import com.sparkaj.service.OglasService;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +32,7 @@ public class OglasController {
     }
     
     @GetMapping("/{id}")
+<<<<<<< Updated upstream
     public Mono<ResponseEntity<List<Oglas>>> getOglasId(@PathVariable("id") Long id) {
         return oglasService.getOglasId(id)
                 .map(ResponseEntity::ok);
@@ -66,6 +71,22 @@ public class OglasController {
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<List<Oglas>>> obrisiOglas(@PathVariable("id") Long id) {
         return oglasService.obrisiOglas(id)
+=======
+    public Mono<ResponseEntity<Oglas>> getOglasById(@PathVariable String id) {
+        try {
+            Integer intId = Integer.parseInt(id);
+            return oglasService.getOglasById(intId)
+                    .map(oglas -> oglas != null ? ResponseEntity.ok(oglas) : ResponseEntity.notFound().build());
+        } catch (NumberFormatException e) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+    }
+
+    // Kreiranje novog oglasa
+    @PostMapping
+    public Mono<ResponseEntity<Oglas>> createOglas(@RequestBody CreateOglasRequest request) {
+        return oglasService.createOglas(request)
+>>>>>>> Stashed changes
                 .map(ResponseEntity::ok);
     }
 }

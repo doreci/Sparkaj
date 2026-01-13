@@ -1,13 +1,22 @@
 package com.sparkaj.service;
 
+<<<<<<< Updated upstream
 import com.sparkaj.model.GradBody;
+=======
+import com.sparkaj.model.CreateOglasRequest;
+>>>>>>> Stashed changes
 import com.sparkaj.model.Oglas;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
+<<<<<<< Updated upstream
 import java.util.stream.Collectors;
+=======
+import java.util.HashMap;
+import java.util.Map;
+>>>>>>> Stashed changes
 
 @Service
 public class OglasService {
@@ -126,6 +135,37 @@ public class OglasService {
                                     o.setKorisnik(korisnik);
                                 }
                                 return lista;
+                            });
+                });
+    }
+
+    // Kreiranje novog oglasa
+    public Mono<Oglas> createOglas(CreateOglasRequest request) {
+        // First, get korisnik by uuid
+        return korisnikService.getKorisnikByUuid(request.getUuid())
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        return Mono.error(new RuntimeException("Korisnik not found"));
+                    }
+                    Map<String, Object> oglasMap = new HashMap<>();
+                    oglasMap.put("naziv_oglasa", request.getNazivOglasa());
+                    oglasMap.put("opis_oglasa", request.getOpisOglasa());
+                    oglasMap.put("cijena", request.getCijena());
+                    oglasMap.put("grad", request.getGrad());
+                    oglasMap.put("ulica_broj", request.getUlicaBroj());
+                    oglasMap.put("postanski_broj", request.getPostanskiBroj());
+                    oglasMap.put("id_korisnika", korisnik.getIdKorisnika());
+                    oglasMap.put("slika", request.getSlika());
+                    return webClient.post()
+                            .uri("/rest/v1/oglas")
+                            .bodyValue(oglasMap)
+                            .exchangeToMono(response -> {
+                                if (response.statusCode().is2xxSuccessful()) {
+                                    return response.bodyToMono(Oglas.class);
+                                } else {
+                                    return response.bodyToMono(String.class)
+                                        .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
+                                }
                             });
                 });
     }
