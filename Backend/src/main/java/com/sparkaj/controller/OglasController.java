@@ -1,5 +1,6 @@
 package com.sparkaj.controller;
 
+import com.sparkaj.model.GradBody;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.service.OglasService;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,24 @@ public class OglasController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<List<Oglas>>> getOglasId(@PathVariable("id") Long id) {
         return oglasService.getOglasId(id)
+                .map(ResponseEntity::ok);
+    }
+    
+    @GetMapping("/searchLokacija")
+    public Mono<ResponseEntity<List<Oglas>>> pretraziOglaseLok(@RequestParam("lokacija") String lokacija) {
+        return oglasService.pretraziOglaseLok(lokacija)
+                .map(ResponseEntity::ok);
+    }
+    
+    @GetMapping("/searchCijena")
+    public Mono<ResponseEntity<List<Oglas>>> pretraziOglaseCij(@RequestParam("cijenaOd") String cijenaOd, @RequestParam("cijenaDo") String cijenaDo) {
+        return oglasService.pretraziOglaseCij(cijenaOd, cijenaDo)
+                .map(ResponseEntity::ok);
+    }
+    
+    @GetMapping("/lokacije")
+    public Mono<ResponseEntity<List<GradBody>>> getLokacije() {
+        return oglasService.getLokacije()
                 .map(ResponseEntity::ok);
     }
     
