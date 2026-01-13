@@ -56,7 +56,14 @@ function AdPage() {
     const korisnik = ad.korisnik || {};
     const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} €` : "Nije dostupno";
     const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
-    const testLokacija = ad.lokacija || "Vukovarska 58, Zagreb";
+    const grad = ad.grad;
+    const ulicaBroj = ad.ulica_broj;
+    const postanskiBroj = ad.postanski_broj;
+
+    // složena adresa za mapu
+    const fullLokacija = [ulicaBroj, postanskiBroj, grad]
+        .filter(Boolean)
+        .join(", ");
 
     return (
         <div className="ad-page-container">
@@ -201,26 +208,28 @@ function AdPage() {
             </div>
 
             {/* Lokacija */}
-            <div className="ad-location-section">
-                <h2>Lokacija parkinga</h2>
+            {fullLokacija && (
+                <div className="ad-location-section">
+                    <h2>Lokacija parkinga</h2>
 
-                <div className="location-address">
-                    {testLokacija}
-                </div>
+                    <div className="location-address">
+                        📍 {fullLokacija}
+                    </div>
 
-                <div className="map-container">
-                    <iframe
-                        title="Lokacija parkinga"
-                        src={`https://www.google.com/maps?q=${encodeURIComponent(testLokacija)}&output=embed`}
-                        width="100%"
-                        height="350"
-                        style={{ border: 0, borderRadius: "10px" }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                    ></iframe>
+                    <div className="map-container">
+                        <iframe
+                            title="Lokacija parkinga"
+                            src={`https://www.google.com/maps?q=${encodeURIComponent(fullLokacija)}&output=embed`}
+                            width="100%"
+                            height="350"
+                            style={{ border: 0, borderRadius: "10px" }}
+                            allowFullScreen=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                        ></iframe>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Footer */}
             <div className="ad-page-footer">
