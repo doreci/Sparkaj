@@ -4,9 +4,9 @@ import "./adCard.css";
 function AdCard({ ad }) {
     if (!ad) return null;
 
-    console.log("AdCard ad:", ad);
-    console.log("ad.korisnik:", ad.korisnik);
-    console.log("ad.korisnik?.email:", ad.korisnik?.email);
+    //console.log("AdCard ad:", ad);
+    //console.log("ad.korisnik:", ad.korisnik);
+    //console.log("ad.korisnik?.email:", ad.korisnik?.email);
 
     const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
     const naziv = ad.naziv_oglasa || "Oglas bez naziva";

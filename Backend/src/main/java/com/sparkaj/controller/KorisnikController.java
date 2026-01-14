@@ -22,6 +22,12 @@ public class KorisnikController {
         System.out.println("Napravljen Korisnik Controller");
     }
 
+    // Prikaz profila korisnika po UUID
+    @GetMapping("/uuid/{uuid}")
+    public Mono<Korisnik> getKorisnikByUUID(@PathVariable String uuid) {
+        return korisnikService.getKorisnikByUuid(uuid);
+    }
+
     // Prikaz profila korisnika
     @GetMapping("/{nadimak}")
     public Mono<Korisnik> getKorisnik(@PathVariable String nadimak) {

@@ -31,11 +31,13 @@ function AdminPage() {
 
     const deleteAd = async (id) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/oglas/${id}`, {
+            const response = await fetch(`http://localhost:8080/api/oglasi/${id}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
                 dispatch(fetchAllAds()); // Refresh ads
+            } else {
+                console.error('Failed to delete ad:', response.statusText);
             }
         } catch (error) {
             console.error('Error deleting ad:', error);

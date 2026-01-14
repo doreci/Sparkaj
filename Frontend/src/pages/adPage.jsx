@@ -7,6 +7,8 @@ import {
     selectSingleAdStatus,
     selectSingleAdError,
 } from "../store/singleAdSlice";
+import { selectUserProfile, fetchUserByUUID } from "../store/userSlice";
+import { supabase } from "../../supabaseClient";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import "./adpage.css";
@@ -21,6 +23,7 @@ function AdPage() {
     const ad = useSelector(selectSingleAdData);
     const status = useSelector(selectSingleAdStatus);
     const error = useSelector(selectSingleAdError);
+    const userProfile = useSelector(selectUserProfile);
     const [selectedOglas, setSelectedOglas] = useState(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState(null);
@@ -32,6 +35,26 @@ function AdPage() {
             dispatch(fetchAdById(id)).finally(() => setIsLoading(false));
         }
     }, [id, dispatch]);
+
+    // Load user profile from Supabase if not already in Redux
+    useEffect(() => {
+        const loadUserProfile = async () => {
+            console.log("Checking user profile...");
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log("Supabase session:", session);
+            
+            if (session?.user) {
+                console.log("User UUID:", session.user.id);
+                // If userProfile is not in Redux, fetch it by UUID
+                if (!userProfile) {
+                    console.log("Fetching user by UUID:", session.user.id);
+                    dispatch(fetchUserByUUID(session.user.id));
+                }
+            }
+        };
+        
+        loadUserProfile();
+    }, [dispatch]);
 
     if (isLoading || status === "loading") {
         return (
@@ -222,7 +245,13 @@ function AdPage() {
                     {/* Akcije */}
                     <div className="ad-actions">
                         <button className="pay-button"
-                            onClick={() => handlePayment(ad)}>
+                            onClick={() => {
+                                if (!userProfile?.id_korisnika) {
+                                    alert('Please log in to make a payment');
+                                    return;
+                                }
+                                handlePayment(ad);
+                            }}>
                             Pay Now
                         </button>   
                         <button className="btn-secondary btn-large">
@@ -270,6 +299,7 @@ function AdPage() {
                         <Elements stripe={stripePromise}>
                             <PaymentForm 
                                 oglas={selectedOglas} 
+                                userProfile={userProfile}
                                 onSuccess={handlePaymentSuccess}
                                 onCancel={handleCancelPayment}
                             />
@@ -297,7 +327,7 @@ function AdPage() {
 
 // Payment Form Component
 // Payment Form Component
-function PaymentForm({ oglas, onSuccess, onCancel }) {
+function PaymentForm({ oglas, userProfile, onSuccess, onCancel }) {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -305,6 +335,11 @@ function PaymentForm({ oglas, onSuccess, onCancel }) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (!userProfile || !userProfile.id_korisnika) {
+            setError('You must be logged in to make a payment.');
+            return;
+        }
 
         if (!stripe || !elements) {
             setError('Stripe has not loaded yet. Please try again.');
@@ -350,6 +385,30 @@ function PaymentForm({ oglas, onSuccess, onCancel }) {
 
             if (paymentIntent.status === 'succeeded') {
                 console.log('Payment successful:', paymentIntent);
+                
+                // 3. Confirm payment with backend and save transaction
+                const confirmResponse = await fetch(`${API_BASE_URL}/api/payments/confirm-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntent.id,
+                        oglasId: oglas.id_oglasa,
+                        korisnikId: userProfile?.id_korisnika,
+                        iznos: paymentIntent.amount / 100
+                    }),
+                });
+
+                if (!confirmResponse.ok) {
+                    const errorData = await confirmResponse.json().catch(() => ({}));
+                    console.error('Confirm payment error response:', errorData);
+                    throw new Error(`Failed to confirm payment: ${confirmResponse.status} ${confirmResponse.statusText || JSON.stringify(errorData)}`);
+                }
+
+                const confirmData = await confirmResponse.json();
+                console.log('Payment confirmed and saved:', confirmData);
+
                 setLoading(false);
                 onSuccess({
                     id: paymentIntent.id,

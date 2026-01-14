@@ -39,8 +39,8 @@ public class OglasController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Long id) {
-        return oglasService.obrisiOglas(id)
+    public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Integer id) {
+        return oglasService.obrisiOglas(id.longValue())
                 .map(oglasi -> ResponseEntity.noContent().build());
     }
 }

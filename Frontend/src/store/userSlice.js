@@ -2,6 +2,28 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
+// Dohvati korisnika po UUID-u
+export const fetchUserByUUID = createAsyncThunk(
+    "user/fetchByUUID",
+    async (uuid, { rejectWithValue }) => {
+        try {
+            const res = await fetch(
+                `${API_BASE_URL}/api/korisnik/uuid/${encodeURIComponent(uuid)}`
+            );
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            return res.json();
+        } catch (error) {
+            return rejectWithValue(
+                error.message || "Neuspješan dohvat korisnika"
+            );
+        }
+    }
+);
+
 // Dohvati korisnika po nadimku
 export const fetchUserByNickname = createAsyncThunk(
     "user/fetchByNickname",
@@ -48,6 +70,24 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            // Handle fetchUserByUUID
+            .addCase(fetchUserByUUID.pending, (state) => {
+                state.status = "loading";
+                state.error = null;
+            })
+            .addCase(fetchUserByUUID.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.profile = action.payload;
+                state.isAuthenticated = true;
+                state.error = null;
+            })
+            .addCase(fetchUserByUUID.rejected, (state, action) => {
+                state.status = "failed";
+                state.profile = null;
+                state.isAuthenticated = false;
+                state.error = action.payload;
+            })
+            // Handle fetchUserByNickname
             .addCase(fetchUserByNickname.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
