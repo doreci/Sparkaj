@@ -235,7 +235,7 @@ function AdPage() {
                     <h2>Lokacija parkinga</h2>
 
                     <div className="location-address">
-                        📍 {fullLokacija}
+                         {fullLokacija}
                     </div>
 
                     <div className="map-container">

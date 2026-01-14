@@ -2,13 +2,15 @@
 .ad-page-container {
     display: flex;
     flex-direction: column;
-    width: 100vw;
-    min-height: 100vh;
+    align-items: center;
+    width: calc(100vw - 20px);
     background: white;
+    overflow-x: hidden;
 }
 
 /* Header sa dugme za nazad */
 .ad-page-header {
+    width: 100%;
     background-color: rgb(0, 0, 61);
     padding: 20px 40px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -34,14 +36,14 @@
 
 /* Glavni sadržaj */
 .ad-page-content {
-    flex: 1;
-    max-width: 1000px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
     padding: 40px 20px;
     width: 100%;
 }
 
 .ad-main-section {
+    width: 60%;
     background: white;
     border-radius: 15px;
     padding: 40px;
@@ -395,8 +397,9 @@
     color: white;
     text-align: center;
     padding: 25px;
-    margin-top: auto;
+    margin-top: 20px;
     font-size: 14px;
+    width: 100%;
 }
 
 /* Responsive */
@@ -476,18 +479,23 @@
 }
 
 .ad-location-section {
-    margin-top: 60px;
+    color: rgb(0, 0, 61);
+    width: 60%;
     padding: 30px;
     background: #f9f9f9;
     border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
 }
 
 .ad-location-section h2 {
+    color: rgb(0, 0, 61);
     margin-bottom: 15px;
     font-size: 24px;
 }
 
 .location-address {
+    color: rgb(0, 0, 61);
     font-size: 18px;
     margin-bottom: 15px;
     font-weight: 500;
