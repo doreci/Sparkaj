@@ -203,7 +203,7 @@ function CreateAdPage() {
             <div className="content-wrapper">
 
                 <div className="profile-section">
-                    <div className="profilna">
+                    <div className="ad-image">
                         <img src={imagePreview} alt="" />
                     </div>
 

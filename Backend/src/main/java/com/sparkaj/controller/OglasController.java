@@ -1,5 +1,6 @@
 package com.sparkaj.controller;
 
+import com.sparkaj.model.CreateOglasRequest;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.service.OglasService;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/oglasi")
-@CrossOrigin(origins = "${cors.allowed-origins}")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "http://localhost:10000", "https://sparkaj-g53p.onrender.com"})
 public class OglasController {
 
     private final OglasService oglasService;
@@ -29,5 +30,17 @@ public class OglasController {
     @GetMapping("/{id}")
     public Mono<Oglas> getOglasById(@PathVariable Integer id) {
         return oglasService.getOglasById(id);
+    }
+
+    @PostMapping
+    public Mono<ResponseEntity<Oglas>> createOglas(@RequestBody CreateOglasRequest request) {
+        return oglasService.createOglas(request)
+                .map(ResponseEntity::ok);
+    }
+
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Long id) {
+        return oglasService.obrisiOglas(id)
+                .map(oglasi -> ResponseEntity.noContent().build());
     }
 }
