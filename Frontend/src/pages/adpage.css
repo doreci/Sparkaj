@@ -486,7 +486,6 @@
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
-}
 
 .ad-location-section h2 {
     color: rgb(0, 0, 61);
@@ -611,5 +610,172 @@
 .pay-button:disabled {
     background: #ccc;
     cursor: not-allowed;
+}
+
+/* Success Modal Styles */
+.success-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.success-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 50px 40px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: slideUp 0.4s ease-out;
+}
+
+.success-checkmark {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 30px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.success-checkmark svg {
+    color: white;
+    width: 60px;
+    height: 60px;
+    animation: checkmark 0.5s ease-out 0.2s backwards;
+}
+
+.success-modal h2 {
+    color: #333;
+    font-size: 28px;
+    margin: 0 0 15px 0;
+    font-weight: 700;
+}
+
+.success-message {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.success-details {
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 25px 0;
+    text-align: left;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #666;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.detail-value {
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+    word-break: break-all;
+    max-width: 200px;
+    text-align: right;
+}
+
+.success-status {
+    background: #4CAF50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.success-button {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.success-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+}
+
+.success-button:active {
+    transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes checkmark {
+    from {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
 }
 

@@ -22,6 +22,8 @@ function AdPage() {
     const status = useSelector(selectSingleAdStatus);
     const error = useSelector(selectSingleAdError);
     const [selectedOglas, setSelectedOglas] = useState(null);
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [paymentDetails, setPaymentDetails] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -74,8 +76,9 @@ function AdPage() {
         setSelectedOglas(oglas);
     };
 
-    const handlePaymentSuccess = () => {
-        alert('Payment successful! Your parking spot has been reserved.');
+    const handlePaymentSuccess = (paymentDetails) => {
+        setPaymentDetails(paymentDetails);
+        setPaymentSuccess(true);
         setSelectedOglas(null);
     };
 
@@ -275,13 +278,22 @@ function AdPage() {
                 </div>
             )}
 
+            {/* Payment Success Modal */}
+            {paymentSuccess && <PaymentSuccessModal 
+                details={paymentDetails} 
+                onClose={() => {
+                    setPaymentSuccess(false);
+                    setPaymentDetails(null);
+                    navigate('/ad/' + ad.id_oglasa);
+                }} 
+            />}
+                </div>
+            )}
+
             {/* Footer */}
             <div className="ad-page-footer">
                 <p>&copy; 2025 Sparkaj. Sva prava zadržana.</p>
-            </div>
-        </div>
-    );
-}
+            </div>;
 
 // Payment Form Component
 // Payment Form Component
@@ -339,8 +351,12 @@ function PaymentForm({ oglas, onSuccess, onCancel }) {
             if (paymentIntent.status === 'succeeded') {
                 console.log('Payment successful:', paymentIntent);
                 setLoading(false);
-                alert('Payment successful! Your parking spot has been reserved.');
-                onSuccess();
+                onSuccess({
+                    id: paymentIntent.id,
+                    amount: paymentIntent.amount / 100,
+                    status: paymentIntent.status,
+                    created: new Date(paymentIntent.created * 1000).toLocaleDateString()
+                });
             } else {
                 throw new Error('Payment was not successful');
             }
@@ -397,4 +413,47 @@ function PaymentForm({ oglas, onSuccess, onCancel }) {
     );
 }
 
+// Success Modal Component
+function PaymentSuccessModal({ details, onClose }) {
+    return (
+        <div className="success-modal-overlay">
+            <div className="success-modal">
+                <div className="success-checkmark">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2>Payment Successful!</h2>
+                <p className="success-message">Your parking spot has been reserved.</p>
+                
+                {details && (
+                    <div className="success-details">
+                        <div className="detail-row">
+                            <span className="detail-label">Transaction ID:</span>
+                            <span className="detail-value">{details.id}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">Amount:</span>
+                            <span className="detail-value">€{details.amount.toFixed(2)}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">Date:</span>
+                            <span className="detail-value">{details.created}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">Status:</span>
+                            <span className="detail-value success-status">{details.status}</span>
+                        </div>
+                    </div>
+                )}
+                
+                <button onClick={onClose} className="success-button">
+                    Continue
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default AdPage;
+
