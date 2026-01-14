@@ -20,6 +20,7 @@ public class Oglas {
     @JsonProperty("prosj_ocjena")
     private Double prosjOcjena;
 
+    @JsonProperty("grad")
     private String grad;
 
     @JsonProperty("ulica_broj")

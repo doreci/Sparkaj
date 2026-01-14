@@ -309,21 +309,41 @@ function PaymentForm({ oglas, onSuccess, onCancel }) {
         setError(null);
 
         try {
-            // For demo purposes, we'll simulate a successful payment
-            // In a real app, you'd:
             // 1. Create a payment intent on your backend
+            const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+            const response = await fetch(`${API_BASE_URL}/api/payments/create-payment-intent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ oglasId: oglas.id_oglasa }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to create payment intent: ${response.statusText}`);
+            }
+
+            const { clientSecret, paymentIntentId } = await response.json();
+
             // 2. Use stripe.confirmCardPayment() to process the payment
-            
-            console.log('Processing payment for:', oglas.naziv_oglasa);
-            
-            // Simulate processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            setLoading(false);
-            
-            // Show success message and close modal
-            alert('Payment successful! Your parking spot has been reserved.');
-            onSuccess();
+            const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                }
+            });
+
+            if (confirmError) {
+                throw new Error(confirmError.message);
+            }
+
+            if (paymentIntent.status === 'succeeded') {
+                console.log('Payment successful:', paymentIntent);
+                setLoading(false);
+                alert('Payment successful! Your parking spot has been reserved.');
+                onSuccess();
+            } else {
+                throw new Error('Payment was not successful');
+            }
             
         } catch (err) {
             setLoading(false);
