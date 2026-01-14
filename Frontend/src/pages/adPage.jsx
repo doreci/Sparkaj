@@ -7,7 +7,11 @@ import {
     selectSingleAdStatus,
     selectSingleAdError,
 } from "../store/singleAdSlice";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import "./adpage.css";
+
+const stripePromise = loadStripe('pk_test_51SebNeCxvTBjwGGPRWn67pHWIRK4qGjk9UJWfPfpF6lHkzSm1pBKvwi5d3YOBjFz9AxAz3kJzDbVZQh3gkUeZHHG00jZxKEkzz');
 
 function AdPage() {
     const { id } = useParams();
@@ -17,6 +21,7 @@ function AdPage() {
     const ad = useSelector(selectSingleAdData);
     const status = useSelector(selectSingleAdStatus);
     const error = useSelector(selectSingleAdError);
+    const [selectedOglas, setSelectedOglas] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -64,6 +69,19 @@ function AdPage() {
     const fullLokacija = [ulicaBroj, postanskiBroj, grad]
         .filter(Boolean)
         .join(", ");
+
+    const handlePayment = (oglas) => {
+        setSelectedOglas(oglas);
+    };
+
+    const handlePaymentSuccess = () => {
+        alert('Payment successful! Your parking spot has been reserved.');
+        setSelectedOglas(null);
+    };
+
+    const handleCancelPayment = () => {
+        setSelectedOglas(null);
+    };
 
     return (
         <div className="ad-page-container">
@@ -200,6 +218,10 @@ function AdPage() {
 
                     {/* Akcije */}
                     <div className="ad-actions">
+                        <button className="pay-button"
+                            onClick={() => handlePayment(ad)}>
+                            Pay Now
+                        </button>   
                         <button className="btn-secondary btn-large">
                             Prijavi oglas
                         </button>
@@ -231,11 +253,127 @@ function AdPage() {
                 </div>
             )}
 
+            {/* Payment Modal */}
+            {selectedOglas && (
+                <div className="payment-modal-overlay">
+                    <div className="payment-modal">
+                        <h2>Payment for Parking Spot</h2>
+                        <div className="payment-details">
+                            <p><strong>Spot:</strong> {selectedOglas.naziv_oglasa}</p>
+                            <p><strong>Price:</strong> ${selectedOglas.cijena}</p>
+                            <p><strong>Location:</strong> {selectedOglas.grad}</p>
+                        </div>
+                        
+                        <Elements stripe={stripePromise}>
+                            <PaymentForm 
+                                oglas={selectedOglas} 
+                                onSuccess={handlePaymentSuccess}
+                                onCancel={handleCancelPayment}
+                            />
+                        </Elements>
+                    </div>
+                </div>
+            )}
+
             {/* Footer */}
             <div className="ad-page-footer">
                 <p>&copy; 2025 Sparkaj. Sva prava zadržana.</p>
             </div>
         </div>
+    );
+}
+
+// Payment Form Component
+// Payment Form Component
+function PaymentForm({ oglas, onSuccess, onCancel }) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!stripe || !elements) {
+            setError('Stripe has not loaded yet. Please try again.');
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            setError('Card element not found. Please refresh and try again.');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            // For demo purposes, we'll simulate a successful payment
+            // In a real app, you'd:
+            // 1. Create a payment intent on your backend
+            // 2. Use stripe.confirmCardPayment() to process the payment
+            
+            console.log('Processing payment for:', oglas.naziv_oglasa);
+            
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            setLoading(false);
+            
+            // Show success message and close modal
+            alert('Payment successful! Your parking spot has been reserved.');
+            onSuccess();
+            
+        } catch (err) {
+            setLoading(false);
+            setError('Payment failed. Please try again.');
+            console.error('Payment error:', err);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="payment-form">
+            <div className="card-element-container">
+                <label>Card Information</label>
+                <CardElement 
+                    options={{
+                        style: {
+                            base: {
+                                fontSize: '16px',
+                                color: '#424770',
+                                '::placeholder': {
+                                    color: '#aab7c4',
+                                },
+                            },
+                            invalid: {
+                                color: '#9e2146',
+                            },
+                        },
+                    }}
+                />
+            </div>
+            
+            {error && <div className="payment-error">{error}</div>}
+            
+            <div className="payment-buttons">
+                <button 
+                    type="button" 
+                    onClick={onCancel}
+                    className="cancel-button"
+                    disabled={loading}
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit" 
+                    disabled={!stripe || loading}
+                    className="pay-button"
+                >
+                    {loading ? 'Processing...' : `Pay $${oglas.cijena}`}
+                </button>
+            </div>
+        </form>
     );
 }
 
