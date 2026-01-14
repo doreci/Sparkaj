@@ -26,20 +26,53 @@
     width: 100%;
 }
 
-.header img {
-    height: 70px;
-    padding: 15px;
+.header-logo {
+    width: 33.3%;
 }
 
-#povecalo {
+#logo {
+    height: 70px;
+    padding: 15px 30px;
+}
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 33.3%;
+}
+
+#btn-filter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    color: rgb(0, 0, 61);
+    width: 60%;
+    height: 35px;
+    border-radius: 5px;
+    border: none;
+    padding: 0 10px;
+    font-size: 16px;
+}
+
+#btn-filter:hover {
+    cursor: pointer;
+    transform: translateY(-2px);
+}
+
+#filter {
     height: 25px;
+    padding: 0;
 }
 
 .header-buttons {
     display: flex;
     align-items: center;
+    justify-content: right;
     gap: 20px;
     padding: 15px;
+    width: 33.3%;
 }
 
 .header-buttons button {
@@ -55,6 +88,7 @@
 .header-buttons button:hover {
     background: rgba(255, 255, 255, 0.25);
     color: white;
+    transform: translateY(-2px);
 }
 
 .content {
@@ -65,30 +99,6 @@
     padding: none;
     min-height: 100vh;
     width: 100%;
-}
-
-.search-bar {
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.search-bar input {
-    background-color: white;
-    color: rgb(0, 0, 61);
-    width: 20vw;
-    height: 35px;
-    border-radius: 5px;
-    border: none;
-    padding: 0 10px;
-    font-size: 16px;
-}
-
-.search-bar img {
-    width: 25px;
-    height: 25px;
-    margin-left: -50px;
-    cursor: pointer;
 }
 
 /* Filter Dropdown */

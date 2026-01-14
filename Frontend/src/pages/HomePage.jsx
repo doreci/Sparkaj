@@ -112,21 +112,18 @@ function HomePage() {
     return (
         <div className="container">
             <div className="header">
-                <img src="/logo.png" alt="logo" />
+                <div className="header-logo">
+                    <img name="logo" src="/logo.png" alt="logo" />
+                </div>
                 <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        onFocus={() => setShowFilters(true)}
-                    />
+                    <button id="btn-filter" onClick={() => setShowFilters(!showFilters)}>
+                        Filtriraj...
                     <img
-                        id="povecalo"
-                        src="/search-icon.jpg"
-                        alt="search icon"
-                        onClick={() => setShowFilters(!showFilters)}
-                        style={{ cursor: "pointer" }}
+                        id="filter"
+                        src="/filter-icon.png"
+                        alt="filter icon"
                     />
-
+                    </button>
                     {/* Filter Dropdown */}
                     {showFilters && (
                         <div className="filter-dropdown">
