@@ -37,7 +37,7 @@ function AdCard({ ad }) {
                 <div className="ad-card-info">
                     <h3 className="ad-card-title">{naziv}</h3>
                     <p className="ad-card-location">
-                        📍 {ad.ulica_broj || "Nepoznata adresa"}, {ad.grad|| "Nepoznat grad"}
+                        {ad.ulica_broj || "Nepoznata adresa"}, {ad.grad|| "Nepoznat grad"}
                     </p>
                 </div>
             </div>

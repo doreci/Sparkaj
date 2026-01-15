@@ -53,6 +53,30 @@ function AllAdsPage() {
 
     const isLoading = status === "loading";
 
+    // Provjera je li korisnik ulogiran
+    if (session === null) {
+        return (
+            <div className="container">
+                <div className="header">
+                    <div className="header-logo">
+                        <img name="logo" src="/logo.png" alt="logo" />
+                    </div>
+                </div>
+                <div className="content">
+                    <div className="no-ads-message">
+                        <p>
+                            Trebate biti ulograni da biste pristupili svim
+                            oglasima.
+                        </p>
+                        <Link to="/login">
+                            <button>Prijavi se</button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters((prev) => ({
@@ -114,13 +138,16 @@ function AllAdsPage() {
                     <img name="logo" src="/logo.png" alt="logo" />
                 </div>
                 <div className="search-bar">
-                    <button id="btn-filter" onClick={() => setShowFilters(!showFilters)}>
+                    <button
+                        id="btn-filter"
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
                         Filtriraj...
-                    <img
-                        id="filter"
-                        src="/filter-icon.png"
-                        alt="filter icon"
-                    />
+                        <img
+                            id="filter"
+                            src="/filter-icon.png"
+                            alt="filter icon"
+                        />
                     </button>
                     {/* Filter Dropdown */}
                     {showFilters && (

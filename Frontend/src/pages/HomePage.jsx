@@ -116,16 +116,21 @@ function HomePage() {
                     <img name="logo" src="/logo.png" alt="logo" />
                 </div>
                 <div className="search-bar">
-                    <button id="btn-filter" onClick={() => setShowFilters(!showFilters)}>
-                        Filtriraj...
-                    <img
-                        id="filter"
-                        src="/filter-icon.png"
-                        alt="filter icon"
-                    />
-                    </button>
+                    {session != null && (
+                        <button
+                            id="btn-filter"
+                            onClick={() => setShowFilters(!showFilters)}
+                        >
+                            Filtriraj...
+                            <img
+                                id="filter"
+                                src="/filter-icon.png"
+                                alt="filter icon"
+                            />
+                        </button>
+                    )}
                     {/* Filter Dropdown */}
-                    {showFilters && (
+                    {showFilters && session != null && (
                         <div className="filter-dropdown">
                             <div className="filter-header">
                                 <h3>Filtri pretrage</h3>
@@ -263,9 +268,11 @@ function HomePage() {
                     )}
                     {!isLoading && topFiveAds.length > 0 && (
                         <div className="view-all">
-                            <Link to="/oglasi" className="btn-view-all">
-                                Pogledaj sve oglase →
-                            </Link>
+                            {session != null && (
+                                <Link to="/oglasi" className="btn-view-all">
+                                    Pogledaj sve oglase →
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>
