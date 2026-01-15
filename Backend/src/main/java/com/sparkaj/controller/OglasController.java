@@ -37,6 +37,12 @@ public class OglasController {
         return oglasService.createOglas(request)
                 .map(ResponseEntity::ok);
     }
+    
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<List<Oglas>>> azurirajOglas(@PathVariable("id") Long id, @RequestBody Oglas oglas) {
+        return oglasService.azurirajOglas(id, oglas)
+                .map(ResponseEntity::ok);
+    }
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Integer id) {
