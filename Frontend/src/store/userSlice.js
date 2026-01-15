@@ -2,6 +2,15 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
+// Normalizuj podatke korisnika - konvertujem polje 'profilna' u 'slika'
+const normalizeUserData = (userData) => {
+    if (!userData) return null;
+    return {
+        ...userData,
+        slika: userData.slika || userData.profilna || null,
+    };
+};
+
 // Dohvati korisnika po UUID-u
 export const fetchUserByUUID = createAsyncThunk(
     "user/fetchByUUID",
@@ -15,7 +24,8 @@ export const fetchUserByUUID = createAsyncThunk(
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
 
-            return res.json();
+            const data = await res.json();
+            return normalizeUserData(data);
         } catch (error) {
             return rejectWithValue(
                 error.message || "Neuspješan dohvat korisnika"
@@ -37,7 +47,8 @@ export const fetchUserByNickname = createAsyncThunk(
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
 
-            return res.json();
+            const data = await res.json();
+            return normalizeUserData(data);
         } catch (error) {
             return rejectWithValue(
                 error.message || "Neuspješan dohvat korisnika"
@@ -115,5 +126,6 @@ export const selectUserStatus = (state) => state.users.status;
 export const selectUserError = (state) => state.users.error;
 export const selectIsAuthenticated = (state) => state.users.isAuthenticated;
 export const selectUserNickname = (state) => state.users.profile?.nadimak;
+export const selectUserImage = (state) => state.users.profile?.slika;
 
 export default userSlice.reducer;

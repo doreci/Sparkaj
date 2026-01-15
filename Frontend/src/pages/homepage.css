@@ -75,6 +75,10 @@
     width: 33.3%;
 }
 
+.profile-icon img{
+    border-radius: 50%;
+}
+
 .header-buttons button {
     background: white;
     color: rgb(0, 0, 61);

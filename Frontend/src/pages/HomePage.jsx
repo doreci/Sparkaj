@@ -4,12 +4,14 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllAds, selectAdsList, selectAdsStatus } from "../store/adSlice";
+import { selectUserProfile, fetchUserByUUID } from "../store/userSlice";
 import AdCard from "../components/adCard";
 
 function HomePage() {
     const dispatch = useDispatch();
     const ads = useSelector(selectAdsList);
     const status = useSelector(selectAdsStatus);
+    const userProfile = useSelector(selectUserProfile);
 
     const [session, setSession] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -32,8 +34,11 @@ function HomePage() {
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
+            if (session?.user?.id) {
+                dispatch(fetchUserByUUID(session.user.id));
+            }
         });
-    }, []);
+    }, [dispatch]);
 
     // Zatvori filter dropdown kada se klikne izvan njega
     useEffect(() => {
@@ -222,22 +227,35 @@ function HomePage() {
                             <button>Napravi oglas</button>
                         </Link>
                     )}
-                    {session != null && (
+                    {/* {session != null && (
                         <Link to="/editprofile">
                             <button>Edit Profile</button>
                         </Link>
-                    )}
-                    {session == null && (
-                        <Link to="/register">
-                            <button>Register</button>
-                        </Link>
-                    )}
+                    )} */}
                     {session != null && (
                         <button onClick={handleLogout}>Logout</button>
                     )}
                     {session == null && (
                         <Link to="/login">
                             <button>Login</button>
+                        </Link>
+                    )}
+                    {session != null && userProfile && (
+                        <Link to="/profile" className="profile-icon-link">
+                            <div className="profile-icon">
+                                {userProfile.slika ? (
+                                    <img 
+                                        src={userProfile.slika}
+                                        alt="Profile"
+                                    />
+                                ) : (
+                                    <div className="profile-icon-placeholder">
+                                        {userProfile.nadimak
+                                            ?.charAt(0)
+                                            .toUpperCase() || "U"}
+                                    </div>
+                                )}
+                            </div>
                         </Link>
                     )}
                 </div>
@@ -269,8 +287,13 @@ function HomePage() {
                     )}
                     {!isLoading && ads.length > 5 && (
                         <div className="view-all">
-                            <button className="btn-view-all" onClick={() => setShowAllAds(!showAllAds)}>
-                                {showAllAds ? "Sakrij sve oglase ↑" : "Pogledaj sve oglase →"}
+                            <button
+                                className="btn-view-all"
+                                onClick={() => setShowAllAds(!showAllAds)}
+                            >
+                                {showAllAds
+                                    ? "Sakrij sve oglase ↑"
+                                    : "Pogledaj sve oglase →"}
                             </button>
                         </div>
                     )}
