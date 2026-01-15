@@ -3,6 +3,7 @@ package com.sparkaj.service;
 
 import com.sparkaj.model.GradBody;
 import com.sparkaj.model.CreateOglasRequest;
+import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -36,17 +37,7 @@ public class OglasService {
                     oglasi.forEach(o -> System.out.println("Oglas: " + o.getNazivOglasa() + ", Korisnik: " + (o.getKorisnik() != null ? o.getKorisnik().getEmail() : "null")));
                 });
     }
-    
-    public Mono<List<Oglas>> getOglasId(Long id) {
-        System.out.println(" Dohvaćam oglas " + id.toString() + " iz baze...");
-
-        return webClient.get()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
-    
+       
     public Mono<List<GradBody>> getLokacije() {
         System.out.println(" Dohvaćam oglase iz baze...");        
         
@@ -58,26 +49,27 @@ public class OglasService {
                 
     }
     
-    public Mono<List<Oglas>> pretraziOglaseLok(String lokacija) {
+    public Mono<List<Oglas>> pretraziOglase(FilterOglasBody fob) {
         System.out.println(" Dohvaćam oglase iz baze...");
-
+        String query = "?";
+        if(fob.getLocation() != null) {
+        	query += "adresa_full=ilike.*" + fob.getLocation() + "*&";
+        }
+        if(fob.getPriceMin() > 0.0f) {
+        	query += "cijena=gte." + fob.getPriceMin() + "&";
+        }
+        if(fob.getPriceMax() > 0.0f) {
+        	query += "cijena=lte." + fob.getPriceMax() + "&";
+        }
+        query = query.substring(0, query.length() - 1);
+        System.out.println("Query: " + query);
         return webClient.get()
-                .uri("/rest/v1/oglas?ulica_broj=ilike.*" + lokacija + "*")
+                .uri("/rest/v1/oglasi_fulladresa" + query)
                 .retrieve()
                 .bodyToMono(Oglas[].class)
                 .map(Arrays::asList);
     }
-    
-    public Mono<List<Oglas>> pretraziOglaseCij(String cijenaOd, String cijenaDo) {
-        System.out.println(" Dohvaćam oglase iz baze...");
-
-        return webClient.get()
-                .uri("/rest/v1/oglas?cijena=gte." + cijenaOd + "&cijena=lte." + cijenaDo)
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
-    
+        
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
         System.out.println(" Kreiram oglas");
 
