@@ -11,7 +11,6 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import EditProfilePage from "./pages/EditProfilePage.jsx";
 import AdPage from "./pages/adPage.jsx";
 import CreateAdPage from "./pages/CreateAdPage.jsx"
-import AllAdsPage from "./pages/AllAdsPage.jsx"
 import AdminPage from "./pages/AdminPage.jsx"
 
 createRoot(document.getElementById("root")).render(
@@ -25,7 +24,6 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/editprofile" element={<EditProfilePage />} />
                     <Route path="/ad/:id" element={<AdPage />} />
                     <Route path="/napravi-oglas" element={<CreateAdPage/>} />
-                    <Route path="/oglasi" element={<AllAdsPage />} />
                     <Route path="/admin" element={<AdminPage />} />
                 </Routes>
             </BrowserRouter>

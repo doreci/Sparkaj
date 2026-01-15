@@ -13,6 +13,7 @@ function HomePage() {
 
     const [session, setSession] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
+    const [showAllAds, setShowAllAds] = useState(false);
     const [filters, setFilters] = useState({
         location: "",
         priceMin: "",
@@ -105,8 +106,8 @@ function HomePage() {
         });
     };
 
-    // Uzmi samo prvih 5 oglasa
-    const topFiveAds = ads.slice(0, 5);
+    // Uzmi samo prvih 5 oglasa ili sve, ovisno o showAllAds stanu
+    const displayAds = showAllAds ? ads : ads.slice(0, 5);
     const isLoading = status === "loading";
 
     return (
@@ -253,26 +254,24 @@ function HomePage() {
                         </div>
                     )}
 
-                    {!isLoading && topFiveAds.length === 0 && (
+                    {!isLoading && displayAds.length === 0 && (
                         <div className="no-ads-message">
                             <p>Nema dostupnih oglasa</p>
                         </div>
                     )}
 
-                    {!isLoading && topFiveAds.length > 0 && (
+                    {!isLoading && displayAds.length > 0 && (
                         <div className="ads-grid">
-                            {topFiveAds.map((ad, index) => (
+                            {displayAds.map((ad, index) => (
                                 <AdCard key={ad.id_oglasa || index} ad={ad} />
                             ))}
                         </div>
                     )}
-                    {!isLoading && topFiveAds.length > 0 && (
+                    {!isLoading && ads.length > 5 && (
                         <div className="view-all">
-                            {session != null && (
-                                <Link to="/oglasi" className="btn-view-all">
-                                    Pogledaj sve oglase →
-                                </Link>
-                            )}
+                            <button className="btn-view-all" onClick={() => setShowAllAds(!showAllAds)}>
+                                {showAllAds ? "Sakrij sve oglase ↑" : "Pogledaj sve oglase →"}
+                            </button>
                         </div>
                     )}
                 </div>
