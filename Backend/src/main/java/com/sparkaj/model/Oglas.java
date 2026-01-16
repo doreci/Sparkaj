@@ -1,8 +1,6 @@
 package com.sparkaj.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sparkaj.model.Korisnik;
 
 public class Oglas {
 

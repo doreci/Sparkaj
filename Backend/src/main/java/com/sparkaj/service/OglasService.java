@@ -80,57 +80,7 @@ public class OglasService {
                 .bodyToMono(Oglas[].class)
                 .map(Arrays::asList);
     }
-    
-    public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
-        System.out.println(" Azuriram oglas " + id.toString());
-        oglas.setIdOglasa(id.intValue());
-        return webClient.put()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
-                .bodyValue(oglas)
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
-    
-    public Mono<List<Oglas>> obrisiOglas(Long id) {
-        System.out.println(" Brisem oglas " + id.toString());
-        return webClient.delete()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
 
-    // Dohvati podatke o oglasu
-    public Mono<Oglas> getOglasById(Integer id) {
-        return webClient.get()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*,korisnik(*)")
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(niz -> niz.length > 0 ? niz[0] : null);
-    }
-
-    // Dohvat svih oglasa jednog korisnika
-    public Mono<List<Oglas>> getOglasiByKorisnikNadimak(String nadimak) {
-        return korisnikService.getKorisnikByNadimak(nadimak)
-                .flatMap(korisnik -> {
-                    if (korisnik == null) return Mono.empty();
-
-                    return webClient.get()
-                            .uri("/rest/v1/oglas?id_korisnika=eq." + korisnik.getIdKorisnika() + "&select=*")
-                            .retrieve()
-                            .bodyToMono(Oglas[].class)
-                            .map(oglasi -> {
-                                List<Oglas> lista = Arrays.asList(oglasi);
-                                for (Oglas o : lista) {
-                                    o.setKorisnik(korisnik);
-                                }
-                                return lista;
-                            });
-                });
-    }
-
-    // Kreiranje novog oglasa
     public Mono<Oglas> createOglas(CreateOglasRequest request) {
         // Ako je id_korisnika dostupan (Spring Boot OAuth2), koristi ga direktno
         if (request.getIdKorisnika() != null) {
@@ -182,6 +132,63 @@ public class OglasService {
                                     return response.bodyToMono(String.class)
                                         .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
                                 }
+                            });
+                });
+    }
+
+    public Mono<List<Oglas>> getOglasiByIdKorisnika(Integer idKorisnika) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_korisnika=eq." + idKorisnika + "&select=*")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
+    
+    public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
+        System.out.println(" Azuriram oglas " + id.toString());
+        oglas.setIdOglasa(id.intValue());
+        return webClient.put()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .bodyValue(oglas)
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
+    
+    public Mono<List<Oglas>> obrisiOglas(Long id) {
+        System.out.println(" Brisem oglas " + id.toString());
+        return webClient.delete()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
+
+    // Dohvati podatke o oglasu
+    public Mono<Oglas> getOglasById(Integer id) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id + "&select=*,korisnik(*)")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(niz -> niz.length > 0 ? niz[0] : null);
+    }
+
+    // Dohvat svih oglasa jednog korisnika
+    public Mono<List<Oglas>> getOglasiByKorisnikNadimak(String nadimak) {
+        return korisnikService.getKorisnikByNadimak(nadimak)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) return Mono.empty();
+
+                    return webClient.get()
+                            .uri("/rest/v1/oglas?id_korisnika=eq." + korisnik.getIdKorisnika() + "&select=*")
+                            .retrieve()
+                            .bodyToMono(Oglas[].class)
+                            .map(oglasi -> {
+                                List<Oglas> lista = Arrays.asList(oglasi);
+                                for (Oglas o : lista) {
+                                    o.setKorisnik(korisnik);
+                                }
+                                return lista;
                             });
                 });
     }

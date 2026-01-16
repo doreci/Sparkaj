@@ -1,7 +1,6 @@
 package com.sparkaj.service;
 
 import com.sparkaj.model.Korisnik;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -14,11 +13,9 @@ import java.util.UUID;
 public class KorisnikService {
 
     private final WebClient webClient;
-    private final ObjectMapper objectMapper;
 
     public KorisnikService(WebClient webClient) {
         this.webClient = webClient;
-        this.objectMapper = new ObjectMapper();
     }
 
     // Salje upit Supabase-u, natrag dobiva podatke o korisniku
@@ -33,6 +30,14 @@ public class KorisnikService {
     public Mono<Korisnik> getKorisnikByUuid(String uuid) {
         return webClient.get()
                 .uri("/rest/v1/korisnik?uuid=eq." + uuid + "&select=*")
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
+    }
+
+    public Mono<Korisnik> getKorisnikById(Integer idKorisnika) {
+        return webClient.get()
+                .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika + "&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
                 .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);

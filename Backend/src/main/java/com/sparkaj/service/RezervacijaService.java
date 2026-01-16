@@ -1,7 +1,6 @@
 package com.sparkaj.service;
 
 import com.sparkaj.model.Rezervacija;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -12,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 public class RezervacijaService {
 
     private final WebClient webClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RezervacijaService(WebClient webClient) {
         this.webClient = webClient;
