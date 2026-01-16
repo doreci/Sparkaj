@@ -69,16 +69,22 @@ public class OglasService {
                 .bodyToMono(Oglas[].class)
                 .map(Arrays::asList);
     }
-        
-    public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
-        System.out.println(" Kreiram oglas");
+
+    public Mono<Oglas> kreirajOglas(CreateOglasRequest request) {
+        Oglas oglas = new Oglas();
+        oglas.setNazivOglasa(request.getNazivOglasa());
+        oglas.setOpisOglasa(request.getOpisOglasa());
+        oglas.setCijena(request.getCijena());
+        oglas.setSlika(request.getSlika());
+        oglas.setIdKorisnika(request.getIdKorisnika()); // Direktno postavljanje
 
         return webClient.post()
                 .uri("/rest/v1/oglas")
+                .header("Prefer", "return=representation")
                 .bodyValue(oglas)
                 .retrieve()
                 .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
+                .map(niz -> niz[0]);
     }
     
     public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
@@ -110,54 +116,12 @@ public class OglasService {
                 .map(niz -> niz.length > 0 ? niz[0] : null);
     }
 
-    // Dohvat svih oglasa jednog korisnika
-    public Mono<List<Oglas>> getOglasiByKorisnikNadimak(String nadimak) {
-        return korisnikService.getKorisnikByNadimak(nadimak)
-                .flatMap(korisnik -> {
-                    if (korisnik == null) return Mono.empty();
-
-                    return webClient.get()
-                            .uri("/rest/v1/oglas?id_korisnika=eq." + korisnik.getIdKorisnika() + "&select=*")
-                            .retrieve()
-                            .bodyToMono(Oglas[].class)
-                            .map(oglasi -> {
-                                List<Oglas> lista = Arrays.asList(oglasi);
-                                for (Oglas o : lista) {
-                                    o.setKorisnik(korisnik);
-                                }
-                                return lista;
-                            });
-                });
+    public Mono<List<Oglas>> getOglasiByIdKorisnika(int idKorisnika) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_korisnika=eq." + idKorisnika + "&select=*")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
     }
 
-    // Kreiranje novog oglasa
-    public Mono<Oglas> createOglas(CreateOglasRequest request) {
-        // First, get korisnik by uuid
-        return korisnikService.getKorisnikByUuid(request.getUuid())
-                .flatMap(korisnik -> {
-                    if (korisnik == null) {
-                        return Mono.error(new RuntimeException("Korisnik not found"));
-                    }
-                    Map<String, Object> oglasMap = new HashMap<>();
-                    oglasMap.put("naziv_oglasa", request.getNazivOglasa());
-                    oglasMap.put("opis_oglasa", request.getOpisOglasa());
-                    oglasMap.put("cijena", request.getCijena());
-                    oglasMap.put("grad", request.getGrad());
-                    oglasMap.put("ulica_broj", request.getUlicaBroj());
-                    oglasMap.put("postanski_broj", request.getPostanskiBroj());
-                    oglasMap.put("id_korisnika", korisnik.getIdKorisnika());
-                    oglasMap.put("slika", request.getSlika());
-                    return webClient.post()
-                            .uri("/rest/v1/oglas")
-                            .bodyValue(oglasMap)
-                            .exchangeToMono(response -> {
-                                if (response.statusCode().is2xxSuccessful()) {
-                                    return response.bodyToMono(Oglas.class);
-                                } else {
-                                    return response.bodyToMono(String.class)
-                                        .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
-                                }
-                            });
-                });
-    }
 }

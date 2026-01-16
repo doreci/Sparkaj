@@ -22,7 +22,8 @@ public class CreateOglasRequest {
 
     private String slika;
 
-    private String uuid; // Supabase user UUID
+    @JsonProperty("id_korisnika")
+    private int idKorisnika; // Supabase user UUID
 
     // Getters and setters
 
@@ -82,11 +83,11 @@ public class CreateOglasRequest {
         this.slika = slika;
     }
 
-    public String getUuid() {
-        return uuid;
+    public int getIdKorisnika() {
+        return idKorisnika;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setIdKorisnika(int idKorisnika) {
+        this.idKorisnika = idKorisnika;
     }
 }

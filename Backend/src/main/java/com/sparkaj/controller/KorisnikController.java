@@ -22,21 +22,15 @@ public class KorisnikController {
         System.out.println("Napravljen Korisnik Controller");
     }
 
-    // Prikaz profila korisnika po UUID
-    @GetMapping("/uuid/{uuid}")
-    public Mono<Korisnik> getKorisnikByUUID(@PathVariable String uuid) {
-        return korisnikService.getKorisnikByUuid(uuid);
-    }
-
     // Prikaz profila korisnika
-    @GetMapping("/{nadimak}")
-    public Mono<Korisnik> getKorisnik(@PathVariable String nadimak) {
-        return korisnikService.getKorisnikByNadimak(nadimak);
+    @GetMapping("/{idKorisnika}")
+    public Mono<Korisnik> getKorisnik(@PathVariable int idKorisnika) {
+        return korisnikService.getKorisnikById(idKorisnika);
     }
 
     // Prikazi svih oglasa jednog korisnika
-    @GetMapping("/{nadimak}/oglasi")
-    public Mono<List<Oglas>> getOglasiKorisnika(@PathVariable String nadimak) {
-        return oglasService.getOglasiByKorisnikNadimak(nadimak);
+    @GetMapping("/{idKorisnika}/oglasi")
+    public Mono<List<Oglas>> getOglasiKorisnika(@PathVariable int idKorisnika) {
+        return oglasService.getOglasiByIdKorisnika(idKorisnika);
     }
 }
