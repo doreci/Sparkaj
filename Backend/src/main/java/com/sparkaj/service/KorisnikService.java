@@ -22,9 +22,9 @@ public class KorisnikService {
     }
 
     // Salje upit Supabase-u, natrag dobiva podatke o korisniku
-    public Mono<Korisnik> getKorisnikByNadimak(String nadimak) {
+    public Mono<Korisnik> getKorisnikById(int idKorisnika) {
         return webClient.get()
-                .uri("/rest/v1/korisnik?nadimak=eq." + nadimak + "&select=*")
+                .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika + "&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
                 .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);

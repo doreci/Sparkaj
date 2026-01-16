@@ -22,7 +22,7 @@ public class CreateOglasRequest {
 
     private String slika;
 
-    private String uuid; // Supabase user UUID
+    private String uuid; 
 
     @JsonProperty("id_korisnika")
     private Integer idKorisnika; // Spring Boot OAuth2 korisnik ID
