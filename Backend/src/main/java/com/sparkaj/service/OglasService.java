@@ -37,17 +37,7 @@ public class OglasService {
                     oglasi.forEach(o -> System.out.println("Oglas: " + o.getNazivOglasa() + ", Korisnik: " + (o.getKorisnik() != null ? o.getKorisnik().getEmail() : "null")));
                 });
     }
-    
-    public Mono<List<Oglas>> getOglasId(Long id) {
-        System.out.println(" Dohvaćam oglas " + id.toString() + " iz baze...");
-
-        return webClient.get()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString() + "&select=*,korisnik(*)")
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
-    
+       
     public Mono<List<GradBody>> getLokacije() {
         System.out.println(" Dohvaćam oglase iz baze...");        
         
@@ -79,17 +69,7 @@ public class OglasService {
                 .bodyToMono(Oglas[].class)
                 .map(Arrays::asList);
     }
-    
-    public Mono<List<Oglas>> pretraziOglaseCij(String cijenaOd, String cijenaDo) {
-        System.out.println(" Dohvaćam oglase iz baze...");
-
-        return webClient.get()
-                .uri("/rest/v1/oglas?cijena=gte." + cijenaOd + "&cijena=lte." + cijenaDo + "&select=*,korisnik(*)")
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
-    }
-    
+        
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
         System.out.println(" Kreiram oglas");
 
