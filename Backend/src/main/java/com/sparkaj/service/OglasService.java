@@ -13,12 +13,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OglasService {
 
     private final WebClient webClient;
     private final KorisnikService korisnikService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OglasService(WebClient webClient, KorisnikService korisnikService) {
         this.webClient = webClient;
@@ -81,20 +83,73 @@ public class OglasService {
     }
 
     public Mono<Oglas> kreirajOglas(CreateOglasRequest request) {
-        Oglas oglas = new Oglas();
-        oglas.setNazivOglasa(request.getNazivOglasa());
-        oglas.setOpisOglasa(request.getOpisOglasa());
-        oglas.setCijena(request.getCijena());
-        oglas.setSlika(request.getSlika());
-        oglas.setIdKorisnika(request.getIdKorisnika()); // Direktno postavljanje
+        System.out.println(" Kreiram oglas");
+        System.out.println("Request UUID: " + request.getUuid());
+        // Get korisnik by UUID and then create oglas with the correct idKorisnika
+        return korisnikService.getKorisnikByUuid(request.getUuid())
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen za UUID: " + request.getUuid()));
+                    }
+                    
+                    System.out.println("Pronađen korisnik ID: " + korisnik.getIdKorisnika());
+                    
+                    // Build a map with only non-null values to avoid sending null fields to Supabase
+                    Map<String, Object> oglasPodaci = new HashMap<>();
+                    oglasPodaci.put("naziv_oglasa", request.getNazivOglasa());
+                    oglasPodaci.put("opis_oglasa", request.getOpisOglasa());
+                    
+                    if (request.getCijena() != null) {
+                        oglasPodaci.put("cijena", request.getCijena());
+                    }
+                    
+                    oglasPodaci.put("grad", request.getGrad());
+                    oglasPodaci.put("ulica_broj", request.getUlicaBroj());
+                    oglasPodaci.put("postanski_broj", request.getPostanskiBroj());
+                    
+                    if (request.getSlika() != null && !request.getSlika().isEmpty()) {
+                        oglasPodaci.put("slika", request.getSlika());
+                    }
+                    
+                    oglasPodaci.put("id_korisnika", korisnik.getIdKorisnika());
 
-        return webClient.post()
-                .uri("/rest/v1/oglas")
-                .header("Prefer", "return=representation")
-                .bodyValue(oglas)
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(niz -> niz[0]);
+                    System.out.println("Slanje podataka u Supabase: " + oglasPodaci);
+
+                    return webClient.post()
+                            .uri("/rest/v1/oglas")
+                            .header("Prefer", "return=representation")
+                            .bodyValue(oglasPodaci)
+                            .retrieve()
+                            .bodyToMono(String.class)  // First get the raw response as string
+                            .doOnNext(response -> {
+                                System.out.println("Supabase response (raw): " + response);
+                            })
+                            .flatMap(responseString -> {
+                                try {
+                                    Oglas[] oglasi = objectMapper.readValue(responseString, Oglas[].class);
+                                    System.out.println("Supabase response (parsed): " + oglasi.length + " oglasa");
+                                    if (oglasi.length > 0) {
+                                        System.out.println("Oglas ID: " + oglasi[0].getIdOglasa());
+                                        return Mono.just(oglasi[0]);
+                                    } else {
+                                        return Mono.error(new RuntimeException("Supabase nije vratio oglas"));
+                                    }
+                                } catch (Exception e) {
+                                    System.err.println("Error parsing response: " + e.getMessage());
+                                    return Mono.error(e);
+                                }
+                            })
+                            .doOnError(error -> {
+                                System.err.println("Error creating oglas: " + error.getMessage());
+                                error.printStackTrace();
+                                if (error instanceof org.springframework.web.reactive.function.client.WebClientResponseException) {
+                                    org.springframework.web.reactive.function.client.WebClientResponseException webError = 
+                                        (org.springframework.web.reactive.function.client.WebClientResponseException) error;
+                                    System.err.println("Response status: " + webError.getStatusCode());
+                                    System.err.println("Response body: " + webError.getResponseBodyAsString());
+                                }
+                            });
+                });
     }
     
     public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {

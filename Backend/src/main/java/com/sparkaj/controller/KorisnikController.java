@@ -28,6 +28,12 @@ public class KorisnikController {
         return korisnikService.getKorisnikById(idKorisnika);
     }
 
+    // Prikaz korisnika po UUID-u
+    @GetMapping("/uuid/{uuid}")
+    public Mono<Korisnik> getKorisnikByUuid(@PathVariable String uuid) {
+        return korisnikService.getKorisnikByUuid(uuid);
+    }
+
     // Prikazi svih oglasa jednog korisnika
     @GetMapping("/{idKorisnika}/oglasi")
     public Mono<List<Oglas>> getOglasiKorisnika(@PathVariable int idKorisnika) {
