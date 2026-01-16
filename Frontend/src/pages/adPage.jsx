@@ -169,7 +169,7 @@ function AdPage() {
                                 <div className="seller-avatar">
                                     <img
                                         src={korisnik.profilna}
-                                        alt={korisnik.nadimak || "Prodavač"}
+                                        alt={"Prodavač"}
                                         className="avatar-image"
                                     />
                                 </div>
@@ -183,15 +183,9 @@ function AdPage() {
                                                 {korisnik.ime}{" "}
                                                 {korisnik.prezime}
                                             </h3>
-                                            <p className="seller-nickname">
-                                                @{korisnik.nadimak}
-                                            </p>
                                         </>
                                     ) : (
-                                        <h3>
-                                            {korisnik.nadimak ||
-                                                "Nepoznat prodavač"}
-                                        </h3>
+                                        <h3>Nepoznat prodavač</h3>
                                     )}
                                 </div>
 
@@ -206,10 +200,10 @@ function AdPage() {
                                             </span>
                                         </div>
                                     )}
-                                    {korisnik.nadimak && (
+                                    {korisnik.ime && (
                                         <div className="detail-item">
                                             <Link
-                                                to={`/profile/${korisnik.nadimak}`}
+                                                to={`/profile/${korisnik.ime}`}
                                                 className="profile-link"
                                             >
                                                 Pogledaj profil →

@@ -82,6 +82,11 @@ public class OglasService {
     }
 
     public Mono<Oglas> createOglas(CreateOglasRequest request) {
+        System.out.println("[createOglas] Počinjem kreiranje oglasa");
+        System.out.println("[createOglas] Request UUID: " + request.getUuid());
+        System.out.println("[createOglas] Request IdKorisnika: " + request.getIdKorisnika());
+        System.out.println("[createOglas] Naziv: " + request.getNazivOglasa());
+        
         // Ako je id_korisnika dostupan (Spring Boot OAuth2), koristi ga direktno
         if (request.getIdKorisnika() != null) {
             Map<String, Object> oglasMap = new HashMap<>();
@@ -94,24 +99,33 @@ public class OglasService {
             oglasMap.put("id_korisnika", request.getIdKorisnika());
             oglasMap.put("slika", request.getSlika());
             System.out.println("[createOglas] Kreiram oglas sa id_korisnika: " + request.getIdKorisnika());
+            System.out.println("[createOglas] OglasMap: " + oglasMap);
             return webClient.post()
                     .uri("/rest/v1/oglas")
                     .bodyValue(oglasMap)
                     .exchangeToMono(response -> {
+                        System.out.println("[createOglas] Response status (id_korisnika path): " + response.statusCode());
                         if (response.statusCode().is2xxSuccessful()) {
+                            System.out.println("[createOglas] ✓ Oglas uspješno kreiran sa id_korisnika");
                             return response.bodyToMono(Oglas.class);
                         } else {
                             return response.bodyToMono(String.class)
-                                .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
+                                .flatMap(body -> {
+                                    System.err.println("[createOglas] ✗ Greška: " + response.statusCode() + " " + body);
+                                    return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
+                                });
                         }
                     });
         }
         
         // Inače, traži korisnika po uuid (stari nacin)
+        System.out.println("[createOglas] ID korisnika je NULL, tražim po UUID-u: " + request.getUuid());
         return korisnikService.getKorisnikByUuid(request.getUuid())
                 .flatMap(korisnik -> {
+                    System.out.println("[createOglas] Pronađen korisnik: " + (korisnik != null ? korisnik.getIdKorisnika() : "NULL"));
                     if (korisnik == null) {
-                        return Mono.error(new RuntimeException("Korisnik not found"));
+                        System.err.println("[createOglas] ✗ Korisnik nije pronađen sa UUID: " + request.getUuid());
+                        return Mono.error(new RuntimeException("Korisnik not found for UUID: " + request.getUuid()));
                     }
                     Map<String, Object> oglasMap = new HashMap<>();
                     oglasMap.put("naziv_oglasa", request.getNazivOglasa());
@@ -122,15 +136,22 @@ public class OglasService {
                     oglasMap.put("postanski_broj", request.getPostanskiBroj());
                     oglasMap.put("id_korisnika", korisnik.getIdKorisnika());
                     oglasMap.put("slika", request.getSlika());
+                    System.out.println("[createOglas] Kreiram oglas sa id_korisnika iz UUID: " + korisnik.getIdKorisnika());
+                    System.out.println("[createOglas] OglasMap: " + oglasMap);
                     return webClient.post()
                             .uri("/rest/v1/oglas")
                             .bodyValue(oglasMap)
                             .exchangeToMono(response -> {
+                                System.out.println("[createOglas] Response status (UUID path): " + response.statusCode());
                                 if (response.statusCode().is2xxSuccessful()) {
+                                    System.out.println("[createOglas] ✓ Oglas uspješno kreiran sa UUID");
                                     return response.bodyToMono(Oglas.class);
                                 } else {
                                     return response.bodyToMono(String.class)
-                                        .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
+                                        .flatMap(body -> {
+                                            System.err.println("[createOglas] ✗ Greška: " + response.statusCode() + " " + body);
+                                            return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
+                                        });
                                 }
                             });
                 });
@@ -174,22 +195,14 @@ public class OglasService {
     }
 
     // Dohvat svih oglasa jednog korisnika
-    public Mono<List<Oglas>> getOglasiByKorisnikNadimak(String nadimak) {
-        return korisnikService.getKorisnikByNadimak(nadimak)
-                .flatMap(korisnik -> {
-                    if (korisnik == null) return Mono.empty();
-
-                    return webClient.get()
-                            .uri("/rest/v1/oglas?id_korisnika=eq." + korisnik.getIdKorisnika() + "&select=*")
-                            .retrieve()
-                            .bodyToMono(Oglas[].class)
-                            .map(oglasi -> {
-                                List<Oglas> lista = Arrays.asList(oglasi);
-                                for (Oglas o : lista) {
-                                    o.setKorisnik(korisnik);
-                                }
-                                return lista;
-                            });
+    public Mono<List<Oglas>> getOglasiByKorisnikId(Integer idKorisnika) {
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_korisnika=eq." + idKorisnika + "&select=*")
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(oglasi -> {
+                    List<Oglas> lista = Arrays.asList(oglasi);
+                    return lista;
                 });
     }
 }

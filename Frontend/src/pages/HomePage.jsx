@@ -3,7 +3,7 @@ import "./homepage.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllAds, selectAdsList, selectAdsStatus } from "../store/adSlice";
+import { fetchAllAds, selectAdsList, selectAdsStatus, searchAds, selectFilteredAdsList, selectIsFiltered, clearFilters } from "../store/adSlice";
 import { selectUserProfile, fetchUserByUUID, clearUser } from "../store/userSlice";
 import AdCard from "../components/adCard";
 
@@ -11,6 +11,8 @@ function HomePage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const ads = useSelector(selectAdsList);
+    const filteredAds = useSelector(selectFilteredAdsList);
+    const isFiltered = useSelector(selectIsFiltered);
     const status = useSelector(selectAdsStatus);
     const userProfile = useSelector(selectUserProfile);
 
@@ -98,31 +100,16 @@ function HomePage() {
             // Pripremi parametre za slanje backendu
             const searchParams = {
                 location: filters.location || null,
-                priceMin: filters.priceMin ? parseInt(filters.priceMin) : null,
-                priceMax: filters.priceMax ? parseInt(filters.priceMax) : null,
+                priceMin: filters.priceMin ? parseFloat(filters.priceMin) : null,
+                priceMax: filters.priceMax ? parseFloat(filters.priceMax) : null,
                 dateFrom: filters.dateFrom || null,
                 dateTo: filters.dateTo || null,
             };
 
             console.log("Slanje parametara backendu:", searchParams);
 
-            // API poziv - Odkomentiraj kada je backend spreman
-            // const response = await fetch('http://localhost:8080/api/oglasi/search', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify(searchParams)
-            // });
-            //
-            // if (response.ok) {
-            //     const data = await response.json();
-            //     console.log("Rezultati pretrage:", data);
-            //     // Ovdje trebaj ažurirati Redux store ili state sa rezultatima
-            // } else {
-            //     console.error("Greška pri pretrazi");
-            // }
-
+            // Koristi Redux action umjesto direktnog fetch-a
+            dispatch(searchAds(searchParams));
             setShowFilters(false);
         } catch (error) {
             console.error("Greška pri pretrazi:", error);
@@ -139,8 +126,8 @@ function HomePage() {
         });
     };
 
-    // Uzmi samo prvih 5 oglasa ili sve, ovisno o showAllAds stanu
-    const displayAds = showAllAds ? ads : ads.slice(0, 5);
+    // Uzmi filtrirane oglase ako su dostupni, inače sve oglase
+    const displayAds = isFiltered ? (showAllAds ? filteredAds : filteredAds.slice(0, 5)) : (showAllAds ? ads : ads.slice(0, 5));
     const isLoading = status === "loading";
 
     return (
@@ -292,7 +279,9 @@ function HomePage() {
             <div className="content">
                 {/* Oglasi Grid */}
                 <div className="ads-section">
-                    <h2 className="section-title">Popularni oglasi</h2>
+                    <h2 className="section-title">
+                        {isFiltered ? "Rezultati pretrage" : "Popularni oglasi"}
+                    </h2>
 
                     {isLoading && (
                         <div className="loading-message">
@@ -302,7 +291,11 @@ function HomePage() {
 
                     {!isLoading && displayAds.length === 0 && (
                         <div className="no-ads-message">
-                            <p>Nema dostupnih oglasa</p>
+                            <p>
+                                {isFiltered
+                                    ? "Nema oglasa koji odgovaraju vašim kriterijima"
+                                    : "Nema dostupnih oglasa"}
+                            </p>
                         </div>
                     )}
 
@@ -313,7 +306,7 @@ function HomePage() {
                             ))}
                         </div>
                     )}
-                    {!isLoading && ads.length > 5 && (
+                    {!isLoading && (isFiltered ? filteredAds.length > 5 : ads.length > 5) && (
                         <div className="view-all">
                             <button
                                 className="btn-view-all"

@@ -125,7 +125,6 @@ export const selectUserProfile = (state) => state.users.profile;
 export const selectUserStatus = (state) => state.users.status;
 export const selectUserError = (state) => state.users.error;
 export const selectIsAuthenticated = (state) => state.users.isAuthenticated;
-export const selectUserNickname = (state) => state.users.profile?.nadimak;
 export const selectUserImage = (state) => state.users.profile?.slika;
 
 export default userSlice.reducer;

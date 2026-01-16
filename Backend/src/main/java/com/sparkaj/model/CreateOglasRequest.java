@@ -23,6 +23,8 @@ public class CreateOglasRequest {
     private String slika;
 
     private String uuid; // Supabase user UUID
+    
+    private Integer idKorisnika; // Database user ID
 
     // Getters and setters
 
@@ -91,10 +93,25 @@ public class CreateOglasRequest {
     }
 
     public Integer getIdKorisnika() {
-        return null; // Implement if needed
+        return idKorisnika;
     }
 
     public void setIdKorisnika(Integer idKorisnika) {
-        // Implement if needed
+        this.idKorisnika = idKorisnika;
+    }
+    
+    @Override
+    public String toString() {
+        return "CreateOglasRequest{" +
+                "nazivOglasa='" + nazivOglasa + '\'' +
+                ", opisOglasa='" + opisOglasa + '\'' +
+                ", cijena=" + cijena +
+                ", grad='" + grad + '\'' +
+                ", ulicaBroj='" + ulicaBroj + '\'' +
+                ", postanskiBroj=" + postanskiBroj +
+                ", slika='" + slika + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", idKorisnika=" + idKorisnika +
+                '}';
     }
 }

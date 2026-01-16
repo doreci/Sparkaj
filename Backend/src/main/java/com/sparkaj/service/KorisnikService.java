@@ -19,20 +19,21 @@ public class KorisnikService {
     }
 
     // Salje upit Supabase-u, natrag dobiva podatke o korisniku
-    public Mono<Korisnik> getKorisnikByNadimak(String nadimak) {
-        return webClient.get()
-                .uri("/rest/v1/korisnik?nadimak=eq." + nadimak + "&select=*")
-                .retrieve()
-                .bodyToMono(Korisnik[].class)
-                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
-    }
-
     public Mono<Korisnik> getKorisnikByUuid(String uuid) {
+        System.out.println("[getKorisnikByUuid] Tražim korisnika sa UUID: " + uuid);
         return webClient.get()
                 .uri("/rest/v1/korisnik?uuid=eq." + uuid + "&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
-                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null);
+                .doOnNext(korisnici -> {
+                    if (korisnici != null && korisnici.length > 0) {
+                        System.out.println("[getKorisnikByUuid] ✓ Pronađen korisnik: ID=" + korisnici[0].getIdKorisnika() + ", Email=" + korisnici[0].getEmail());
+                    } else {
+                        System.out.println("[getKorisnikByUuid] ✗ Korisnik nije pronađen za UUID: " + uuid);
+                    }
+                })
+                .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null)
+                .doOnError(error -> System.err.println("[getKorisnikByUuid] ✗ Greška: " + error.getMessage()));
     }
 
     public Mono<Korisnik> getKorisnikById(Integer idKorisnika) {
@@ -44,19 +45,19 @@ public class KorisnikService {
     }
 
     // OAuth2 metode
-    public Mono<Void> saveOrUpdateOAuth2Korisnik(String email, String ime, String prezime, String profilna) {
-        System.out.println("[KorisnikService] Provjeravamo korisnika: " + email);
+    public Mono<Void> saveOrUpdateOAuth2Korisnik(String email, String ime, String prezime, String profilna, String uuid) {
+        System.out.println("[KorisnikService] Provjeravamo korisnika: " + email + ", UUID: " + uuid);
         
         return getKorisnikByEmail(email)
                 .flatMap(existingKorisnik -> {
                     // Ako korisnik postoji, samo ažuriraj podatke
                     if (existingKorisnik != null) {
                         System.out.println("[KorisnikService] ✓ Korisnik postoji, ažuriramo: " + email);
-                        return updateKorisnik(email, ime, prezime, profilna);
+                        return updateKorisnik(email, ime, prezime, profilna, uuid);
                     }
                     // Ako korisnik ne postoji, kreiraj novog
                     System.out.println("[KorisnikService] ✗ Korisnik ne postoji, kreiramo novog: " + email);
-                    return createOAuth2Korisnik(email, ime, prezime, profilna);
+                    return createOAuth2Korisnik(email, ime, prezime, profilna, uuid);
                 })
                 .onErrorResume(throwable -> {
                     System.err.println("[saveOrUpdateOAuth2Korisnik] Greška: " + throwable.getMessage());
@@ -83,11 +84,12 @@ public class KorisnikService {
                 });
     }
 
-    private Mono<Void> updateKorisnik(String email, String ime, String prezime, String profilna) {
+    private Mono<Void> updateKorisnik(String email, String ime, String prezime, String profilna, String uuid) {
         Map<String, Object> updates = new HashMap<>();
         if (ime != null) updates.put("ime", ime);
         if (prezime != null) updates.put("prezime", prezime);
         if (profilna != null) updates.put("profilna", profilna);
+        if (uuid != null) updates.put("uuid", uuid);
 
         System.out.println("[updateKorisnik] Ažuriramo korisnika: " + email + " sa podacima: " + updates);
         
@@ -101,16 +103,16 @@ public class KorisnikService {
                 .then();
     }
 
-    private Mono<Void> createOAuth2Korisnik(String email, String ime, String prezime, String profilna) {
+    private Mono<Void> createOAuth2Korisnik(String email, String ime, String prezime, String profilna, String uuid) {
         Map<String, Object> newKorisnik = new HashMap<>();
         newKorisnik.put("email", email);
         newKorisnik.put("ime", ime != null ? ime : "");
         newKorisnik.put("prezime", prezime != null ? prezime : "");
         newKorisnik.put("profilna", profilna != null ? profilna : "");
-        newKorisnik.put("uuid", UUID.randomUUID().toString());
-        newKorisnik.put("nadimak", email.split("@")[0]); // Automatski nadimak
+        newKorisnik.put("uuid", uuid != null ? uuid : UUID.randomUUID().toString());
 
         System.out.println("[createOAuth2Korisnik] Kreiramo novog korisnika sa podacima: " + newKorisnik);
+        
         
         return webClient.post()
                 .uri("/rest/v1/korisnik")

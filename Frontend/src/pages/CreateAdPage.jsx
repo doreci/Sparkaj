@@ -161,7 +161,11 @@ function CreateAdPage() {
                 signal: controller.signal,
             });
 
+            console.log("Response status:", response.status);
+            console.log("Response headers:", response.headers);
+
             if (response.ok) {
+                console.log("✓ Oglas uspješno kreiran!");
                 alert("Oglas uspješno spremljen!");
                 // Reset form or redirect
                 setFormData({
@@ -175,8 +179,10 @@ function CreateAdPage() {
                 setImagePreview("./parking-placeholder.png");
             } else {
                 const errorText = await response.text();
-                console.error("Error creating ad:", errorText);
-                alert("Greška pri spremanju oglasa: " + errorText);
+                console.error("✗ Greška pri spremanju oglasa:");
+                console.error("Status:", response.status);
+                console.error("Error text:", errorText);
+                alert("Greška pri spremanju oglasa [" + response.status + "]: " + errorText);
             }
         } catch (error) {
             if (error.name === 'AbortError') {

@@ -41,8 +41,15 @@ public class OglasController {
     
     @PostMapping
     public Mono<ResponseEntity<Oglas>> kreirajOglas(@RequestBody CreateOglasRequest request) {
+        System.out.println("[OglasController] POST /api/oglasi - Primljen zahtjev");
+        System.out.println("[OglasController] Request body: " + request);
         return oglasService.createOglas(request)
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri kreiranju oglasa: " + error.getMessage());
+                    error.printStackTrace();
+                    return Mono.just(ResponseEntity.status(500).build());
+                });
     }
     
     @PutMapping("/{id}")

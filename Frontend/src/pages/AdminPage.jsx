@@ -81,7 +81,7 @@ function AdminPage() {
                             {users.map(user => (
                                 <tr key={user.id_korisnika}>
                                     <td>{user.id_korisnika}</td>
-                                    <td>{user.nadimak}</td>
+                                    <td>{user.ime} {user.prezime}</td>
                                     <td>{user.email}</td>
                                     <td>
                                         <button onClick={() => deleteUser(user.id_korisnika)}>Delete</button>

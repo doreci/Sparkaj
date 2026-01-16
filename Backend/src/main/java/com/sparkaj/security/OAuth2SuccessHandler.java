@@ -33,15 +33,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String ime = oauth2User.getAttribute("given_name");
         String prezime = oauth2User.getAttribute("family_name");
         String profilna = oauth2User.getAttribute("picture");
+        String googleId = oauth2User.getAttribute("sub"); // Google user ID
         
         System.out.println("=== OAuth2 Login Success ===");
         System.out.println("Email: " + email);
         System.out.println("Ime: " + ime);
         System.out.println("Prezime: " + prezime);
+        System.out.println("Google ID: " + googleId);
         
         try {
             // Spremi ili ažuriraj korisnika u Supabase - čekaj rezultat
-            korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna)
+            // Koristi googleId kao "uuid" da se sazva sa frontendom
+            korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
                     .block(); // Čekaj da se završi
             System.out.println("✓ Korisnik uspješno spremljen: " + email);
         } catch (Exception e) {

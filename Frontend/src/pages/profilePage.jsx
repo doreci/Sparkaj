@@ -83,7 +83,7 @@ function ProfilePage() {
                                 />
                             ) : (
                                 <div className="profile-image-placeholder">
-                                    {userProfile.nadimak
+                                    {userProfile.ime
                                         ?.charAt(0)
                                         .toUpperCase() || "U"}
                                 </div>
