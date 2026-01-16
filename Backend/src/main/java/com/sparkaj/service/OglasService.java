@@ -3,6 +3,7 @@ package com.sparkaj.service;
 
 import com.sparkaj.model.GradBody;
 import com.sparkaj.model.CreateOglasRequest;
+import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -48,11 +49,22 @@ public class OglasService {
                 
     }
     
-    public Mono<List<Oglas>> pretraziOglase(String lokacija) {
+    public Mono<List<Oglas>> pretraziOglase(FilterOglasBody fob) {
         System.out.println(" Dohvaćam oglase iz baze...");
-
+        String query = "?";
+        if(fob.getLocation() != null) {
+        	query += "adresa_full=ilike.*" + fob.getLocation() + "*&";
+        }
+        if(fob.getPriceMin() > 0.0f) {
+        	query += "cijena=gte." + fob.getPriceMin() + "&";
+        }
+        if(fob.getPriceMax() > 0.0f) {
+        	query += "cijena=lte." + fob.getPriceMax() + "&";
+        }
+        query = query.substring(0, query.length() - 1);
+        System.out.println("Query: " + query);
         return webClient.get()
-                .uri("/rest/v1/oglas?ulica_broj=ilike.*" + lokacija + "*")
+                .uri("/rest/v1/oglasi_fulladresa" + query)
                 .retrieve()
                 .bodyToMono(Oglas[].class)
                 .map(Arrays::asList);

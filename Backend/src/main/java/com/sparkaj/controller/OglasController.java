@@ -1,6 +1,7 @@
 package com.sparkaj.controller;
 
 import com.sparkaj.model.CreateOglasRequest;
+import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.service.OglasService;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,12 @@ public class OglasController {
         return oglasService.getOglasById(id);
     }
 
+    @PostMapping("/search")
+    public Mono<ResponseEntity<List<Oglas>>> pretraziOglase(@RequestBody FilterOglasBody fob) {
+        return oglasService.pretraziOglase(fob)
+                .map(ResponseEntity::ok);
+    }
+    
     @PostMapping
     public Mono<ResponseEntity<Oglas>> createOglas(@RequestBody CreateOglasRequest request) {
         return oglasService.createOglas(request)
