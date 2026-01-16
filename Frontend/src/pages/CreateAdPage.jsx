@@ -1,13 +1,11 @@
 
 import "./createadpage.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
 function CreateAdPage() {
 
-    const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
     const [imagePreview, setImagePreview] = useState("./parking-placeholder.png");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -19,27 +17,50 @@ function CreateAdPage() {
         slika: null
     });
 
-    // Provjera je li korisnik ulogiran kroz Spring Boot
     useEffect(() => {
-        checkAuthentication();
-    }, [navigate]);
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            if (session?.user) {
+                // Parse name into ime and prezime
+                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
+                const nameParts = fullName.split(' ');
+                const ime = nameParts[0] || 'Unknown';
+                const prezime = nameParts.slice(1).join(' ') || null;
 
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch("http://localhost:8080/api/user", {
-                credentials: "include",
-            });
-            const data = await response.json();
-            if (data.authenticated) {
-                setUser(data);
-            } else {
-                navigate("/login");
+                // Upsert korisnik
+                supabase.from('korisnik').upsert({
+                    uuid: session.user.id,
+                    ime: ime,
+                    prezime: prezime,
+                    email: session.user.email
+                }, { onConflict: 'uuid' }).then(({ error }) => {
+                    if (error) console.error('Error upserting korisnik:', error);
+                });
             }
-        } catch (error) {
-            console.log("Korisnik nije autentificiran");
-            navigate("/login");
-        }
-    };
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            setSession(session);
+            if (event === 'SIGNED_IN' && session?.user) {
+                // Parse name into ime and prezime
+                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
+                const nameParts = fullName.split(' ');
+                const ime = nameParts[0] || 'Unknown';
+                const prezime = nameParts.slice(1).join(' ') || null;
+
+                // Upsert korisnik on sign in
+                const { error } = await supabase.from('korisnik').upsert({
+                    uuid: session.user.id,
+                    ime: ime,
+                    prezime: prezime,
+                    email: session.user.email
+                }, { onConflict: 'uuid' });
+                if (error) console.error('Error upserting korisnik:', error);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -65,7 +86,7 @@ function CreateAdPage() {
     const handleCreateAd = async (e) => {
         e.preventDefault();
 
-        if (!user?.id_korisnika) {
+        if (!session?.user?.id) {
             alert("Nisi prijavljen!");
             return;
         }
@@ -114,8 +135,8 @@ function CreateAdPage() {
             }
         }
 
-        // Get korisnik id
-        const korisnikId = user.id_korisnika;
+        // Get korisnik uuid
+        const uuid = session.user.id;
 
         const payload = {
             naziv_oglasa: formData.naziv_oglasa,
@@ -125,7 +146,7 @@ function CreateAdPage() {
             ulica_broj: ulicaBroj,
             postanski_broj: postanskiBroj,
             slika: imageUrl,
-            id_korisnika: korisnikId,
+            uuid: uuid,
         };
 
         console.log("Oglas payload:", payload);
@@ -136,7 +157,6 @@ function CreateAdPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify(payload),
                 signal: controller.signal,
             });
@@ -152,7 +172,7 @@ function CreateAdPage() {
                     slika: null
                 });
                 setImagePreview("./parking-placeholder.png");
-                navigate("/");
+                setImagePreview("./parking-placeholder.png");
             } else {
                 const errorText = await response.text();
                 console.error("Error creating ad:", errorText);

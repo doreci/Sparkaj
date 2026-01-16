@@ -36,35 +36,45 @@ function AdPage() {
     const [paymentDetails, setPaymentDetails] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
 
-    // Provjera je li korisnik ulogiran kroz Spring Boot
+    // Provjera je li korisnik ulogiran
     useEffect(() => {
-        checkAuthentication();
-    }, [navigate]);
-
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch("http://localhost:8080/api/user", {
-                credentials: "include",
-            });
-            const data = await response.json();
-            if (data.authenticated) {
-                setUser(data);
-            } else {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            if (!session) {
                 navigate("/login");
             }
-        } catch (error) {
-            console.log("Korisnik nije autentificiran");
-            navigate("/login");
-        }
-    };
+        });
+    }, [navigate]);
 
     useEffect(() => {
         if (id) {
             dispatch(fetchAdById(id)).finally(() => setIsLoading(false));
         }
     }, [id, dispatch]);
+
+    // Load user profile from Supabase if not already in Redux
+    useEffect(() => {
+        const loadUserProfile = async () => {
+            console.log("Checking user profile...");
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+            console.log("Supabase session:", session);
+
+            if (session?.user) {
+                console.log("User UUID:", session.user.id);
+                // If userProfile is not in Redux, fetch it by UUID
+                if (!userProfile) {
+                    console.log("Fetching user by UUID:", session.user.id);
+                    dispatch(fetchUserByUUID(session.user.id));
+                }
+            }
+        };
+
+        loadUserProfile();
+    }, [dispatch]);
 
     if (isLoading || status === "loading") {
         return (
@@ -257,7 +267,7 @@ function AdPage() {
                         <button
                             className="pay-button"
                             onClick={() => {
-                                if (!user) {
+                                if (!userProfile?.id_korisnika) {
                                     alert("Please log in to make a payment");
                                     return;
                                 }
@@ -318,7 +328,7 @@ function AdPage() {
                         <Elements stripe={stripePromise}>
                             <PaymentForm
                                 oglas={selectedOglas}
-                                user={user}
+                                userProfile={userProfile}
                                 onSuccess={handlePaymentSuccess}
                                 onCancel={handleCancelPayment}
                             />
@@ -334,6 +344,7 @@ function AdPage() {
                     onClose={() => {
                         setPaymentSuccess(false);
                         setPaymentDetails(null);
+                        navigate("/ad/" + ad.id_oglasa);
                     }}
                 />
             )}
@@ -350,7 +361,7 @@ function AdPage() {
 
 // Payment Form Component
 // Payment Form Component
-function PaymentForm({ oglas, user, onSuccess, onCancel }) {
+function PaymentForm({ oglas, userProfile, onSuccess, onCancel }) {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -359,7 +370,7 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (!user || !user.id_korisnika) {
+        if (!userProfile || !userProfile.id_korisnika) {
             setError("You must be logged in to make a payment.");
             return;
         }
@@ -389,7 +400,6 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    credentials: "include",
                     body: JSON.stringify({ oglasId: oglas.id_oglasa }),
                 }
             );
@@ -428,7 +438,7 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
                         body: JSON.stringify({
                             paymentIntentId: paymentIntent.id,
                             oglasId: oglas.id_oglasa,
-                            korisnikId: user?.id_korisnika,
+                            korisnikId: userProfile?.id_korisnika,
                             iznos: paymentIntent.amount / 100,
                         }),
                     }

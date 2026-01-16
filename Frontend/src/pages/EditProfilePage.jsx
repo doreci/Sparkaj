@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
 
 function EditProfilePage() {
-    const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
     const [profileImage, setProfileImage] = useState("./avatar-icon.png");
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
@@ -14,40 +14,51 @@ function EditProfilePage() {
     });
 
     useEffect(() => {
-        checkAuthentication();
-    }, []);
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
 
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch("http://localhost:8080/api/user", {
-                credentials: "include",
-            });
-            const data = await response.json();
-            if (data.authenticated) {
-                setUser(data);
-                
-                // Postavi formData sa podacima iz OAuth2
+            if (session?.user) {
+                const metadata = session.user.user_metadata;
+
+                // console.log("Auth metadata (Edit Profile useEffect):", metadata);
+
+                let ime = "";
+                let prezime = "";
+
+                if (metadata?.ime && metadata?.prezime) {
+                    ime = metadata.ime;
+                    prezime = metadata.prezime;
+                } else if (metadata?.full_name) {
+                    const nameParts = metadata.full_name.trim().split(/\s+/);
+                    ime = nameParts[0] || "";
+                    prezime = nameParts.slice(1).join(" ") || "";
+                } else if (metadata?.name) {
+                    const nameParts = metadata.name.trim().split(/\s+/);
+                    ime = nameParts[0] || "";
+                    prezime = nameParts.slice(1).join(" ") || "";
+                }
+
                 setFormData({
-                    ime: data.given_name || "",
-                    prezime: data.family_name || "",
-                    broj_mobitela: "",
-                    profile_image_url: data.picture || "",
+                    ime: ime,
+                    prezime: prezime,
+                    broj_mobitela: metadata?.broj_mobitela || "",
+                    profile_image_url: metadata?.profile_image_url || "",
                 });
 
-                if (data.picture) {
-                    setProfileImage(data.picture);
+                if (metadata?.profile_image_url) {
+                    setProfileImage(metadata.profile_image_url);
+                } else if (metadata?.avatar_url) {
+                    setProfileImage(metadata.avatar_url);
                 } else {
                     console.log("Nema URLa za sliku");
                 }
             }
-        } catch (error) {
-            console.log("Korisnik nije autentificiran");
-        }
-    };
+        });
+    }, []);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
-        if (file && user?.email) {
+        if (file && session?.user?.id) {
             try {
                 setUploading(true);
 
@@ -60,7 +71,7 @@ function EditProfilePage() {
                 const BUCKET = "profilne";
                 const fileExt = file.name.split(".").pop();
                 const fileName = `${Date.now()}.${fileExt}`;
-                const filePath = `${user.email}/avatars/${fileName}`;
+                const filePath = `${session.user.id}/avatars/${fileName}`;
 
                 try {
                     const { data: listData, error: listError } =
@@ -161,12 +172,23 @@ function EditProfilePage() {
     const handleSaveChanges = async (e) => {
         e.preventDefault();
 
-        if (!user?.email) {
+        if (!session?.user?.id) {
             console.error("Nema aktivne sesije");
             return;
         }
 
         try {
+            const { error: authError } = await supabase.auth.updateUser({
+                data: {
+                    ime: formData.ime,
+                    prezime: formData.prezime,
+                    broj_mobitela: formData.broj_mobitela,
+                    profile_image_url: formData.profile_image_url,
+                },
+            });
+
+            if (authError) throw authError;
+
             const dbPayload = {
                 ime: formData.ime,
                 prezime: formData.prezime,
@@ -174,9 +196,17 @@ function EditProfilePage() {
                 profilna: formData.profile_image_url || "",
             };
 
-            const userEmail = user.email;
+            const userUuid = session.user.id;
+            const userEmail = session.user.email;
 
-            let orFilter = `email.eq.${userEmail}`;
+            let orFilter = null;
+            if (userUuid && userEmail) {
+                orFilter = `uuid.eq.${userUuid},email.eq.${userEmail}`;
+            } else if (userUuid) {
+                orFilter = `uuid.eq.${userUuid}`;
+            } else if (userEmail) {
+                orFilter = `email.eq.${userEmail}`;
+            }
 
             let existing = null;
             let selectErr = null;
@@ -200,7 +230,9 @@ function EditProfilePage() {
 
             if (existing && Array.isArray(existing) && existing.length > 0) {
                 const found = existing[0];
-                const updateBy = { column: "email", value: userEmail };
+                const updateBy = found.uuid
+                    ? { column: "uuid", value: found.uuid }
+                    : { column: "email", value: found.email };
 
                 const { data: updatedData, error: updateErr } = await supabase
                     .from("korisnik")
@@ -216,6 +248,7 @@ function EditProfilePage() {
                 }
             } else {
                 const upsertPayload = {
+                    uuid: userUuid,
                     email: userEmail,
                     ...dbPayload,
                 };
@@ -223,7 +256,7 @@ function EditProfilePage() {
                 const { data: upsertData, error: upsertErr } = await supabase
                     .from("korisnik")
                     .upsert(upsertPayload, {
-                        onConflict: "email",
+                        onConflict: "uuid",
                         returning: "representation",
                     });
 

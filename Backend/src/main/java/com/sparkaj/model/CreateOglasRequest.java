@@ -24,9 +24,6 @@ public class CreateOglasRequest {
 
     private String uuid; 
 
-    @JsonProperty("id_korisnika")
-    private Integer idKorisnika; // Spring Boot OAuth2 korisnik ID
-
     // Getters and setters
 
     public String getNazivOglasa() {
@@ -91,13 +88,5 @@ public class CreateOglasRequest {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public Integer getIdKorisnika() {
-        return idKorisnika;
-    }
-
-    public void setIdKorisnika(Integer idKorisnika) {
-        this.idKorisnika = idKorisnika;
     }
 }

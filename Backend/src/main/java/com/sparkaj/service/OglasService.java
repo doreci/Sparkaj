@@ -152,32 +152,7 @@ public class OglasService {
 
     // Kreiranje novog oglasa
     public Mono<Oglas> createOglas(CreateOglasRequest request) {
-        // Ako je id_korisnika dostupan (Spring Boot OAuth2), koristi ga direktno
-        if (request.getIdKorisnika() != null) {
-            Map<String, Object> oglasMap = new HashMap<>();
-            oglasMap.put("naziv_oglasa", request.getNazivOglasa());
-            oglasMap.put("opis_oglasa", request.getOpisOglasa());
-            oglasMap.put("cijena", request.getCijena());
-            oglasMap.put("grad", request.getGrad());
-            oglasMap.put("ulica_broj", request.getUlicaBroj());
-            oglasMap.put("postanski_broj", request.getPostanskiBroj());
-            oglasMap.put("id_korisnika", request.getIdKorisnika());
-            oglasMap.put("slika", request.getSlika());
-            System.out.println("[createOglas] Kreiram oglas sa id_korisnika: " + request.getIdKorisnika());
-            return webClient.post()
-                    .uri("/rest/v1/oglas")
-                    .bodyValue(oglasMap)
-                    .exchangeToMono(response -> {
-                        if (response.statusCode().is2xxSuccessful()) {
-                            return response.bodyToMono(Oglas.class);
-                        } else {
-                            return response.bodyToMono(String.class)
-                                .flatMap(body -> Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body)));
-                        }
-                    });
-        }
-        
-        // Inače, traži korisnika po uuid (stari nacin)
+        // First, get korisnik by uuid
         return korisnikService.getKorisnikByUuid(request.getUuid())
                 .flatMap(korisnik -> {
                     if (korisnik == null) {
