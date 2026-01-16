@@ -37,6 +37,16 @@ public class OglasService {
                     oglasi.forEach(o -> System.out.println("Oglas: " + o.getNazivOglasa() + ", Korisnik: " + (o.getKorisnik() != null ? o.getKorisnik().getEmail() : "null")));
                 });
     }
+
+    public Mono<List<Oglas>> getOglasId(Long id) {
+        System.out.println(" Dohvaćam oglas " + id.toString() + " iz baze...");
+
+        return webClient.get()
+                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                .retrieve()
+                .bodyToMono(Oglas[].class)
+                .map(Arrays::asList);
+    }
        
     public Mono<List<GradBody>> getLokacije() {
         System.out.println(" Dohvaćam oglase iz baze...");        
