@@ -256,7 +256,7 @@ function HomePage() {
                         </Link>
                     )}
                     {user != null && (
-                        <Link to="/editprofile" className="profile-icon-link">
+                        <Link to="/profile" className="profile-icon-link">
                             <div className="profile-icon">
                                 {user.picture ? (
                                     <img 

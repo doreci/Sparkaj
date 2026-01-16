@@ -4,12 +4,15 @@ import com.sparkaj.model.PaymentConfirmationRequest;
 import com.sparkaj.service.OglasService;
 import com.sparkaj.service.TransakcijaService;
 import com.sparkaj.service.RezervacijaService;
+import com.sparkaj.service.KorisnikService;
 import com.stripe.Stripe;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -24,14 +27,16 @@ public class PaymentController {
     private final OglasService oglasService;
     private final TransakcijaService transakcijaService;
     private final RezervacijaService rezervacijaService;
+    private final KorisnikService korisnikService;
 
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
-    public PaymentController(OglasService oglasService, TransakcijaService transakcijaService, RezervacijaService rezervacijaService) {
+    public PaymentController(OglasService oglasService, TransakcijaService transakcijaService, RezervacijaService rezervacijaService, KorisnikService korisnikService) {
         this.oglasService = oglasService;
         this.transakcijaService = transakcijaService;
         this.rezervacijaService = rezervacijaService;
+        this.korisnikService = korisnikService;
     }
 
     @PostMapping("/create-payment-intent")
@@ -167,6 +172,99 @@ public class PaymentController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Internal server error: " + e.getMessage());
             return Mono.just(new ResponseEntity<>((Object) errorResponse, HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @GetMapping("/transaction-history/{userId}")
+    public Mono<ResponseEntity<Object>> getTransactionHistory(@PathVariable Long userId) {
+        System.out.println("Fetching transaction history for userId: " + userId);
+        
+        return transakcijaService.getTransakcijeByUserId(userId)
+                .collectList()
+                .map(transakcije -> {
+                    System.out.println("Found " + transakcije.size() + " transactions");
+                    Map<String, Object> response = new HashMap<>();
+                    if (transakcije.isEmpty()) {
+                        response.put("message", "Nema dostupnih transakcija");
+                        response.put("transactions", transakcije);
+                    } else {
+                        response.put("transactions", transakcije);
+                        response.put("total", transakcije.size());
+                    }
+                    return ResponseEntity.ok((Object) response);
+                })
+                .onErrorResume(error -> {
+                    System.err.println("Error fetching transaction history: " + error.getMessage());
+                    error.printStackTrace();
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Greška pri dohvaćanju istorije transakcija: " + error.getMessage());
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((Object) errorResponse));
+                });
+    }
+
+    @GetMapping("/transaction-history")
+    public Mono<ResponseEntity<Object>> getMyTransactionHistory(Authentication authentication) {
+        System.out.println("Fetching current user transaction history");
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Korisnik nije autentificiran");
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body((Object) errorResponse));
+        }
+
+        try {
+            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            String googleId = oauth2User.getAttribute("sub");
+            
+            System.out.println("Getting transactions for user: " + email + " (Google ID: " + googleId + ")");
+            
+            // Look up user by email to get their database ID
+            return korisnikService.getKorisnikByEmail(email)
+                    .flatMap(korisnik -> {
+                        if (korisnik == null) {
+                            System.out.println("User not found in database: " + email);
+                            Map<String, Object> errorResponse = new HashMap<>();
+                            errorResponse.put("error", "Korisnik nije pronađen u bazi podataka");
+                            errorResponse.put("message", "Nema dostupnih transakcija");
+                            errorResponse.put("transactions", new java.util.ArrayList<>());
+                            return Mono.just(ResponseEntity.ok((Object) errorResponse));
+                        }
+                        
+                        Long korisnikId = (long) korisnik.getIdKorisnika();
+                        System.out.println("Found korisnik with ID: " + korisnikId);
+                        
+                        // Get all transactions for this user
+                        return transakcijaService.getTransakcijeByUserId(korisnikId)
+                                .collectList()
+                                .map(transakcije -> {
+                                    System.out.println("Found " + transakcije.size() + " transactions for user");
+                                    Map<String, Object> response = new HashMap<>();
+                                    response.put("transactions", transakcije);
+                                    if (transakcije.isEmpty()) {
+                                        response.put("message", "Nema dostupnih transakcija");
+                                    } else {
+                                        response.put("total", transakcije.size());
+                                    }
+                                    return ResponseEntity.ok((Object) response);
+                                });
+                    })
+                    .onErrorResume(error -> {
+                        System.err.println("Error fetching transaction history: " + error.getMessage());
+                        error.printStackTrace();
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("error", "Greška pri dohvaćanju istorije transakcija: " + error.getMessage());
+                        errorResponse.put("message", "Nema dostupnih transakcija");
+                        errorResponse.put("transactions", new java.util.ArrayList<>());
+                        return Mono.just(ResponseEntity.ok((Object) errorResponse));
+                    });
+            
+        } catch (Exception e) {
+            System.err.println("Error fetching current user transaction history: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Greška pri dohvaćanju istorije transakcija: " + e.getMessage());
+            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((Object) errorResponse));
         }
     }
 }

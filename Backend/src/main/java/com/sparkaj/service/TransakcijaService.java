@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class TransakcijaService {
@@ -61,5 +64,46 @@ public class TransakcijaService {
                 .retrieve()
                 .bodyToMono(Transakcija[].class)
                 .map(niz -> niz.length > 0 ? niz[0] : null);
+    }
+
+    public Flux<Transakcija> getTransakcijeByUserId(Long userId) {
+        // First get all reservations for this user
+        return webClient.get()
+                .uri("/rest/v1/Rezervacija?id_korisnika=eq." + userId)
+                .retrieve()
+                .onStatus(status -> !status.is2xxSuccessful(), 
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(error -> Mono.error(new RuntimeException("Supabase error: " + error)))
+                )
+                .bodyToMono(com.sparkaj.model.Rezervacija[].class)
+                .flatMapMany(rezervacije -> {
+                    if (rezervacije == null || rezervacije.length == 0) {
+                        return Flux.empty();
+                    }
+                    // Build OR query for all reservation IDs
+                    StringBuilder orQuery = new StringBuilder();
+                    for (int i = 0; i < rezervacije.length; i++) {
+                        if (i > 0) orQuery.append(",");
+                        orQuery.append("id_rezervacije.eq.").append(rezervacije[i].getIdRezervacije());
+                    }
+                    
+                    // Get all transactions for these reservations
+                    return webClient.get()
+                            .uri("/rest/v1/Transakcija?or=(" + orQuery.toString() + ")&order=datum_transakcije.desc")
+                            .retrieve()
+                            .onStatus(status -> !status.is2xxSuccessful(),
+                                response -> response.bodyToMono(String.class)
+                                    .flatMap(error -> Mono.error(new RuntimeException("Supabase error: " + error)))
+                            )
+                            .bodyToMono(Transakcija[].class)
+                            .flatMapMany(transakcije -> {
+                                if (transakcije == null || transakcije.length == 0) {
+                                    return Flux.empty();
+                                }
+                                return Flux.fromIterable(Arrays.asList(transakcije));
+                            });
+                })
+                .doOnNext(t -> System.out.println("Fetched transaction: " + t.getIdTransakcija()))
+                .doOnError(error -> System.err.println("Error fetching transactions: " + error.getMessage()));
     }
 }

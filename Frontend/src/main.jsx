@@ -12,6 +12,7 @@ import AdPage from "./pages/adPage.jsx";
 import CreateAdPage from "./pages/CreateAdPage.jsx"
 import AdminPage from "./pages/AdminPage.jsx"
 import ProfilePage from "./pages/profilePage.jsx"
+import TransactionHistoryPage from "./pages/TransactionHistoryPage.jsx"
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
@@ -25,6 +26,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/napravi-oglas" element={<CreateAdPage/>} />
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/transaction-history" element={<TransactionHistoryPage />} />
                 </Routes>
             </BrowserRouter>
         </Provider>

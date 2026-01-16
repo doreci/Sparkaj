@@ -52,6 +52,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
 
 .loading,
 .not-logged-in,
@@ -228,6 +229,26 @@
     background-color: white;
     color: rgb(0, 0, 61);
     border: 2px solid rgb(0, 0, 61);
+    transform: translateY(-2px);
+}
+
+.btn-transactions {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    padding: 14px 50px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.btn-transactions:hover {
+    background-color: white;
+    color: #0066cc;
+    border: 2px solid #0066cc;
     transform: translateY(-2px);
 }
 

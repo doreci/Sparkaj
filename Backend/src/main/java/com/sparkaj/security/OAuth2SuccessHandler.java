@@ -19,7 +19,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     private KorisnikService korisnikService;
 
-    @Value("${oauth2.success-url:http://localhost:3000/home}")
+    @Value("${oauth2.success-url:http://localhost:10000}")
     private String successUrl;
 
     @Override

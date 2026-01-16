@@ -4,27 +4,38 @@ import { Link } from "react-router-dom";
 import {
     selectUserProfile,
     selectUserStatus,
-    fetchUserByUUID,
 } from "../store/userSlice";
-import { supabase } from "../../supabaseClient";
 import "./profilepage.css";
 
 function ProfilePage() {
     const dispatch = useDispatch();
     const userProfile = useSelector(selectUserProfile);
     const status = useSelector(selectUserStatus);
-    const [session, setSession] = useState(null);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session?.user?.id) {
-                dispatch(fetchUserByUUID(session.user.id));
+        checkAuthentication();
+    }, []);
+
+    const checkAuthentication = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/user", {
+                credentials: "include",
+            });
+            const data = await response.json();
+            if (data.authenticated) {
+                setUser(data);
+            } else {
+                setUser(null);
             }
+        } catch (error) {
+            console.log("Korisnik nije autentificiran");
+            setUser(null);
+        } finally {
             setLoading(false);
-        });
-    }, [dispatch]);
+        }
+    };
 
     if (loading) {
         return (
@@ -34,7 +45,7 @@ function ProfilePage() {
         );
     }
 
-    if (!session) {
+    if (!user) {
         return (
             <div className="profile-container">
                 <div className="not-logged-in">
@@ -43,19 +54,6 @@ function ProfilePage() {
                     </p>
                     <Link to="/login">
                         <button>Idi na login</button>
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
-    if (!userProfile) {
-        return (
-            <div className="profile-container">
-                <div className="no-profile">
-                    <p>Profil nije dostupan</p>
-                    <Link to="/">
-                        <button>Nazad na početnu</button>
                     </Link>
                 </div>
             </div>
@@ -75,15 +73,15 @@ function ProfilePage() {
                     {/* Profilna slika */}
                     <div className="profile-image-section">
                         <div className="profile-image-wrapper">
-                            {userProfile.slika ? (
+                            {user.picture ? (
                                 <img
-                                    src={userProfile.slika}
+                                    src={user.picture}
                                     alt="Profilna slika"
                                     className="profile-image"
                                 />
                             ) : (
                                 <div className="profile-image-placeholder">
-                                    {userProfile.ime
+                                    {user.given_name
                                         ?.charAt(0)
                                         .toUpperCase() || "U"}
                                 </div>
@@ -95,7 +93,7 @@ function ProfilePage() {
                     <div className="profile-info">
                         <div className="profile-section">
                             <h1 className="profile-name">
-                                {userProfile.ime} {userProfile.prezime}
+                                {user.given_name} {user.family_name}
                             </h1>
                         </div>
 
@@ -103,21 +101,12 @@ function ProfilePage() {
                         <div className="profile-details">
                             <div className="detail-item">
                                 <label>Email</label>
-                                <p>{userProfile.email || "Nije dostupno"}</p>
+                                <p>{user.email || "Nije dostupno"}</p>
                             </div>
 
                             <div className="detail-item">
-                                <label>Broj mobilnog</label>
-                                <p>
-                                    {userProfile.broj_mobitela
-                                        ? userProfile.broj_mobitela
-                                        : "Nije dostupno"}
-                                </p>
-                            </div>
-
-                            <div className="detail-item">
-                                <label>ID korisnika</label>
-                                <p>{userProfile.id_korisnika}</p>
+                                <label>Google ID</label>
+                                <p>{user.id || "Nije dostupno"}</p>
                             </div>
                         </div>
 
@@ -126,6 +115,11 @@ function ProfilePage() {
                             <Link to="/editprofile">
                                 <button className="btn-edit">
                                     Uredi profil
+                                </button>
+                            </Link>
+                            <Link to="/transaction-history">
+                                <button className="btn-transactions">
+                                    Povijest Transakcija
                                 </button>
                             </Link>
                         </div>
