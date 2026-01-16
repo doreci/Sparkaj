@@ -40,7 +40,7 @@ public class OglasController {
     }
     
     @PostMapping
-    public Mono<ResponseEntity<Oglas>> createOglas(@RequestBody CreateOglasRequest request) {
+    public Mono<ResponseEntity<Oglas>> kreirajOglas(@RequestBody CreateOglasRequest request) {
         return oglasService.createOglas(request)
                 .map(ResponseEntity::ok);
     }

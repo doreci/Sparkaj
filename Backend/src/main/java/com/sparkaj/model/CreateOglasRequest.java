@@ -89,4 +89,12 @@ public class CreateOglasRequest {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
+    public Integer getIdKorisnika() {
+        return null; // Implement if needed
+    }
+
+    public void setIdKorisnika(Integer idKorisnika) {
+        // Implement if needed
+    }
 }
