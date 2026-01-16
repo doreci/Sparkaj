@@ -38,7 +38,7 @@ public class OglasController {
         return oglasService.pretraziOglase(fob)
                 .map(ResponseEntity::ok);
     }
-
+    
     @PostMapping
     public Mono<ResponseEntity<Oglas>> kreirajOglas(@RequestBody CreateOglasRequest request) {
         return oglasService.createOglas(request)

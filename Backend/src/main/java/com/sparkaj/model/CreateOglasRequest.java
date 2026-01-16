@@ -22,7 +22,7 @@ public class CreateOglasRequest {
 
     private String slika;
 
-    private String uuid; 
+    private String uuid; // Supabase user UUID
 
     // Getters and setters
 
