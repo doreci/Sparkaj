@@ -1,19 +1,21 @@
 import { supabase } from "../../supabaseClient";
 import "./homepage.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllAds, selectAdsList, selectAdsStatus } from "../store/adSlice";
-import { selectUserProfile, fetchUserByUUID } from "../store/userSlice";
+import { selectUserProfile, fetchUserByUUID, clearUser } from "../store/userSlice";
 import AdCard from "../components/adCard";
 
 function HomePage() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const ads = useSelector(selectAdsList);
     const status = useSelector(selectAdsStatus);
     const userProfile = useSelector(selectUserProfile);
 
     const [session, setSession] = useState(null);
+    const [user, setUser] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [showAllAds, setShowAllAds] = useState(false);
     const [filters, setFilters] = useState({
@@ -31,14 +33,32 @@ function HomePage() {
         }
     }, [dispatch, status]);
 
+    // Provjeri autentifikaciju putem Spring Boot
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session?.user?.id) {
-                dispatch(fetchUserByUUID(session.user.id));
+        checkAuthentication();
+    }, []);
+
+    // Dodaj effect koji osjetuje promjene u autentifikaciji
+    useEffect(() => {
+        if (userProfile === null) {
+            setUser(null);
+        }
+    }, [userProfile]);
+
+    const checkAuthentication = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/user", {
+                credentials: "include",
+            });
+            const data = await response.json();
+            if (data.authenticated) {
+                setUser(data);
+                setSession({ user: data });
             }
-        });
-    }, [dispatch]);
+        } catch (error) {
+            console.log("Korisnik nije autentificiran");
+        }
+    };
 
     // Zatvori filter dropdown kada se klikne izvan njega
     useEffect(() => {
@@ -53,9 +73,17 @@ function HomePage() {
     }, [showFilters]);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        setSession(null);
+        try {
+            setUser(null);
+            dispatch(clearUser());
+            
+            // Preusmjeri na logout endpoint na backendu
+            window.location.href = "http://localhost:8080/logout";
+        } catch (error) {
+            console.error("Greška pri odjavi:", error);
+        }
     };
+
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -122,7 +150,7 @@ function HomePage() {
                     <img name="logo" src="/logo.png" alt="logo" />
                 </div>
                 <div className="search-bar">
-                    {session != null && (
+                    {user != null && (
                         <button
                             id="btn-filter"
                             onClick={() => setShowFilters(!showFilters)}
@@ -136,7 +164,7 @@ function HomePage() {
                         </button>
                     )}
                     {/* Filter Dropdown */}
-                    {showFilters && session != null && (
+                    {showFilters && user != null && (
                         <div className="filter-dropdown">
                             <div className="filter-header">
                                 <h3>Filtri pretrage</h3>
@@ -222,35 +250,35 @@ function HomePage() {
                     )}
                 </div>
                 <div className="header-buttons">
-                    {session != null && (
+                    {user != null && (
                         <Link to="/napravi-oglas">
                             <button>Napravi oglas</button>
                         </Link>
                     )}
-                    {/* {session != null && (
+                    {/* {user != null && (
                         <Link to="/editprofile">
                             <button>Edit Profile</button>
                         </Link>
                     )} */}
-                    {session != null && (
+                    {user != null && (
                         <button onClick={handleLogout}>Logout</button>
                     )}
-                    {session == null && (
+                    {user == null && (
                         <Link to="/login">
                             <button>Login</button>
                         </Link>
                     )}
-                    {session != null && userProfile && (
-                        <Link to="/profile" className="profile-icon-link">
+                    {user != null && (
+                        <Link to="/editprofile" className="profile-icon-link">
                             <div className="profile-icon">
-                                {userProfile.slika ? (
+                                {user.picture ? (
                                     <img 
-                                        src={userProfile.slika}
+                                        src={user.picture}
                                         alt="Profile"
                                     />
                                 ) : (
                                     <div className="profile-icon-placeholder">
-                                        {userProfile.nadimak
+                                        {user.given_name
                                             ?.charAt(0)
                                             .toUpperCase() || "U"}
                                     </div>
