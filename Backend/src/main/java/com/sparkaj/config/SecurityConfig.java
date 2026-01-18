@@ -24,6 +24,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("[SecurityConfig] Konfiguriranje OAuth2...");
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
@@ -39,10 +40,11 @@ public class SecurityConfig {
                     auth.requestMatchers("/oauth2/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oauth2SuccessHandler)
-                        .failureUrl("/login?error=true")
-                )
+                .oauth2Login(oauth2 -> {
+                    System.out.println("[SecurityConfig] OAuth2 Login Handler je: " + oauth2SuccessHandler);
+                    oauth2.successHandler(oauth2SuccessHandler)
+                    .failureUrl("/login?error=true");
+                })
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("http://localhost:10000")

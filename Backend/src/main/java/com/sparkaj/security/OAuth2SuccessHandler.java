@@ -26,9 +26,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
         
+        System.out.println("=== OAuth2SuccessHandler.onAuthenticationSuccess - POČETO ===");
+        
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         
-        // Izvucite podatke iz OAuth2 providera (Google)
+        // Izvuci podatke iz OAuth2 providera (Google)
         String email = oauth2User.getAttribute("email");
         String ime = oauth2User.getAttribute("given_name");
         String prezime = oauth2User.getAttribute("family_name");
@@ -42,18 +44,34 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         System.out.println("Google ID: " + googleId);
         
         try {
-            // Spremi ili ažuriraj korisnika u Supabase - čekaj rezultat
-            // Koristi googleId kao "uuid" da se sazva sa frontendom
-            korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
-                    .block(); // Čekaj da se završi
-            System.out.println("✓ Korisnik uspješno spremljen: " + email);
+            // Provjeri postoji li korisnik u bazi
+            // Ako postoji - ne ažuriraj ga (čuvaju se editirani podaci)
+            // Ako ne postoji - kreiraj ga sa OAuth2 podacima
+            System.out.println("i Tražim korisnika: " + email);
+            com.sparkaj.model.Korisnik existingUser = korisnikService.getKorisnikByEmail(email)
+                    .block(java.time.Duration.ofSeconds(5));
+            
+            System.out.println("i Rezultat pretrage: " + (existingUser != null ? "pronađen" : "nije pronađen"));
+            
+            if (existingUser != null) {
+                // Korisnik postoji - ne ažuriraj ga
+                System.out.println("OK Korisnik već postoji u bazi, ne ažuriram ga");
+            } else {
+                // Korisnik ne postoji - kreiraj ga
+                System.out.println("i Korisnik ne postoji u bazi, kreiramo novog");
+                System.out.println("i Pozivam saveOrUpdateOAuth2Korisnik sa email: " + email);
+                korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
+                        .block(java.time.Duration.ofSeconds(10));
+                System.out.println("OK Novi korisnik kreiran: " + email);
+            }
         } catch (Exception e) {
-            System.err.println("✗ Greška pri spremanju korisnika: " + e.getMessage());
+            System.err.println("GREŠKA pri upravljanju korisnikom: " + e.getMessage());
             e.printStackTrace();
         }
         
         // Preusmjeravanje na frontend
         System.out.println("Preusmjeravanje na: " + successUrl);
+        System.out.println("=== OAuth2SuccessHandler.onAuthenticationSuccess - ZAVRŠENO ===");
         response.sendRedirect(successUrl);
     }
 }
