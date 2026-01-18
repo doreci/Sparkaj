@@ -42,13 +42,24 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         System.out.println("Google ID: " + googleId);
         
         try {
-            // Spremi ili ažuriraj korisnika u Supabase - čekaj rezultat
-            // Koristi googleId kao "uuid" da se sazva sa frontendom
-            korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
-                    .block(); // Čekaj da se završi
-            System.out.println("✓ Korisnik uspješno spremljen: " + email);
+            // Provjeri postoji li korisnik u bazi
+            // Ako postoji - ne ažuriraj ga (čuva se editirane podatke)
+            // Ako ne postoji - kreiraj ga sa OAuth2 podacima
+            com.sparkaj.model.Korisnik existingUser = korisnikService.getKorisnikByEmail(email)
+                    .block(java.time.Duration.ofSeconds(5));
+            
+            if (existingUser != null) {
+                // Korisnik postoji - ne ažuriraj ga
+                System.out.println("✓ Korisnik već postoji u bazi, ne ažuriram ga");
+            } else {
+                // Korisnik ne postoji - kreiraj ga
+                System.out.println("ℹ Korisnik ne postoji u bazi, kreiramo novog");
+                korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
+                        .block();
+                System.out.println("✓ Novi korisnik kreiran: " + email);
+            }
         } catch (Exception e) {
-            System.err.println("✗ Greška pri spremanju korisnika: " + e.getMessage());
+            System.err.println("✗ Greška pri provjeri korisnika: " + e.getMessage());
             e.printStackTrace();
         }
         

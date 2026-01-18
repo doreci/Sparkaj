@@ -26,23 +26,37 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         
         if (principal != null) {
+            String email = principal.getAttribute("email");
             response.put("authenticated", true);
-            response.put("email", principal.getAttribute("email"));
-            response.put("name", principal.getAttribute("name"));
-            response.put("given_name", principal.getAttribute("given_name"));
-            response.put("family_name", principal.getAttribute("family_name"));
-            response.put("picture", principal.getAttribute("picture"));
+            response.put("email", email);
             
-            // Pronađi korisnika po emailu i dodaj id_korisnika
+            // Pronađi korisnika u bazi po emailu
             try {
-                String email = principal.getAttribute("email");
                 Korisnik korisnik = korisnikService.getKorisnikByEmail(email).block();
                 if (korisnik != null) {
+                    // Vrati podatke iz baze
+                    System.out.println("[AuthController] Pronađen korisnik u bazi, vraćam podatke iz baze");
                     response.put("id_korisnika", korisnik.getIdKorisnika());
                     response.put("uuid", korisnik.getUuid());
+                    response.put("given_name", korisnik.getIme());
+                    response.put("family_name", korisnik.getPrezime());
+                    response.put("picture", korisnik.getProfilna());
+                    response.put("broj_mobitela", korisnik.getBrojMobitela());
+                } else {
+                    // Ako nema u bazi, vrati OAuth2 podatke kao fallback
+                    System.out.println("[AuthController] Korisnik nije pronađen u bazi, vraćam OAuth2 podatke");
+                    response.put("given_name", principal.getAttribute("given_name"));
+                    response.put("family_name", principal.getAttribute("family_name"));
+                    response.put("picture", principal.getAttribute("picture"));
+                    response.put("name", principal.getAttribute("name"));
                 }
             } catch (Exception e) {
                 System.err.println("[AuthController] Greška pri pronalaženju korisnika: " + e.getMessage());
+                // Ako greška, vrati OAuth2 podatke
+                response.put("given_name", principal.getAttribute("given_name"));
+                response.put("family_name", principal.getAttribute("family_name"));
+                response.put("picture", principal.getAttribute("picture"));
+                response.put("name", principal.getAttribute("name"));
             }
             
             return response;

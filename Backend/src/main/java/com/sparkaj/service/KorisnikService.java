@@ -136,8 +136,13 @@ public class KorisnikService {
         if (updateRequest.getPrezime() != null && !updateRequest.getPrezime().isEmpty()) {
             updates.put("prezime", updateRequest.getPrezime());
         }
-        if (updateRequest.getBrojMobitela() != null && !updateRequest.getBrojMobitela().isEmpty()) {
-            updates.put("broj_mobitela", updateRequest.getBrojMobitela());
+        // Za broj mobitela: ako je prazan string, postavi na null; inače postavi vrijednost
+        if (updateRequest.getBrojMobitela() != null) {
+            if (updateRequest.getBrojMobitela().isEmpty()) {
+                updates.put("broj_mobitela", null);
+            } else {
+                updates.put("broj_mobitela", updateRequest.getBrojMobitela());
+            }
         }
         if (updateRequest.getProfileImageUrl() != null && !updateRequest.getProfileImageUrl().isEmpty()) {
             updates.put("profilna", updateRequest.getProfileImageUrl());
