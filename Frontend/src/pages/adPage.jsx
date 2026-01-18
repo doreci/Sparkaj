@@ -246,6 +246,20 @@ function AdPage() {
                         </div>
                     </div>
 
+                    {/* Slika oglasa */}
+                    {ad.slika && (
+                        <div className="ad-image-section">
+                            <h2>Slika parkirnog mjesta</h2>
+                            <div className="ad-image-box">
+                                <img
+                                    src={ad.slika}
+                                    alt={ad.naziv_oglasa}
+                                    className="ad-image"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Akcije */}
                     <div className="ad-actions">
                         <button
