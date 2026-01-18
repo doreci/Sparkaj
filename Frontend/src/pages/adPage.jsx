@@ -34,6 +34,11 @@ function AdPage() {
     const [selectedOglas, setSelectedOglas] = useState(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState(null);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportText, setReportText] = useState("");
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
+    const [reservationDate, setReservationDate] = useState("");
 
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -220,20 +225,6 @@ function AdPage() {
                         <h2>Dodatne informacije</h2>
                         <div className="details-grid">
                             <div className="detail-box">
-                                <span className="detail-label">ID Oglasa</span>
-                                <span className="detail-value">
-                                    {ad.id_oglasa}
-                                </span>
-                            </div>
-                            <div className="detail-box">
-                                <span className="detail-label">
-                                    ID Prodavača
-                                </span>
-                                <span className="detail-value">
-                                    {ad.id_korisnika}
-                                </span>
-                            </div>
-                            <div className="detail-box">
                                 <span className="detail-label">
                                     Prosječna ocjena
                                 </span>
@@ -274,8 +265,22 @@ function AdPage() {
                         >
                             Pay Now
                         </button>
-                        <button className="btn-secondary btn-large">
+                        <button className="btn-secondary btn-large"
+                                onClick={()=> setShowReportModal(true)}
+                        >
                             Prijavi oglas
+                        </button>
+                        <button
+                            className="btn-primary btn-large"
+                            onClick={() => setShowReviewModal(true)}
+                        >
+                            Ostavi recenziju
+                        </button>
+                        <button
+                            className="btn-primary btn-large"
+                            onClick={() => setShowCalendarModal(true)}
+                        >
+                            Rezerviraj termin
                         </button>
                     </div>
                 </div>
@@ -344,6 +349,90 @@ function AdPage() {
                         setPaymentDetails(null);
                     }}
                 />
+            )}
+
+            {showReportModal && (
+                    <div className="payment-modal-overlay">
+                        <div className="payment-modal">
+                            <h2>Prijava oglasa</h2>
+
+                        <textarea
+                            placeholder="Opišite razlog prijave..."
+                            value={reportText}
+                            onChange={(e) => setReportText(e.target.value)}
+                            style={{
+                                width: "100%",
+                                minHeight: "120px",
+                                padding: "10px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                marginBottom: "20px"
+                            }}
+                        />
+
+                        <div className="payment-buttons">
+                            <button
+                                className="cancel-button"
+                                onClick={() => setShowReportModal(false)}
+                            >
+                                Odustani
+                            </button>
+                            <button
+                                className="pay-button"
+                                onClick={() => {
+                                    console.log("Prijava:", reportText);
+                                    setShowReportModal(false);
+                                    setReportText("");
+                                }}
+                            >
+                                Pošalji prijavu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showCalendarModal && (
+                <div className="payment-modal-overlay">
+                    <div className="payment-modal">
+                        <h2>Odaberi termin rezervacije</h2>
+
+                        <label style={{ fontWeight: "600", marginBottom: "8px", display: "block" }}>
+                            Datum i vrijeme
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            value={reservationDate}
+                            onChange={(e) => setReservationDate(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                            marginBottom: "20px"
+                            }}
+                        />
+
+                        <div className="payment-buttons">
+                            <button
+                                className="cancel-button"
+                                onClick={() => setShowCalendarModal(false)}
+                            >
+                                Odustani
+                            </button>
+
+                            <button
+                                className="pay-button"
+                                onClick={() => {
+                                    console.log("Rezervirani termin:", reservationDate);
+                                    setShowCalendarModal(false);
+                                }}
+                            >
+                                Potvrdi termin
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
