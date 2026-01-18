@@ -1,6 +1,7 @@
 package com.sparkaj.service;
 
 import com.sparkaj.model.Korisnik;
+import com.sparkaj.model.UpdateProfileRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -121,6 +122,36 @@ public class KorisnikService {
                 .toBodilessEntity()
                 .doOnSuccess(r -> System.out.println("[createOAuth2Korisnik] ✓ Novi korisnik kreiran: " + email))
                 .doOnError(e -> System.err.println("[createOAuth2Korisnik] ✗ Greška pri kreiranju: " + e.getMessage()))
+                .then();
+    }
+
+    // Ažuriranje profila korisnika
+    public Mono<Void> updateUserProfile(String email, UpdateProfileRequest updateRequest) {
+        System.out.println("[updateUserProfile] Ažuriramo profil za email: " + email);
+        
+        Map<String, Object> updates = new HashMap<>();
+        if (updateRequest.getIme() != null && !updateRequest.getIme().isEmpty()) {
+            updates.put("ime", updateRequest.getIme());
+        }
+        if (updateRequest.getPrezime() != null && !updateRequest.getPrezime().isEmpty()) {
+            updates.put("prezime", updateRequest.getPrezime());
+        }
+        if (updateRequest.getBrojMobitela() != null && !updateRequest.getBrojMobitela().isEmpty()) {
+            updates.put("broj_mobitela", updateRequest.getBrojMobitela());
+        }
+        if (updateRequest.getProfileImageUrl() != null && !updateRequest.getProfileImageUrl().isEmpty()) {
+            updates.put("profilna", updateRequest.getProfileImageUrl());
+        }
+
+        System.out.println("[updateUserProfile] Podatci za ažuriranje: " + updates);
+
+        return webClient.patch()
+                .uri("/rest/v1/korisnik?email=eq." + email)
+                .bodyValue(updates)
+                .retrieve()
+                .toBodilessEntity()
+                .doOnSuccess(r -> System.out.println("[updateUserProfile] ✓ Profil ažuriran za: " + email))
+                .doOnError(e -> System.err.println("[updateUserProfile] ✗ Greška pri ažuriranju: " + e.getMessage()))
                 .then();
     }
 }

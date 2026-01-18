@@ -2,6 +2,8 @@ import "./editprofilepage.css";
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
 
+const API_URL = "http://localhost:8080";
+
 function EditProfilePage() {
     const [user, setUser] = useState(null);
     const [profileImage, setProfileImage] = useState("./avatar-icon.png");
@@ -19,23 +21,57 @@ function EditProfilePage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
             if (data.authenticated) {
                 setUser(data);
                 
-                // Postavi formData sa podacima iz OAuth2
+                // Prvo učitaj podatke iz baze
+                let dbIme = data.given_name || "";
+                let dbPrezime = data.family_name || "";
+                let dbBrojMobitela = "";
+                let dbProfilna = data.picture || "";
+
+                try {
+                    const dbResponse = await fetch(
+                        `${API_URL}/api/user`,
+                        {
+                            credentials: "include",
+                        }
+                    );
+                    const userResponse = await dbResponse.json();
+                    
+                    if (userResponse.id_korisnika) {
+                        const profileResponse = await fetch(
+                            `${API_URL}/api/korisnik/${userResponse.id_korisnika}`,
+                            {
+                                credentials: "include",
+                            }
+                        );
+                        const dbData = await profileResponse.json();
+                        if (dbData && dbData.ime) {
+                            dbIme = dbData.ime || dbIme;
+                            dbPrezime = dbData.prezime || dbPrezime;
+                            dbBrojMobitela = dbData.broj_mobitela || "";
+                            dbProfilna = dbData.profilna || dbProfilna;
+                        }
+                    }
+                } catch (dbError) {
+                    console.log("Nije pronađen korisnik u bazi, koristim OAuth2 podatke");
+                }
+
+                // Postavi formData sa podacima
                 setFormData({
-                    ime: data.given_name || "",
-                    prezime: data.family_name || "",
-                    broj_mobitela: "",
-                    profile_image_url: data.picture || "",
+                    ime: dbIme,
+                    prezime: dbPrezime,
+                    broj_mobitela: dbBrojMobitela,
+                    profile_image_url: dbProfilna,
                 });
 
-                if (data.picture) {
-                    setProfileImage(data.picture);
+                if (dbProfilna) {
+                    setProfileImage(dbProfilna);
                 } else {
                     console.log("Nema URLa za sliku");
                 }
@@ -167,73 +203,36 @@ function EditProfilePage() {
         }
 
         try {
-            const dbPayload = {
+            const updatePayload = {
                 ime: formData.ime,
                 prezime: formData.prezime,
                 broj_mobitela: formData.broj_mobitela,
-                profilna: formData.profile_image_url || "",
+                profile_image_url: formData.profile_image_url || "",
             };
 
-            const userEmail = user.email;
+            const response = await fetch(`${API_URL}/api/korisnik/profile/update`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify(updatePayload),
+            });
 
-            let orFilter = `email.eq.${userEmail}`;
+            const data = await response.json();
 
-            let existing = null;
-            let selectErr = null;
-            if (orFilter) {
-                const selectRes = await supabase
-                    .from("korisnik")
-                    .select("uuid,email")
-                    .or(orFilter)
-                    .limit(1);
-
-                existing = selectRes.data;
-                selectErr = selectRes.error;
-            }
-
-            if (selectErr) {
-                console.warn(
-                    "Greška pri provjeri postojanja korisnika:",
-                    selectErr
-                );
-            }
-
-            if (existing && Array.isArray(existing) && existing.length > 0) {
-                const found = existing[0];
-                const updateBy = { column: "email", value: userEmail };
-
-                const { data: updatedData, error: updateErr } = await supabase
-                    .from("korisnik")
-                    .update(dbPayload)
-                    .eq(updateBy.column, updateBy.value)
-                    .select();
-
-                // console.log('Ažuriaj korisnika:', updateBy.column, { updatedData, updateErr });
-
-                if (updateErr) {
-                    console.error("Greška pri ažuriranju:", updateErr);
-                    throw updateErr;
-                }
+            if (data.success) {
+                console.log("Profil uspješno ažuriran");
+                alert("Profil uspješno ažuriran");
+                // Osvježi podatke iz baze nakon što su ažurirani
+                checkAuthentication();
             } else {
-                const upsertPayload = {
-                    email: userEmail,
-                    ...dbPayload,
-                };
-
-                const { data: upsertData, error: upsertErr } = await supabase
-                    .from("korisnik")
-                    .upsert(upsertPayload, {
-                        onConflict: "email",
-                        returning: "representation",
-                    });
-
-                if (upsertErr) {
-                    console.error("Greška pri dodavanju korisnika:", upsertErr);
-                    throw upsertErr;
-                }
+                console.error("Greška pri ažuriranju profila:", data.message);
+                alert("Greška pri ažuriranju profila: " + data.message);
             }
         } catch (error) {
             console.error("Greška pri spremanju promjena:", error.message);
+            alert("Greška pri spremanju promjena: " + error.message);
         }
     };
 

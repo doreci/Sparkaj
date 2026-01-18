@@ -39,6 +39,7 @@ public class AuthController {
                 Korisnik korisnik = korisnikService.getKorisnikByEmail(email).block();
                 if (korisnik != null) {
                     response.put("id_korisnika", korisnik.getIdKorisnika());
+                    response.put("uuid", korisnik.getUuid());
                 }
             } catch (Exception e) {
                 System.err.println("[AuthController] Greška pri pronalaženju korisnika: " + e.getMessage());

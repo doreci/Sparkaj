@@ -4,7 +4,10 @@ import com.sparkaj.model.CreateOglasRequest;
 import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.service.OglasService;
+import com.sparkaj.service.KorisnikService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import java.util.List;
@@ -15,9 +18,11 @@ import java.util.List;
 public class OglasController {
 
     private final OglasService oglasService;
+    private final KorisnikService korisnikService;
 
-    public OglasController(OglasService oglasService) {
+    public OglasController(OglasService oglasService, KorisnikService korisnikService) {
         this.oglasService = oglasService;
+        this.korisnikService = korisnikService;
         System.out.println(" OglasController created");
     }
 
@@ -40,16 +45,42 @@ public class OglasController {
     }
     
     @PostMapping
-    public Mono<ResponseEntity<Oglas>> kreirajOglas(@RequestBody CreateOglasRequest request) {
+    public Mono<ResponseEntity<Oglas>> kreirajOglas(
+            @AuthenticationPrincipal OAuth2User principal,
+            @RequestBody CreateOglasRequest request) {
         System.out.println("[OglasController] POST /api/oglasi - Primljen zahtjev");
         System.out.println("[OglasController] Request body: " + request);
-        return oglasService.createOglas(request)
-                .map(ResponseEntity::ok)
-                .onErrorResume(error -> {
-                    System.err.println("[OglasController] ✗ Greška pri kreiranju oglasa: " + error.getMessage());
-                    error.printStackTrace();
-                    return Mono.just(ResponseEntity.status(500).build());
-                });
+        
+        if (principal != null) {
+            String email = principal.getAttribute("email");
+            System.out.println("[OglasController] Korisnik autentificiran, email: " + email);
+            
+            // Pronađi id_korisnika po emailu
+            return korisnikService.getKorisnikByEmail(email)
+                    .flatMap(korisnik -> {
+                        if (korisnik != null) {
+                            System.out.println("[OglasController] Pronađen korisnik sa ID: " + korisnik.getIdKorisnika());
+                            request.setIdKorisnika(korisnik.getIdKorisnika());
+                        }
+                        return oglasService.createOglas(request);
+                    })
+                    .map(ResponseEntity::ok)
+                    .onErrorResume(error -> {
+                        System.err.println("[OglasController] ✗ Greška pri kreiranju oglasa: " + error.getMessage());
+                        error.printStackTrace();
+                        return Mono.just(ResponseEntity.status(500).build());
+                    });
+        } else {
+            // Ako nema OAuth2 autentifikacije, koristi UUID iz requestа
+            System.out.println("[OglasController] Nema OAuth2 autentifikacije, koristim UUID");
+            return oglasService.createOglas(request)
+                    .map(ResponseEntity::ok)
+                    .onErrorResume(error -> {
+                        System.err.println("[OglasController] ✗ Greška pri kreiranju oglasa: " + error.getMessage());
+                        error.printStackTrace();
+                        return Mono.just(ResponseEntity.status(500).build());
+                    });
+        }
     }
     
     @PutMapping("/{id}")

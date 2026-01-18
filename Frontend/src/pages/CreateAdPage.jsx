@@ -3,9 +3,12 @@ import "./createadpage.css";
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
 
+const API_URL = "http://localhost:8080";
+
 function CreateAdPage() {
 
     const [session, setSession] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [imagePreview, setImagePreview] = useState("./parking-placeholder.png");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -18,49 +21,27 @@ function CreateAdPage() {
     });
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session?.user) {
-                // Parse name into ime and prezime
-                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
-                const nameParts = fullName.split(' ');
-                const ime = nameParts[0] || 'Unknown';
-                const prezime = nameParts.slice(1).join(' ') || null;
-
-                // Upsert korisnik
-                supabase.from('korisnik').upsert({
-                    uuid: session.user.id,
-                    ime: ime,
-                    prezime: prezime,
-                    email: session.user.email
-                }, { onConflict: 'uuid' }).then(({ error }) => {
-                    if (error) console.error('Error upserting korisnik:', error);
-                });
-            }
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            setSession(session);
-            if (event === 'SIGNED_IN' && session?.user) {
-                // Parse name into ime and prezime
-                const fullName = session.user.user_metadata?.name || session.user.email || 'Unknown';
-                const nameParts = fullName.split(' ');
-                const ime = nameParts[0] || 'Unknown';
-                const prezime = nameParts.slice(1).join(' ') || null;
-
-                // Upsert korisnik on sign in
-                const { error } = await supabase.from('korisnik').upsert({
-                    uuid: session.user.id,
-                    ime: ime,
-                    prezime: prezime,
-                    email: session.user.email
-                }, { onConflict: 'uuid' });
-                if (error) console.error('Error upserting korisnik:', error);
-            }
-        });
-
-        return () => subscription.unsubscribe();
+        // Provjeri OAuth2 autentifikaciju
+        checkAuthentication();
     }, []);
+
+    const checkAuthentication = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/user`, {
+                credentials: "include",
+            });
+            const data = await response.json();
+            if (data.authenticated) {
+                setSession(data);
+                setIsAuthenticated(true);
+            } else {
+                setIsAuthenticated(false);
+            }
+        } catch (error) {
+            console.log("Korisnik nije autentificiran");
+            setIsAuthenticated(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -86,7 +67,7 @@ function CreateAdPage() {
     const handleCreateAd = async (e) => {
         e.preventDefault();
 
-        if (!session?.user?.id) {
+        if (!isAuthenticated) {
             alert("Nisi prijavljen!");
             return;
         }
@@ -135,9 +116,7 @@ function CreateAdPage() {
             }
         }
 
-        // Get korisnik uuid
-        const uuid = session.user.id;
-
+        // Backend će preuzeti id_korisnika iz OAuth2 autentifikacije
         const payload = {
             naziv_oglasa: formData.naziv_oglasa,
             opis_oglasa: formData.opis_oglasa,
@@ -146,17 +125,18 @@ function CreateAdPage() {
             ulica_broj: ulicaBroj,
             postanski_broj: postanskiBroj,
             slika: imageUrl,
-            uuid: uuid,
+            uuid: session?.id || session?.uuid || "",
         };
 
         console.log("Oglas payload:", payload);
 
         try {
-            const response = await fetch('http://localhost:8080/api/oglasi', {
+            const response = await fetch(`${API_URL}/api/oglasi`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify(payload),
                 signal: controller.signal,
             });
@@ -206,6 +186,11 @@ function CreateAdPage() {
 
             <div className="title">Izrada oglasa</div>
 
+            {!isAuthenticated ? (
+                <div className="content-wrapper">
+                    <p>Trebas biti prijavljen da kreirajš oglas. Molimo prijavi se prvo.</p>
+                </div>
+            ) : (
             <div className="content-wrapper">
 
                 <div className="profile-section">
@@ -256,6 +241,7 @@ function CreateAdPage() {
                 </form>
 
             </div>
+            )}
         </div>
     );
 }
