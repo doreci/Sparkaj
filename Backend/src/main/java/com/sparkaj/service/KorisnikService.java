@@ -47,21 +47,20 @@ public class KorisnikService {
 
     // OAuth2 metode
     public Mono<Void> saveOrUpdateOAuth2Korisnik(String email, String ime, String prezime, String profilna, String uuid) {
-        System.out.println("[KorisnikService] Provjeravamo korisnika: " + email + ", UUID: " + uuid);
+        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] POČETO - email: " + email + ", UUID: " + uuid);
         
         return getKorisnikByEmail(email)
-                .flatMap(existingKorisnik -> {
-                    // Ako korisnik postoji, samo ažuriraj podatke
-                    if (existingKorisnik != null) {
-                        System.out.println("[KorisnikService] ✓ Korisnik postoji, ažuriramo: " + email);
-                        return updateKorisnik(email, ime, prezime, profilna, uuid);
-                    }
-                    // Ako korisnik ne postoji, kreiraj novog
-                    System.out.println("[KorisnikService] ✗ Korisnik ne postoji, kreiramo novog: " + email);
+                .doOnNext(korisnik -> System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik postoji, ne kreiramo novog"))
+                .then() // Konvertiraj Korisnik u Void
+                .switchIfEmpty(Mono.defer(() -> {
+                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik ne postoji, kreiramo novog");
                     return createOAuth2Korisnik(email, ime, prezime, profilna, uuid);
-                })
+                }))
+                .doOnSuccess(v -> System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] USPJEŠNO ZAVRŠENO"))
+                .doOnError(e -> System.err.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] GREŠKA: " + e.getMessage()))
                 .onErrorResume(throwable -> {
-                    System.err.println("[saveOrUpdateOAuth2Korisnik] Greška: " + throwable.getMessage());
+                    System.err.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Error resume: " + throwable.getMessage());
+                    throwable.printStackTrace();
                     return Mono.empty();
                 });
     }
@@ -71,13 +70,13 @@ public class KorisnikService {
                 .uri("/rest/v1/korisnik?email=eq." + email + "&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
-                .map(korisnici -> {
-                    if (korisnici.length > 0) {
+                .flatMap(korisnici -> {
+                    if (korisnici != null && korisnici.length > 0) {
                         System.out.println("[getKorisnikByEmail] Pronađen korisnik: " + email);
-                        return korisnici[0];
+                        return Mono.just(korisnici[0]);
                     }
                     System.out.println("[getKorisnikByEmail] Korisnik nije pronađen: " + email);
-                    return null;
+                    return Mono.empty();
                 })
                 .onErrorResume(e -> {
                     System.err.println("[getKorisnikByEmail] Greška: " + e.getMessage());
