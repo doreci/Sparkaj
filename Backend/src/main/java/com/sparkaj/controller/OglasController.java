@@ -3,14 +3,18 @@ package com.sparkaj.controller;
 import com.sparkaj.model.CreateOglasRequest;
 import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
+import com.sparkaj.model.Prijava;
 import com.sparkaj.service.OglasService;
 import com.sparkaj.service.KorisnikService;
+import com.sparkaj.service.PrijavaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/oglasi")
@@ -19,10 +23,12 @@ public class OglasController {
 
     private final OglasService oglasService;
     private final KorisnikService korisnikService;
+    private final PrijavaService prijavaService;
 
-    public OglasController(OglasService oglasService, KorisnikService korisnikService) {
+    public OglasController(OglasService oglasService, KorisnikService korisnikService, PrijavaService prijavaService) {
         this.oglasService = oglasService;
         this.korisnikService = korisnikService;
+        this.prijavaService = prijavaService;
         System.out.println(" OglasController created");
     }
 
@@ -93,5 +99,47 @@ public class OglasController {
     public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Integer id) {
         return oglasService.obrisiOglas(id.longValue())
                 .map(oglasi -> ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/{id}/prijava")
+    public Mono<ResponseEntity<Object>> prijaviOglas(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal OAuth2User principal,
+            @RequestBody Map<String, String> body) {
+        System.out.println("[OglasController] POST /api/oglasi/{id}/prijava - Primljen zahtjev za oglas: " + id);
+        
+        if (principal == null) {
+            System.err.println("[OglasController] ✗ Korisnik nije autentificiran");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Korisnik nije autentificiran");
+            return Mono.just(ResponseEntity.status(401).body((Object) error));
+        }
+
+        String email = principal.getAttribute("email");
+        String opis = body.get("opis");
+        
+        System.out.println("[OglasController] Email korisnika: " + email + ", opis: " + opis);
+
+        // Pronađi id_korisnika po emailu
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[OglasController] ✗ Korisnik nije pronađen sa emailom: " + email);
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Korisnik nije pronađen");
+                        return Mono.just(ResponseEntity.status(404).body((Object) error));
+                    }
+                    
+                    System.out.println("[OglasController] Pronađen korisnik sa ID: " + korisnik.getIdKorisnika());
+                    return prijavaService.kreirajPrijavu(korisnik.getIdKorisnika(), id, opis)
+                            .map(prijava -> ResponseEntity.ok((Object) prijava));
+                })
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri slanju prijave: " + error.getMessage());
+                    error.printStackTrace();
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
+                });
     }
 }
