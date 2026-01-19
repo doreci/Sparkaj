@@ -44,26 +44,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         System.out.println("Google ID: " + googleId);
         
         try {
-            // Provjeri postoji li korisnik u bazi
-            // Ako postoji - ne ažuriraj ga (čuvaju se editirani podaci)
-            // Ako ne postoji - kreiraj ga sa OAuth2 podacima
-            System.out.println("i Tražim korisnika: " + email);
-            com.sparkaj.model.Korisnik existingUser = korisnikService.getKorisnikByEmail(email)
-                    .block(java.time.Duration.ofSeconds(5));
-            
-            System.out.println("i Rezultat pretrage: " + (existingUser != null ? "pronađen" : "nije pronađen"));
-            
-            if (existingUser != null) {
-                // Korisnik postoji - ne ažuriraj ga
-                System.out.println("OK Korisnik već postoji u bazi, ne ažuriram ga");
-            } else {
-                // Korisnik ne postoji - kreiraj ga
-                System.out.println("i Korisnik ne postoji u bazi, kreiramo novog");
-                System.out.println("i Pozivam saveOrUpdateOAuth2Korisnik sa email: " + email);
-                korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
-                        .block(java.time.Duration.ofSeconds(10));
-                System.out.println("OK Novi korisnik kreiran: " + email);
-            }
+            // Pozovi saveOrUpdateOAuth2Korisnik UVIJEK
+            // - Ako korisnik ne postoji, kreiraj ga
+            // - Ako postoji, ažuriraj UUID ako se razlikuje
+            System.out.println("i Pozivam saveOrUpdateOAuth2Korisnik sa email: " + email);
+            System.out.println("i Proslijeđujem Google ID (UUID): " + googleId);
+            korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
+                    .block(java.time.Duration.ofSeconds(10));
+            System.out.println("OK Korisnik obrada završena: " + email);
         } catch (Exception e) {
             System.err.println("GREŠKA pri upravljanju korisnikom: " + e.getMessage());
             e.printStackTrace();

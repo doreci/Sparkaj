@@ -31,11 +31,7 @@ public class OglasService {
                 .uri("/rest/v1/oglas?select=*,korisnik(*)")
                 .retrieve()
                 .bodyToMono(Oglas[].class)
-                .map(Arrays::asList)
-                .doOnNext(oglasi -> {
-                    System.out.println("Fetched oglasi: " + oglasi.size());
-                    oglasi.forEach(o -> System.out.println("Oglas: " + o.getNazivOglasa() + ", Korisnik: " + (o.getKorisnik() != null ? o.getKorisnik().getEmail() : "null")));
-                });
+                .map(Arrays::asList);
     }
        
     public Mono<List<GradBody>> getLokacije() {

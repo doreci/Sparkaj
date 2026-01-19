@@ -50,12 +50,31 @@ public class KorisnikService {
         System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] POČETO - email: " + email + ", UUID: " + uuid);
         
         return getKorisnikByEmail(email)
-                .doOnNext(korisnik -> System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik postoji, ne kreiramo novog"))
-                .then() // Konvertiraj Korisnik u Void
-                .switchIfEmpty(Mono.defer(() -> {
-                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik ne postoji, kreiramo novog");
-                    return createOAuth2Korisnik(email, ime, prezime, profilna, uuid);
-                }))
+                .hasElement()
+                .flatMap(korisnikPostoji -> {
+                    if (korisnikPostoji) {
+                        // Korisnik postoji - ažuriraj UUID ako se razlikuje
+                        return getKorisnikByEmail(email)
+                                .flatMap(korisnik -> {
+                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik postoji");
+                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Postojeći UUID: " + korisnik.getUuid());
+                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Novi UUID: " + uuid);
+                                    
+                                    // Provjeri da li je UUID null ili se razlikuje
+                                    if (uuid != null && (korisnik.getUuid() == null || !uuid.equals(korisnik.getUuid()))) {
+                                        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] UUID se razlikuje ili je null, ažuriram sa novim UUID-om");
+                                        return updateKorisnikUuid(email, uuid);
+                                    }
+                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] UUID je isti, nema potrebe za ažuriranjem");
+                                    return Mono.empty();
+                                });
+                    } else {
+                        // Korisnik ne postoji - kreiraj novog
+                        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik ne postoji, kreiramo novog");
+                        return createOAuth2Korisnik(email, ime, prezime, profilna, uuid);
+                    }
+                })
+                .then()
                 .doOnSuccess(v -> System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] USPJEŠNO ZAVRŠENO"))
                 .doOnError(e -> System.err.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] GREŠKA: " + e.getMessage()))
                 .onErrorResume(throwable -> {
@@ -156,6 +175,23 @@ public class KorisnikService {
                 .toBodilessEntity()
                 .doOnSuccess(r -> System.out.println("[updateUserProfile] ✓ Profil ažuriran za: " + email))
                 .doOnError(e -> System.err.println("[updateUserProfile] ✗ Greška pri ažuriranju: " + e.getMessage()))
+                .then();
+    }
+
+    // Ažuriranje UUID-a korisnika
+    private Mono<Void> updateKorisnikUuid(String email, String uuid) {
+        System.out.println("[updateKorisnikUuid] Ažuriram UUID za email: " + email + ", novi UUID: " + uuid);
+        
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("uuid", uuid);
+
+        return webClient.patch()
+                .uri("/rest/v1/korisnik?email=eq." + email)
+                .bodyValue(updates)
+                .retrieve()
+                .toBodilessEntity()
+                .doOnSuccess(r -> System.out.println("[updateKorisnikUuid] ✓ UUID ažuriran za: " + email))
+                .doOnError(e -> System.err.println("[updateKorisnikUuid] ✗ Greška pri ažuriranju UUID-a: " + e.getMessage()))
                 .then();
     }
 }
