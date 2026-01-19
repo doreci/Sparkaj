@@ -3,8 +3,20 @@ import "./homepage.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllAds, selectAdsList, selectAdsStatus, searchAds, selectFilteredAdsList, selectIsFiltered, clearFilters } from "../store/adSlice";
-import { selectUserProfile, fetchUserByUUID, clearUser } from "../store/userSlice";
+import {
+    fetchAllAds,
+    selectAdsList,
+    selectAdsStatus,
+    searchAds,
+    selectFilteredAdsList,
+    selectIsFiltered,
+    clearFilters,
+} from "../store/adSlice";
+import {
+    selectUserProfile,
+    fetchUserByUUID,
+    clearUser,
+} from "../store/userSlice";
 import AdCard from "../components/adCard";
 
 function HomePage() {
@@ -78,14 +90,13 @@ function HomePage() {
         try {
             setUser(null);
             dispatch(clearUser());
-            
+
             // Preusmjeri na logout endpoint na backendu
             window.location.href = "http://localhost:8080/logout";
         } catch (error) {
             console.error("Greška pri odjavi:", error);
         }
     };
-
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -99,9 +110,15 @@ function HomePage() {
         try {
             // Pripremi parametre za slanje backendu
             const searchParams = {
-                location: filters.location || null,
-                priceMin: filters.priceMin ? parseFloat(filters.priceMin) : null,
-                priceMax: filters.priceMax ? parseFloat(filters.priceMax) : null,
+                location: filters.location
+                    ? filters.location.replace(/\s+/g, "*")
+                    : null,
+                priceMin: filters.priceMin
+                    ? parseFloat(filters.priceMin)
+                    : null,
+                priceMax: filters.priceMax
+                    ? parseFloat(filters.priceMax)
+                    : null,
                 dateFrom: filters.dateFrom || null,
                 dateTo: filters.dateTo || null,
             };
@@ -127,7 +144,13 @@ function HomePage() {
     };
 
     // Uzmi filtrirane oglase ako su dostupni, inače sve oglase
-    const displayAds = isFiltered ? (showAllAds ? filteredAds : filteredAds.slice(0, 5)) : (showAllAds ? ads : ads.slice(0, 5));
+    const displayAds = isFiltered
+        ? showAllAds
+            ? filteredAds
+            : filteredAds.slice(0, 5)
+        : showAllAds
+          ? ads
+          : ads.slice(0, 5);
     const isLoading = status === "loading";
 
     return (
@@ -259,10 +282,7 @@ function HomePage() {
                         <Link to="/profile" className="profile-icon-link">
                             <div className="profile-icon">
                                 {user.picture ? (
-                                    <img 
-                                        src={user.picture}
-                                        alt="Profile"
-                                    />
+                                    <img src={user.picture} alt="Profile" />
                                 ) : (
                                     <div className="profile-icon-placeholder">
                                         {user.given_name
@@ -285,7 +305,7 @@ function HomePage() {
 
                     {isLoading && (
                         <div className="loading-message">
-                            <p>Učitavanje oglasa...</p>
+                            <p>Učitavanje oglasa</p>
                         </div>
                     )}
 
@@ -306,18 +326,21 @@ function HomePage() {
                             ))}
                         </div>
                     )}
-                    {!isLoading && (isFiltered ? filteredAds.length > 5 : ads.length > 5) && (
-                        <div className="view-all">
-                            <button
-                                className="btn-view-all"
-                                onClick={() => setShowAllAds(!showAllAds)}
-                            >
-                                {showAllAds
-                                    ? "Sakrij sve oglase ↑"
-                                    : "Pogledaj sve oglase →"}
-                            </button>
-                        </div>
-                    )}
+                    {!isLoading &&
+                        (isFiltered
+                            ? filteredAds.length > 5
+                            : ads.length > 5) && (
+                            <div className="view-all">
+                                <button
+                                    className="btn-view-all"
+                                    onClick={() => setShowAllAds(!showAllAds)}
+                                >
+                                    {showAllAds
+                                        ? "Sakrij sve oglase ↑"
+                                        : "Pogledaj sve oglase →"}
+                                </button>
+                            </div>
+                        )}
                 </div>
             </div>
 
