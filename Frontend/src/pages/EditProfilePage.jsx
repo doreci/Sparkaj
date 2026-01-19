@@ -321,8 +321,9 @@ function EditProfilePage() {
                             type="text"
                             id="broj_mobitela"
                             className="broj_mobitela"
-                            value={formData.broj_mobitela}
+                            value={formData.broj_mobitela || "+385"}
                             onChange={handleInputChange}
+                            maxLength={13}
                         />
                     </div>
 
