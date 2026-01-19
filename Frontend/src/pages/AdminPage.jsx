@@ -17,13 +17,11 @@ function AdminPage() {
 
     const fetchUsers = async () => {
         try {
-            const { data, error } = await supabase
-                .from('korisnik')
-                .select('*');
+            const { data, error } = await supabase.from("korisnik").select("*");
             if (error) throw error;
             setUsers(data);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            console.error("Error fetching users:", error);
         } finally {
             setLoading(false);
         }
@@ -31,29 +29,32 @@ function AdminPage() {
 
     const deleteAd = async (id) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/oglasi/${id}`, {
-                method: 'DELETE',
-            });
+            const response = await fetch(
+                `http://localhost:8080/api/oglasi/${id}`,
+                {
+                    method: "DELETE",
+                }
+            );
             if (response.ok) {
                 dispatch(fetchAllAds()); // Refresh ads
             } else {
-                console.error('Failed to delete ad:', response.statusText);
+                console.error("Failed to delete ad:", response.statusText);
             }
         } catch (error) {
-            console.error('Error deleting ad:', error);
+            console.error("Error deleting ad:", error);
         }
     };
 
     const deleteUser = async (id) => {
         try {
             const { error } = await supabase
-                .from('korisnik')
+                .from("korisnik")
                 .delete()
-                .eq('id_korisnika', id);
+                .eq("id_korisnika", id);
             if (error) throw error;
             fetchUsers(); // Refresh users
         } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error("Error deleting user:", error);
         }
     };
 
@@ -72,19 +73,27 @@ function AdminPage() {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nickname</th>
+                                <th>Ime i Prezime</th>
                                 <th>Email</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map(user => (
+                            {users.map((user) => (
                                 <tr key={user.id_korisnika}>
                                     <td>{user.id_korisnika}</td>
-                                    <td>{user.ime} {user.prezime}</td>
+                                    <td>
+                                        {user.ime} {user.prezime}
+                                    </td>
                                     <td>{user.email}</td>
                                     <td>
-                                        <button onClick={() => deleteUser(user.id_korisnika)}>Delete</button>
+                                        <button
+                                            onClick={() =>
+                                                deleteUser(user.id_korisnika)
+                                            }
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -103,13 +112,19 @@ function AdminPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {ads.map(ad => (
+                            {ads.map((ad) => (
                                 <tr key={ad.id_oglasa}>
                                     <td>{ad.id_oglasa}</td>
                                     <td>{ad.naziv_oglasa}</td>
                                     <td>{ad.cijena}</td>
                                     <td>
-                                        <button onClick={() => deleteAd(ad.id_oglasa)}>Delete</button>
+                                        <button
+                                            onClick={() =>
+                                                deleteAd(ad.id_oglasa)
+                                            }
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

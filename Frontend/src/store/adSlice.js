@@ -22,24 +22,24 @@ export const fetchAllAds = createAsyncThunk(
     }
 );
 
-// Dohvati oglase specifičnog korisnika
-export const fetchAdsByUser = createAsyncThunk(
-    "ads/fetchByUser",
-    async (nickname, { rejectWithValue }) => {
+// Dohvati oglase specifičnog korisnika po ID-u
+export const fetchAdsByUserId = createAsyncThunk(
+    "ads/fetchByUserId",
+    async (userId, { rejectWithValue }) => {
         try {
-            const res = await fetch(
-                `${API_BASE_URL}/api/korisnik/${encodeURIComponent(
-                    nickname
-                )}/oglasi`
-            );
+            const url = `${API_BASE_URL}/api/korisnik/${userId}/oglasi`;
+            console.log("Dohvaćam oglase sa URL-a:", url);
+            const res = await fetch(url);
 
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
 
             const data = await res.json();
+            console.log("Dohvaćeni oglasi za korisnika:", data);
             return Array.isArray(data) ? data : data.data || [];
         } catch (error) {
+            console.error("Greška pri dohvaćanju oglasa:", error);
             return rejectWithValue(
                 error.message || "Neuspješan dohvat oglasa korisnika"
             );
@@ -53,11 +53,11 @@ export const searchAds = createAsyncThunk(
     async (filters, { rejectWithValue }) => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/oglasi/search`, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify(filters)
+                body: JSON.stringify(filters),
             });
 
             if (!res.ok) {
@@ -120,22 +120,23 @@ const adSlice = createSlice({
                 state.status = "failed";
                 state.error = action.payload;
             })
-            // fetchAdsByUser
-            .addCase(fetchAdsByUser.pending, (state) => {
+            // fetchAdsByUserId
+            .addCase(fetchAdsByUserId.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
             })
-            .addCase(fetchAdsByUser.fulfilled, (state, action) => {
+            .addCase(fetchAdsByUserId.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.list = action.payload;
                 state.error = null;
                 state.isFiltered = false;
                 state.filteredList = [];
             })
-            .addCase(fetchAdsByUser.rejected, (state, action) => {
+            .addCase(fetchAdsByUserId.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.payload;
             })
+
             // searchAds
             .addCase(searchAds.pending, (state) => {
                 state.status = "loading";

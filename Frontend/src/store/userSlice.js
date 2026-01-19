@@ -34,13 +34,13 @@ export const fetchUserByUUID = createAsyncThunk(
     }
 );
 
-// Dohvati korisnika po nadimku
-export const fetchUserByNickname = createAsyncThunk(
-    "user/fetchByNickname",
-    async (nickname, { rejectWithValue }) => {
+// Dohvati korisnika po ID-u
+export const fetchUserById = createAsyncThunk(
+    "user/fetchById",
+    async (id, { rejectWithValue }) => {
         try {
             const res = await fetch(
-                `${API_BASE_URL}/api/korisnik/${encodeURIComponent(nickname)}`
+                `${API_BASE_URL}/api/korisnik/${encodeURIComponent(id)}`
             );
 
             if (!res.ok) {
@@ -98,18 +98,18 @@ const userSlice = createSlice({
                 state.isAuthenticated = false;
                 state.error = action.payload;
             })
-            // Handle fetchUserByNickname
-            .addCase(fetchUserByNickname.pending, (state) => {
+            // Handle fetchUserById
+            .addCase(fetchUserById.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
             })
-            .addCase(fetchUserByNickname.fulfilled, (state, action) => {
+            .addCase(fetchUserById.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.profile = action.payload;
                 state.isAuthenticated = true;
                 state.error = null;
             })
-            .addCase(fetchUserByNickname.rejected, (state, action) => {
+            .addCase(fetchUserById.rejected, (state, action) => {
                 state.status = "failed";
                 state.profile = null;
                 state.isAuthenticated = false;

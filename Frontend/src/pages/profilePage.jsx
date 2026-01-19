@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import {
-    selectUserProfile,
-    selectUserStatus,
-} from "../store/userSlice";
+import { selectUserProfile, selectUserStatus } from "../store/userSlice";
+import { selectAdsList, selectAdsStatus } from "../store/adSlice";
+import AdCard from "../components/adCard";
 import "./profilepage.css";
 
 function ProfilePage() {
-    const dispatch = useDispatch();
     const userProfile = useSelector(selectUserProfile);
     const status = useSelector(selectUserStatus);
+    const ads = useSelector(selectAdsList);
+    const adsStatus = useSelector(selectAdsStatus);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Filtriramo oglase po id_korisnika
+    const userAds = ads.filter(ad => ad.id_korisnika === user?.id_korisnika);
 
     useEffect(() => {
         checkAuthentication();
@@ -82,9 +85,7 @@ function ProfilePage() {
                                 />
                             ) : (
                                 <div className="profile-image-placeholder">
-                                    {user.given_name
-                                        ?.charAt(0)
-                                        .toUpperCase() || "U"}
+                                    {user.given_name?.charAt(0).toUpperCase() || "U"}
                                 </div>
                             )}
                         </div>
@@ -106,8 +107,8 @@ function ProfilePage() {
                             </div>
 
                             <div className="detail-item">
-                                <label>Google ID</label>
-                                <p>{user.id || "Nije dostupno"}</p>
+                                <label>ID Korisnika</label>
+                                <p>{user.id_korisnika || "Nije dostupno"}</p>
                             </div>
                         </div>
 
@@ -125,6 +126,34 @@ function ProfilePage() {
                             </Link>
                         </div>
                     </div>
+                </div>
+
+                {/* Korisnikovi oglasi */}
+                <div className="user-ads-section">
+                    <h2 className="section-title">Moji oglasi</h2>
+
+                    {adsStatus === "loading" && (
+                        <div className="loading-message">
+                            <p>Učitavanje oglasa...</p>
+                        </div>
+                    )}
+
+                    {adsStatus !== "loading" && userAds.length === 0 && (
+                        <div className="no-ads-message">
+                            <p>Nemate postavljenih oglasa</p>
+                            <Link to="/napravi-oglas">
+                                <button>Napravi novi oglas</button>
+                            </Link>
+                        </div>
+                    )}
+
+                    {adsStatus !== "loading" && userAds.length > 0 && (
+                        <div className="ads-grid">
+                            {userAds.map(ad => (
+                                <AdCard key={ad.id_oglasa} ad={ad} />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

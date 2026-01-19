@@ -207,10 +207,10 @@ function AdPage() {
                                             </span>
                                         </div>
                                     )}
-                                    {korisnik.ime && (
+                                    {korisnik.id_korisnika && (
                                         <div className="detail-item">
                                             <Link
-                                                to={`/profile/${korisnik.ime}`}
+                                                to={`/profile/${korisnik.id_korisnika}`}
                                                 className="profile-link"
                                             >
                                                 Pogledaj profil →
@@ -267,8 +267,9 @@ function AdPage() {
                         >
                             Pay Now
                         </button>
-                        <button className="btn-secondary btn-large"
-                                onClick={()=> setShowReportModal(true)}
+                        <button
+                            className="btn-secondary btn-large"
+                            onClick={() => setShowReportModal(true)}
                         >
                             Prijavi oglas
                         </button>
@@ -354,9 +355,9 @@ function AdPage() {
             )}
 
             {showReportModal && (
-                    <div className="payment-modal-overlay">
-                        <div className="payment-modal">
-                            <h2>Prijava oglasa</h2>
+                <div className="payment-modal-overlay">
+                    <div className="payment-modal">
+                        <h2>Prijava oglasa</h2>
 
                         <textarea
                             placeholder="Opišite razlog prijave..."
@@ -368,7 +369,7 @@ function AdPage() {
                                 padding: "10px",
                                 borderRadius: "8px",
                                 border: "1px solid #ccc",
-                                marginBottom: "20px"
+                                marginBottom: "20px",
                             }}
                         />
 
@@ -398,7 +399,13 @@ function AdPage() {
                     <div className="payment-modal">
                         <h2>Odaberi termin rezervacije</h2>
 
-                        <label style={{ fontWeight: "600", marginBottom: "8px", display: "block" }}>
+                        <label
+                            style={{
+                                fontWeight: "600",
+                                marginBottom: "8px",
+                                display: "block",
+                            }}
+                        >
                             Datum i vrijeme
                         </label>
 
@@ -411,7 +418,7 @@ function AdPage() {
                                 padding: "10px",
                                 borderRadius: "8px",
                                 border: "1px solid #ccc",
-                            marginBottom: "20px"
+                                marginBottom: "20px",
                             }}
                         />
 
@@ -426,7 +433,10 @@ function AdPage() {
                             <button
                                 className="pay-button"
                                 onClick={() => {
-                                    console.log("Rezervirani termin:", reservationDate);
+                                    console.log(
+                                        "Rezervirani termin:",
+                                        reservationDate
+                                    );
                                     setShowCalendarModal(false);
                                 }}
                             >
@@ -442,16 +452,22 @@ function AdPage() {
                         <h2>Ostavi recenziju</h2>
 
                         {/* Zvjezdice */}
-                        <div className="review-stars" style={{ marginBottom: "15px" }}>
-                            {[1,2,3,4,5].map((star) => (
+                        <div
+                            className="review-stars"
+                            style={{ marginBottom: "15px" }}
+                        >
+                            {[1, 2, 3, 4, 5].map((star) => (
                                 <span
                                     key={star}
                                     onClick={() => setReviewRating(star)}
                                     style={{
                                         fontSize: "28px",
                                         cursor: "pointer",
-                                        color: star <= reviewRating ? "#f39c12" : "#ccc",
-                                        marginRight: "5px"
+                                        color:
+                                            star <= reviewRating
+                                                ? "#f39c12"
+                                                : "#ccc",
+                                        marginRight: "5px",
                                     }}
                                 >
                                     ★
@@ -471,7 +487,7 @@ function AdPage() {
                                 border: "1px solid #ccc",
                                 marginBottom: "20px",
                                 minHeight: "100px",
-                                resize: "vertical"
+                                resize: "vertical",
                             }}
                         />
 
@@ -490,49 +506,62 @@ function AdPage() {
                             <button
                                 className="pay-button"
                                 onClick={async () => {
-                                try {
-                                    if (reviewRating === 0) {
-                                        alert("Odaberite ocjenu zvjezdicama!");
-                                        return;
-                                    }
-
-                                    // Pošalji recenziju na backend
-                                    const API_BASE_URL =
-                                        import.meta.env.VITE_API_URL || "http://localhost:8080";
-
-                                    const response = await fetch(
-                                        `${API_BASE_URL}/api/reviews`,
-                                        {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            credentials: "include",
-                                            body: JSON.stringify({
-                                            oglasId: ad.id_oglasa,
-                                            rating: reviewRating,
-                                            komentar: reviewText,
-                                            }),
+                                    try {
+                                        if (reviewRating === 0) {
+                                            alert(
+                                                "Odaberite ocjenu zvjezdicama!"
+                                            );
+                                            return;
                                         }
-                                    );
 
-                                    if (!response.ok) throw new Error("Greška pri slanju recenzije");
+                                        // Pošalji recenziju na backend
+                                        const API_BASE_URL =
+                                            import.meta.env.VITE_API_URL ||
+                                            "http://localhost:8080";
 
-                                    const updatedAd = await response.json(); 
-                                    // Ovdje backend vraća oglas sa ažuriranom prosječnom ocjenom
+                                        const response = await fetch(
+                                            `${API_BASE_URL}/api/reviews`,
+                                            {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type":
+                                                        "application/json",
+                                                },
+                                                credentials: "include",
+                                                body: JSON.stringify({
+                                                    oglasId: ad.id_oglasa,
+                                                    rating: reviewRating,
+                                                    komentar: reviewText,
+                                                }),
+                                            }
+                                        );
 
-                                    // Update state adPage-a
-                                    dispatch(fetchAdById(ad.id_oglasa)); // ili setAd(updatedAd) ako lokalno
+                                        if (!response.ok)
+                                            throw new Error(
+                                                "Greška pri slanju recenzije"
+                                            );
 
-                                    // Očisti i zatvori modal
-                                    setShowReviewModal(false);
-                                    setReviewText("");
-                                    setReviewRating(0);
+                                        const updatedAd = await response.json();
+                                        // Ovdje backend vraća oglas sa ažuriranom prosječnom ocjenom
 
-                                    alert("Recenzija je uspješno spremljena!");
-                                } catch (err) {
-                                    console.error(err);
-                                    alert("Došlo je do greške. Pokušajte ponovno.");
-                                }
-                            }}
+                                        // Update state adPage-a
+                                        dispatch(fetchAdById(ad.id_oglasa)); // ili setAd(updatedAd) ako lokalno
+
+                                        // Očisti i zatvori modal
+                                        setShowReviewModal(false);
+                                        setReviewText("");
+                                        setReviewRating(0);
+
+                                        alert(
+                                            "Recenzija je uspješno spremljena!"
+                                        );
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert(
+                                            "Došlo je do greške. Pokušajte ponovno."
+                                        );
+                                    }
+                                }}
                             >
                                 Pošalji recenziju
                             </button>
