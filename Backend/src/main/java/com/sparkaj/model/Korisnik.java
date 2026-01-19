@@ -13,7 +13,7 @@ public class Korisnik {
     private String email;
 
     @JsonProperty("broj_mobitela")
-    private int brojMobitela;
+    private String brojMobitela;
 
     private String profilna;
 
@@ -21,7 +21,7 @@ public class Korisnik {
 
     public Korisnik() {}
 
-    public Korisnik(int idKorisnika, String ime, String prezime, String email, int brojMobitela, String profilna) {
+    public Korisnik(int idKorisnika, String ime, String prezime, String email, String brojMobitela, String profilna) {
         this.ime = ime;
         this.prezime = prezime;
         this.email = email;
@@ -60,11 +60,11 @@ public class Korisnik {
         this.email = email;
     }
 
-    public int getBrojMobitela() {
+    public String getBrojMobitela() {
         return brojMobitela;
     }
 
-    public void setBrojMobitela(int brojMobitela) {
+    public void setBrojMobitela(String brojMobitela) {
         this.brojMobitela = brojMobitela;
     }
 
