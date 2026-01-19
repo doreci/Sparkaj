@@ -143,14 +143,22 @@ function HomePage() {
         });
     };
 
+    // Sortiraj oglase po recenziji silazno
+    const sortedAds = [...ads].sort(
+        (a, b) => (b.prosj_ocjena || 0) - (a.prosj_ocjena || 0)
+    );
+    const sortedFilteredAds = [...filteredAds].sort(
+        (a, b) => (b.prosj_ocjena || 0) - (a.prosj_ocjena || 0)
+    );
+
     // Uzmi filtrirane oglase ako su dostupni, inače sve oglase
     const displayAds = isFiltered
         ? showAllAds
-            ? filteredAds
-            : filteredAds.slice(0, 5)
+            ? sortedFilteredAds
+            : sortedFilteredAds.slice(0, 5)
         : showAllAds
-          ? ads
-          : ads.slice(0, 5);
+          ? sortedAds
+          : sortedAds.slice(0, 5);
     const isLoading = status === "loading";
 
     return (
