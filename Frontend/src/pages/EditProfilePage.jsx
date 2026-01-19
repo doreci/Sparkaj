@@ -317,14 +317,17 @@ function EditProfilePage() {
 
                     <div className="form-group">
                         <label htmlFor="broj_mobitela">Broj mobitela</label>
-                        <input
-                            type="text"
-                            id="broj_mobitela"
-                            className="broj_mobitela"
-                            value={formData.broj_mobitela || "+385"}
-                            onChange={handleInputChange}
-                            maxLength={13}
-                        />
+                        <div className="broj-mobitela">
+                            <span>+385 </span>
+                            <input
+                                type="text"
+                                id="broj_mobitela"
+                                className="broj_mobitela"
+                                value={formData.broj_mobitela}
+                                onChange={handleInputChange}
+                                maxLength={9}
+                            />
+                        </div>
                     </div>
 
                     <div className="submit-button">
