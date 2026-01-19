@@ -39,8 +39,9 @@ function ProfilePage() {
 
     if (loading) {
         return (
-            <div className="profile-container">
-                <div className="loading">Učitavanje...</div>
+            <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Učitavanje...</p>
             </div>
         );
     }

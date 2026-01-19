@@ -106,11 +106,9 @@ function TransactionHistoryPage() {
 
     if (loading) {
         return (
-            <div className="transaction-history-container">
-                <div className="loading-spinner">
-                    <div className="spinner"></div>
-                    <p>Učitavanje...</p>
-                </div>
+            <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Učitavanje...</p>
             </div>
         );
     }
