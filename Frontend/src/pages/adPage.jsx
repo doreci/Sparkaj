@@ -244,7 +244,7 @@ function AdPage() {
                                                 Kontakt:
                                             </span>
                                             <span className="value">
-                                                +387 {korisnik.broj_mobitela}
+                                                +385 {korisnik.broj_mobitela}
                                             </span>
                                         </div>
                                     )}
