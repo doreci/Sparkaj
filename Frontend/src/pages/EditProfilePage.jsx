@@ -1,10 +1,13 @@
 import "./editprofilepage.css";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
+import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 
 const API_URL = "http://localhost:8080";
 
 function EditProfilePage() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [profileImage, setProfileImage] = useState("./avatar-icon.png");
     const [uploading, setUploading] = useState(false);
@@ -26,6 +29,13 @@ function EditProfilePage() {
             });
             const data = await response.json();
             if (data.authenticated) {
+                // Provjeri je li admin i redirekcija na admin page
+                if (isAdmin(data)) {
+                    console.log("✓ Admin, redirekcija na /admin");
+                    navigate("/admin");
+                    return;
+                }
+                
                 setUser(data);
                 
                 // Prvo učitaj podatke iz baze

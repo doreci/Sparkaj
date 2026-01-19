@@ -1,19 +1,48 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchAllAds, selectAdsList } from "../store/adSlice";
 import { supabase } from "../../supabaseClient";
+import { isAdmin } from "../utils/authHelpers";
 import "./adminpage.css";
 
 function AdminPage() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const ads = useSelector(selectAdsList);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
-        dispatch(fetchAllAds());
-        fetchUsers();
-    }, [dispatch]);
+        checkAdminAccess();
+    }, []);
+
+    const checkAdminAccess = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/user", {
+                credentials: "include",
+            });
+            const data = await response.json();
+            
+            if (data.authenticated && isAdmin(data)) {
+                console.log("✓ Admin pristup odobren:", data.email);
+                setUser(data);
+                setIsAuthorized(true);
+                dispatch(fetchAllAds());
+                fetchUsers();
+            } else {
+                console.warn("✗ Korisnik nije admin, redirekcija na home");
+                navigate("/");
+            }
+        } catch (error) {
+            console.error("Greška pri provjeri admin pristupa:", error);
+            navigate("/");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchUsers = async () => {
         try {
@@ -58,7 +87,21 @@ function AdminPage() {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div>Provjera pristupa...</div>;
+
+    if (!isAuthorized) {
+        return (
+            <div className="container">
+                <div className="header">
+                    <img src="/logo.png" alt="logo" />
+                </div>
+                <div style={{ padding: "20px", textAlign: "center" }}>
+                    <h2>Pristup odbijen</h2>
+                    <p>Nemate dozvolu za pristup admin panelu.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container">

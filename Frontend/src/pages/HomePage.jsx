@@ -3,6 +3,7 @@ import "./homepage.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 import {
     fetchAllAds,
     selectAdsList,
@@ -68,6 +69,9 @@ function HomePage() {
             if (data.authenticated) {
                 setUser(data);
                 setSession({ user: data });
+                console.log("✓ Korisnik autentificiran:", data.email);
+                console.log("✓ Je li admin?", isAdmin(data));
+                console.log("✓ Ruta profila:", getProfileRoute(data));
             }
         } catch (error) {
             console.log("Korisnik nije autentificiran");
@@ -289,7 +293,7 @@ function HomePage() {
                         </Link>
                     )}
                     {user != null && (
-                        <Link to="/profile" className="profile-icon-link">
+                        <Link to={getProfileRoute(user)} className="profile-icon-link">
                             <div className="profile-icon">
                                 {user.picture ? (
                                     <img src={user.picture} alt="Profile" />

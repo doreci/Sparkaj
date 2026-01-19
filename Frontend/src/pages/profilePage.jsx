@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { selectUserProfile, selectUserStatus } from "../store/userSlice";
 import { selectAdsList, selectAdsStatus } from "../store/adSlice";
 import AdCard from "../components/adCard";
 import "./profilepage.css";
+import { isAdmin } from "../utils/authHelpers";
 
 function ProfilePage() {
+    const navigate = useNavigate();
     const userProfile = useSelector(selectUserProfile);
     const status = useSelector(selectUserStatus);
     const ads = useSelector(selectAdsList);
@@ -28,6 +30,13 @@ function ProfilePage() {
             });
             const data = await response.json();
             if (data.authenticated) {
+                // Provjeri je li admin i redirekcija na admin page
+                if (isAdmin(data)) {
+                    console.log("✓ Admin, redirekcija na /admin");
+                    navigate("/admin");
+                    return;
+                }
+                
                 setUser(data);
             } else {
                 setUser(null);
