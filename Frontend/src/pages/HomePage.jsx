@@ -235,13 +235,15 @@ function HomePage() {
                                 <label>Dostupnost</label>
                                 <div className="date-inputs">
                                     <input
+                                        id="fromDate"
                                         type="datetime-local"
                                         name="dateFrom"
                                         value={filters.dateFrom}
                                         onChange={handleFilterChange}
                                     />
                                     <span className="separator">do</span>
-                                    <input
+                                    <input 
+                                        id="toDate"
                                         type="datetime-local"
                                         name="dateTo"
                                         value={filters.dateTo}
