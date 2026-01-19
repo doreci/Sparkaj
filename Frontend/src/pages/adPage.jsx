@@ -34,13 +34,8 @@ function AdPage() {
     const [selectedOglas, setSelectedOglas] = useState(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState(null);
-    const [showReviewModal, setShowReviewModal] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportText, setReportText] = useState("");
-    const [showCalendarModal, setShowCalendarModal] = useState(false);
-    const [reservationDate, setReservationDate] = useState("");
-
-    const [reviewText, setReviewText] = useState(""); // tekst recenzije
     const [reviewRating, setReviewRating] = useState(0); // ocjena 1-5
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -124,6 +119,52 @@ function AdPage() {
 
     const handleCancelPayment = () => {
         setSelectedOglas(null);
+    };
+
+    const handleSubmitReport = async () => {
+        if (!reportText.trim()) {
+            alert("Molimo napišite razlog prijave");
+            return;
+        }
+
+        if (!user) {
+            alert("Molimo prijavite se prije nego što prijavite oglas");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/oglasi/${id}/prijava`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ opis: reportText }),
+                }
+            );
+
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.error || "Greška pri slanju prijave"
+                );
+            }
+
+            console.log("Prijava uspješno poslana:", data);
+            alert("Prijava oglasa je uspješno poslana!");
+            setShowReportModal(false);
+            setReportText("");
+        } catch (error) {
+            console.error("Greška:", error);
+            alert("Greška pri slanju prijave: " + error.message);
+        }
     };
 
     return (
@@ -273,18 +314,29 @@ function AdPage() {
                         >
                             Prijavi oglas
                         </button>
-                        <button
-                            className="btn-primary btn-large"
-                            onClick={() => setShowReviewModal(true)}
-                        >
-                            Ostavi recenziju
-                        </button>
-                        <button
-                            className="btn-primary btn-large"
-                            onClick={() => setShowCalendarModal(true)}
-                        >
-                            Rezerviraj termin
-                        </button>
+
+                        {/* Zvjezdice za recenziju */}
+                        <div className="review-stars-inline" style={{ marginTop: "15px", marginBottom: "15px" }}>
+                            <label style={{ display: "block", marginBottom: "10px", fontWeight: "600" }}>Ocijeni oglas:</label>
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        onClick={() => setReviewRating(star)}
+                                        style={{
+                                            fontSize: "32px",
+                                            cursor: "pointer",
+                                            color:
+                                                star <= reviewRating
+                                                    ? "#f39c12"
+                                                    : "#ccc",
+                                        }}
+                                    >
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -382,188 +434,9 @@ function AdPage() {
                             </button>
                             <button
                                 className="pay-button"
-                                onClick={() => {
-                                    console.log("Prijava:", reportText);
-                                    setShowReportModal(false);
-                                    setReportText("");
-                                }}
+                                onClick={handleSubmitReport}
                             >
                                 Pošalji prijavu
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {showCalendarModal && (
-                <div className="payment-modal-overlay">
-                    <div className="payment-modal">
-                        <h2>Odaberi termin rezervacije</h2>
-
-                        <label
-                            style={{
-                                fontWeight: "600",
-                                marginBottom: "8px",
-                                display: "block",
-                            }}
-                        >
-                            Datum i vrijeme
-                        </label>
-
-                        <input
-                            type="datetime-local"
-                            value={reservationDate}
-                            onChange={(e) => setReservationDate(e.target.value)}
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                marginBottom: "20px",
-                            }}
-                        />
-
-                        <div className="payment-buttons">
-                            <button
-                                className="cancel-button"
-                                onClick={() => setShowCalendarModal(false)}
-                            >
-                                Odustani
-                            </button>
-
-                            <button
-                                className="pay-button"
-                                onClick={() => {
-                                    console.log(
-                                        "Rezervirani termin:",
-                                        reservationDate
-                                    );
-                                    setShowCalendarModal(false);
-                                }}
-                            >
-                                Potvrdi termin
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {showReviewModal && (
-                <div className="payment-modal-overlay">
-                    <div className="payment-modal">
-                        <h2>Ostavi recenziju</h2>
-
-                        {/* Zvjezdice */}
-                        <div
-                            className="review-stars"
-                            style={{ marginBottom: "15px" }}
-                        >
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <span
-                                    key={star}
-                                    onClick={() => setReviewRating(star)}
-                                    style={{
-                                        fontSize: "28px",
-                                        cursor: "pointer",
-                                        color:
-                                            star <= reviewRating
-                                                ? "#f39c12"
-                                                : "#ccc",
-                                        marginRight: "5px",
-                                    }}
-                                >
-                                    ★
-                                </span>
-                            ))}
-                        </div>
-
-                        {/* Tekst recenzije */}
-                        <textarea
-                            value={reviewText}
-                            onChange={(e) => setReviewText(e.target.value)}
-                            placeholder="Napišite komentar..."
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                marginBottom: "20px",
-                                minHeight: "100px",
-                                resize: "vertical",
-                            }}
-                        />
-
-                        <div className="payment-buttons">
-                            <button
-                                className="cancel-button"
-                                onClick={() => {
-                                    setShowReviewModal(false);
-                                    setReviewText("");
-                                    setReviewRating(0);
-                                }}
-                            >
-                                Odustani
-                            </button>
-
-                            <button
-                                className="pay-button"
-                                onClick={async () => {
-                                    try {
-                                        if (reviewRating === 0) {
-                                            alert(
-                                                "Odaberite ocjenu zvjezdicama!"
-                                            );
-                                            return;
-                                        }
-
-                                        // Pošalji recenziju na backend
-                                        const API_BASE_URL =
-                                            import.meta.env.VITE_API_URL ||
-                                            "http://localhost:8080";
-
-                                        const response = await fetch(
-                                            `${API_BASE_URL}/api/reviews`,
-                                            {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type":
-                                                        "application/json",
-                                                },
-                                                credentials: "include",
-                                                body: JSON.stringify({
-                                                    oglasId: ad.id_oglasa,
-                                                    rating: reviewRating,
-                                                    komentar: reviewText,
-                                                }),
-                                            }
-                                        );
-
-                                        if (!response.ok)
-                                            throw new Error(
-                                                "Greška pri slanju recenzije"
-                                            );
-
-                                        const updatedAd = await response.json();
-                                        // Ovdje backend vraća oglas sa ažuriranom prosječnom ocjenom
-
-                                        // Update state adPage-a
-                                        dispatch(fetchAdById(ad.id_oglasa)); // ili setAd(updatedAd) ako lokalno
-
-                                        // Očisti i zatvori modal
-                                        setShowReviewModal(false);
-                                        setReviewText("");
-                                        setReviewRating(0);
-
-                                        alert(
-                                            "Recenzija je uspješno spremljena!"
-                                        );
-                                    } catch (err) {
-                                        console.error(err);
-                                        alert(
-                                            "Došlo je do greške. Pokušajte ponovno."
-                                        );
-                                    }
-                                }}
-                            >
-                                Pošalji recenziju
                             </button>
                         </div>
                     </div>
