@@ -318,7 +318,7 @@ function EditProfilePage() {
                     <div className="form-group">
                         <label htmlFor="broj_mobitela">Broj mobitela</label>
                         <div className="broj-mobitela">
-                            <span>+381 </span>
+                            <span>+385 </span>
                             <input
                                 type="text"
                                 id="broj_mobitela"
