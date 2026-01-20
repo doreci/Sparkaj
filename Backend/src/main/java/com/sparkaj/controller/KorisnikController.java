@@ -63,7 +63,7 @@ public class KorisnikController {
 
     @PatchMapping("/{id}/blokiraj")
     public Mono<Korisnik> blokirajKorisnika(@PathVariable Integer id) {
-        return korisnikService.blokirajKorisnika(id);
+        return korisnikService.blockUser(id);
     }
 
     private Map<String, Object> createSuccessResponse(String message) {

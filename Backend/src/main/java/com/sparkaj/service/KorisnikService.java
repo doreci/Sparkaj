@@ -198,20 +198,34 @@ public class KorisnikService {
     }
 
     // Blokiranje
-    public Mono<Korisnik> blokirajKorisnika(Integer id) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("blokiran", true);
+    public Mono<Korisnik> blockUser(Integer idKorisnika) {
+        System.out.println("[KorisnikService] Blokiranje korisnika sa ID: " + idKorisnika);
 
-        return webClient.patch()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/rest/v1/korisnik")
-                        .queryParam("id_korisnika", "eq." + id)
-                        .build())
-                .header("Prefer", "return=representation")
-                .bodyValue(updates)
-                .retrieve()
-                .bodyToMono(Korisnik[].class)
-                .map(niz -> niz[0]);
+        return getKorisnikById(idKorisnika)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[KorisnikService] Korisnik nije pronađen: " + idKorisnika);
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen"));
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("blokiran", true);
+
+                    System.out.println("[KorisnikService] Ažuriram blokiran na true");
+
+                    return webClient.patch()
+                            .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updates)
+                            .retrieve()
+                            .bodyToMono(Korisnik[].class)
+                            .doOnNext(niz -> {
+                                if (niz.length > 0) {
+                                    System.out.println("[KorisnikService] ✓ Korisnik je blokiran");
+                                }
+                            })
+                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                });
     }
 
     // Dohvati sve korisnike sa zahtjevom za oglašivanje
@@ -330,5 +344,46 @@ public class KorisnikService {
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
                 });
+    }
+
+    // Odblokiraj korisnika
+    public Mono<Korisnik> unblockUser(Integer idKorisnika) {
+        System.out.println("[KorisnikService] Odblokiravanje korisnika sa ID: " + idKorisnika);
+
+        return getKorisnikById(idKorisnika)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[KorisnikService] Korisnik nije pronađen: " + idKorisnika);
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen"));
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("blokiran", false);
+
+                    System.out.println("[KorisnikService] Ažuriram blokiran na false");
+
+                    return webClient.patch()
+                            .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updates)
+                            .retrieve()
+                            .bodyToMono(Korisnik[].class)
+                            .doOnNext(niz -> {
+                                if (niz.length > 0) {
+                                    System.out.println("[KorisnikService] ✓ Korisnik je odblokirан");
+                                }
+                            })
+                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                });
+    }
+
+    // Dohvati sve blokirane korisnike
+    public Mono<Korisnik[]> getBlockedUsers() {
+        System.out.println("[KorisnikService] Dohvaćam sve blokirane korisnike");
+        return webClient.get()
+                .uri("/rest/v1/korisnik?blokiran=eq.true&select=*")
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .doOnNext(niz -> System.out.println("[KorisnikService] ✓ Pronađeno " + niz.length + " blokiranih korisnika"));
     }
 }
