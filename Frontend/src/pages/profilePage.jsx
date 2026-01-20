@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { selectUserProfile, selectUserStatus } from "../store/userSlice";
 import { selectAdsList, selectAdsStatus } from "../store/adSlice";
 import AdCard from "../components/adCard";
@@ -9,19 +9,48 @@ import { isAdmin } from "../utils/authHelpers";
 
 function ProfilePage() {
     const navigate = useNavigate();
+    const { id } = useParams(); // ID korisnika koji se gleda iz URL-a
     const userProfile = useSelector(selectUserProfile);
     const status = useSelector(selectUserStatus);
     const ads = useSelector(selectAdsList);
     const adsStatus = useSelector(selectAdsStatus);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-    // Filtriramo oglase po id_korisnika
-    const userAds = ads.filter(ad => ad.id_korisnika === user?.id_korisnika);
+    // Ako je id u URL-u, prikaži oglase tog korisnika, inače prikaži oglase prijavljenog korisnika
+    const displayedUserId = id ? parseInt(id) : user?.id_korisnika;
+    const userAds = ads.filter(ad => ad.id_korisnika === displayedUserId);
 
     useEffect(() => {
         checkAuthentication();
     }, []);
+
+    useEffect(() => {
+        // Ako je id u URL-u i razlikuje se od prijavljenog korisnika, učitaj druge korisnikove podatke
+        if (id && id !== user?.id_korisnika) {
+            fetchUserProfile(parseInt(id));
+        } else if (!id) {
+            setIsOwnProfile(true);
+        } else {
+            setIsOwnProfile(true);
+        }
+    }, [id, user?.id_korisnika]);
+
+    const fetchUserProfile = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/korisnik/${userId}`, {
+                credentials: "include",
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+                setIsOwnProfile(false);
+            }
+        } catch (error) {
+            console.error("Greška pri učitavanju profila:", error);
+        }
+    };
 
     const checkAuthentication = async () => {
         try {
@@ -38,6 +67,7 @@ function ProfilePage() {
                 }
                 
                 setUser(data);
+                if (!id) setIsOwnProfile(true);
             } else {
                 setUser(null);
             }
@@ -111,15 +141,15 @@ function ProfilePage() {
                     {/* Profilna slika */}
                     <div className="profile-image-section">
                         <div className="profile-image-wrapper">
-                            {user.picture ? (
+                            {user.profilna || user.picture ? (
                                 <img
-                                    src={user.picture}
+                                    src={user.profilna || user.picture}
                                     alt="Profilna slika"
                                     className="profile-image"
                                 />
                             ) : (
                                 <div className="profile-image-placeholder">
-                                    {user.given_name?.charAt(0).toUpperCase() || "U"}
+                                    {(user.ime || user.given_name)?.charAt(0).toUpperCase() || "U"}
                                 </div>
                             )}
                         </div>
@@ -129,7 +159,7 @@ function ProfilePage() {
                     <div className="profile-info">
                         <div className="profile-section">
                             <h1 className="profile-name">
-                                {user.given_name} {user.family_name}
+                                {user.ime || user.given_name} {user.prezime || user.family_name}
                             </h1>
                         </div>
 
@@ -148,44 +178,48 @@ function ProfilePage() {
 
                         {/* Akcije */}
                         <div className="profile-actions">
-                            <Link to="/editprofile">
-                                <button className="btn-edit">
-                                    Uredi profil
-                                </button>
-                            </Link>
-                            <Link to="/transaction-history">
-                                <button className="btn-transactions">
-                                    povijest Transakcija
-                                </button>
-                            </Link>
-                            {user.oglasivac === "NE" && (
-                                <button 
-                                    className="btn-advertiser"
-                                    onClick={handleRequestAdvertiser}
-                                    style={{
-                                        backgroundColor: "#ff9800",
-                                        color: "white",
-                                        padding: "10px 20px",
-                                        border: "none",
-                                        borderRadius: "5px",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        fontWeight: "600"
-                                    }}
-                                >
-                                    Postani oglasivac
-                                </button>
-                            )}
-                            {user.oglasivac === "ZAHTJEV" && (
-                                <div style={{
-                                    padding: "10px 20px",
-                                    backgroundColor: "#ffd700",
-                                    borderRadius: "5px",
-                                    fontWeight: "600",
-                                    textAlign: "center"
-                                }}>
-                                    Zahtjev na čekanju
-                                </div>
+                            {isOwnProfile && (
+                                <>
+                                    <Link to="/editprofile">
+                                        <button className="btn-edit">
+                                            Uredi profil
+                                        </button>
+                                    </Link>
+                                    <Link to="/transaction-history">
+                                        <button className="btn-transactions">
+                                            povijest Transakcija
+                                        </button>
+                                    </Link>
+                                    {user.oglasivac === "NE" && (
+                                        <button 
+                                            className="btn-advertiser"
+                                            onClick={handleRequestAdvertiser}
+                                            style={{
+                                                backgroundColor: "#ff9800",
+                                                color: "white",
+                                                padding: "10px 20px",
+                                                border: "none",
+                                                borderRadius: "5px",
+                                                cursor: "pointer",
+                                                fontSize: "14px",
+                                                fontWeight: "600"
+                                            }}
+                                        >
+                                            Postani oglasivac
+                                        </button>
+                                    )}
+                                    {user.oglasivac === "ZAHTJEV" && (
+                                        <div style={{
+                                            padding: "10px 20px",
+                                            backgroundColor: "#ffd700",
+                                            borderRadius: "5px",
+                                            fontWeight: "600",
+                                            textAlign: "center"
+                                        }}>
+                                            Zahtjev na čekanju
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

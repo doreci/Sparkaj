@@ -29,6 +29,8 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/napravi-oglas" element={<ProtectedRoute><CreateAdPage/></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/profile/:id" element={<ProfilePage />} />
+                    <Route path="/editprofile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                     <Route path="/transaction-history" element={<ProtectedRoute><TransactionHistoryPage /></ProtectedRoute>} />
                 </Routes>
             </BrowserRouter>
