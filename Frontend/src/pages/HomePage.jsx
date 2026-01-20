@@ -69,9 +69,6 @@ function HomePage() {
             if (data.authenticated) {
                 setUser(data);
                 setSession({ user: data });
-                console.log("✓ Korisnik autentificiran:", data.email);
-                console.log("✓ Je li admin?", isAdmin(data));
-                console.log("✓ Ruta profila:", getProfileRoute(data));
             }
         } catch (error) {
             console.log("Korisnik nije autentificiran");
@@ -103,10 +100,14 @@ function HomePage() {
     };
 
     const handleFilterChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
+        let newValue = value;
+        if (type === "datetime-local") {
+            newValue = value.replace(/:\d{2}$/, ":00");
+        }
         setFilters((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: newValue,
         }));
     };
 
@@ -142,8 +143,8 @@ function HomePage() {
             location: "",
             priceMin: "",
             priceMax: "",
-            dateFrom: "",
-            dateTo: "",
+            dateFrom: "0000-00-00T00:00",
+            dateTo: "0000-00-00T00:00",
         });
     };
 
