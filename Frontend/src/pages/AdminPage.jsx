@@ -13,6 +13,7 @@ function AdminPage() {
     const [users, setUsers] = useState([]);
     const [prijave, setPrijave] = useState([]);
     const [zahtjevi, setZahtjevi] = useState([]);
+    const [blokirani, setBlokirani] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -36,6 +37,7 @@ function AdminPage() {
                 fetchUsers();
                 fetchPrijave();
                 fetchZahtjevi();
+                fetchBlokirani();
             } else {
                 console.warn("✗ Korisnik nije admin, redirekcija na home");
                 navigate("/");
@@ -86,6 +88,19 @@ function AdminPage() {
         }
     };
 
+    const fetchBlokirani = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/admin/blocked-users", {
+                credentials: "include",
+            });
+            if (!response.ok) throw new Error("Greška pri dohvaćanju blokiranih korisnika");
+            const data = await response.json();
+            setBlokirani(data.blokirani || []);
+        } catch (error) {
+            console.error("Error fetching blokirani:", error);
+        }
+    };
+
     const deleteAd = async (id) => {
         try {
             const response = await fetch(
@@ -105,6 +120,11 @@ function AdminPage() {
     };
 
     const deleteUser = async (id) => {
+        // Potvrda prije brisanja
+        if (!window.confirm("Jeste li sigurni da želite obrisati korisnika? Ova akcija se ne može poništiti.")) {
+            return;
+        }
+
         try {
             const { error } = await supabase
                 .from("korisnik")
@@ -112,8 +132,30 @@ function AdminPage() {
                 .eq("id_korisnika", id);
             if (error) throw error;
             fetchUsers(); // Refresh users
+            alert("Korisnik je obrisan");
         } catch (error) {
             console.error("Error deleting user:", error);
+            alert("Greška pri brisanju korisnika");
+        }
+    };
+
+    const blockUser = async (id) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/admin/block-user/${id}`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                }
+            );
+            if (response.ok) {
+                fetchUsers(); // Refresh users
+                alert("Korisnik je blokiran");
+            } else {
+                console.error("Failed to block user:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error blocking user:", error);
         }
     };
 
@@ -181,6 +223,27 @@ function AdminPage() {
         }
     };
 
+    const unblockUser = async (id) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/admin/unblock-user/${id}`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                }
+            );
+            if (response.ok) {
+                fetchBlokirani(); // Refresh blokirani
+                fetchUsers(); // Refresh users lista
+                alert("Korisnik je odblokirаn");
+            } else {
+                console.error("Failed to unblock user:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error unblocking user:", error);
+        }
+    };
+
     if (loading) return <div>Provjera pristupa...</div>;
 
     if (!isAuthorized) {
@@ -224,13 +287,40 @@ function AdminPage() {
                                     </td>
                                     <td>{user.email}</td>
                                     <td>
-                                        <button
-                                            onClick={() =>
-                                                deleteUser(user.id_korisnika)
-                                            }
-                                        >
-                                            Delete
-                                        </button>
+                                        <div style={{ display: "flex", gap: "8px" }}>
+                                            <button
+                                                onClick={() =>
+                                                    blockUser(user.id_korisnika)
+                                                }
+                                                style={{
+                                                    backgroundColor: "#ff9800",
+                                                    color: "white",
+                                                    border: "none",
+                                                    padding: "8px 12px",
+                                                    borderRadius: "4px",
+                                                    cursor: "pointer",
+                                                    fontSize: "12px"
+                                                }}
+                                            >
+                                                Blokiraj
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    deleteUser(user.id_korisnika)
+                                                }
+                                                style={{
+                                                    backgroundColor: "#f44336",
+                                                    color: "white",
+                                                    border: "none",
+                                                    padding: "8px 12px",
+                                                    borderRadius: "4px",
+                                                    cursor: "pointer",
+                                                    fontSize: "12px"
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -328,6 +418,55 @@ function AdminPage() {
                                 <tr>
                                     <td colSpan="4" style={{ textAlign: "center" }}>
                                         Nema zahtjeva na čekanju
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="admin-section">
+                    <h2>Blokirani Korisnici</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ime i Prezime</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {blokirani.length > 0 ? (
+                                blokirani.map((korisnik) => (
+                                    <tr key={korisnik.id_korisnika}>
+                                        <td>{korisnik.id_korisnika}</td>
+                                        <td>
+                                            {korisnik.ime} {korisnik.prezime}
+                                        </td>
+                                        <td>{korisnik.email}</td>
+                                        <td>
+                                            <button
+                                                onClick={() =>
+                                                    unblockUser(korisnik.id_korisnika)
+                                                }
+                                                style={{
+                                                    backgroundColor: "#4caf50",
+                                                    color: "white",
+                                                    border: "none",
+                                                    padding: "8px 16px",
+                                                    borderRadius: "4px",
+                                                    cursor: "pointer"
+                                                }}
+                                            >
+                                                Odblokiraj
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" style={{ textAlign: "center" }}>
+                                        Nema blokiranih korisnika
                                     </td>
                                 </tr>
                             )}

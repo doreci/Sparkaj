@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
@@ -13,20 +13,23 @@ import CreateAdPage from "./pages/CreateAdPage.jsx"
 import AdminPage from "./pages/AdminPage.jsx"
 import ProfilePage from "./pages/profilePage.jsx"
 import TransactionHistoryPage from "./pages/TransactionHistoryPage.jsx"
+import BlockedPage from "./pages/BlockedPage.jsx"
+import ProtectedRoute from "./components/ProtectedRoute.jsx"
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
         <Provider store={store}>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<LoginPage />} />
-                    <Route path="/editprofile" element={<EditProfilePage />} />
-                    <Route path="/ad/:id" element={<AdPage />} />
-                    <Route path="/napravi-oglas" element={<CreateAdPage/>} />
-                    <Route path="/admin" element={<AdminPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/transaction-history" element={<TransactionHistoryPage />} />
+                    <Route path="/blocked" element={<BlockedPage />} />
+                    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                    <Route path="/editprofile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
+                    <Route path="/ad/:id" element={<ProtectedRoute><AdPage /></ProtectedRoute>} />
+                    <Route path="/napravi-oglas" element={<ProtectedRoute><CreateAdPage/></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/transaction-history" element={<ProtectedRoute><TransactionHistoryPage /></ProtectedRoute>} />
                 </Routes>
             </BrowserRouter>
         </Provider>
