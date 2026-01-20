@@ -17,6 +17,7 @@ import {
     useElements,
 } from "@stripe/react-stripe-js";
 import "./adpage.css";
+import ParkingReservationCalendar from "../components/ParkingReservationCalendar";
 
 const stripePromise = loadStripe(
     "pk_test_51SebNeCxvTBjwGGPRWn67pHWIRK4qGjk9UJWfPfpF6lHkzSm1pBKvwi5d3YOBjFz9AxAz3kJzDbVZQh3gkUeZHHG00jZxKEkzz"
@@ -341,6 +342,8 @@ function AdPage() {
                 </div>
             </div>
 
+            
+
             {/* Lokacija */}
             {fullLokacija && (
                 <div className="ad-location-section">
@@ -364,6 +367,11 @@ function AdPage() {
                     </div>
                 </div>
             )}
+
+            <ParkingReservationCalendar
+                oglasId={ad.id_oglasa}
+                userId={user?.id_korisnika}
+            />
 
             {/* Payment Modal */}
             {selectedOglas && (
