@@ -129,6 +129,8 @@ public class KorisnikService {
         newKorisnik.put("prezime", prezime != null ? prezime : "");
         newKorisnik.put("profilna", profilna != null ? profilna : "");
         newKorisnik.put("uuid", uuid != null ? uuid : UUID.randomUUID().toString());
+        newKorisnik.put("oglasivac", "NE");
+        newKorisnik.put("blokiran", false);
 
         System.out.println("[createOAuth2Korisnik] Kreiramo novog korisnika sa podacima: " + newKorisnik);
         
@@ -210,5 +212,123 @@ public class KorisnikService {
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
                 .map(niz -> niz[0]);
+    }
+
+    // Dohvati sve korisnike sa zahtjevom za oglašivanje
+    public Mono<Korisnik[]> getPendingAdvertiserRequests() {
+        System.out.println("[KorisnikService] Dohvaćam sve zahtjeve za oglašivanje");
+        return webClient.get()
+                .uri("/rest/v1/korisnik?oglasivac=eq.ZAHTJEV&select=*")
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .doOnNext(niz -> System.out.println("[KorisnikService] ✓ Pronađeno " + niz.length + " zahtjeva"));
+    }
+
+    // Zahtjev za oglašivanje
+    public Mono<Korisnik> requestAdvertiser(String email) {
+        System.out.println("[KorisnikService] Primljen zahtjev za oglašivanje od: " + email);
+
+        return getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[KorisnikService] Korisnik nije pronađen: " + email);
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen"));
+                    }
+
+                    if (!"NE".equals(korisnik.getOglasivac())) {
+                        System.err.println("[KorisnikService] Korisnik je već ili zahtjev je već poslан: " + korisnik.getOglasivac());
+                        return Mono.error(new RuntimeException("Korisnik je već oglašivač ili je zahtjev na čekanju"));
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("oglasivac", "ZAHTJEV");
+
+                    System.out.println("[KorisnikService] Ažuriram oglasivac na ZAHTJEV");
+
+                    return webClient.patch()
+                            .uri("/rest/v1/korisnik?email=eq." + email)
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updates)
+                            .retrieve()
+                            .bodyToMono(Korisnik[].class)
+                            .doOnNext(niz -> {
+                                if (niz.length > 0) {
+                                    System.out.println("[KorisnikService] ✓ Zahtjev za oglašivanje je prihvaćen");
+                                }
+                            })
+                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                });
+    }
+
+    // Prihvati zahtjev za oglašivanje
+    public Mono<Korisnik> approveAdvertiserRequest(Integer idKorisnika) {
+        System.out.println("[KorisnikService] Odobravanje zahtjeva za oglašivanje za ID: " + idKorisnika);
+
+        return getKorisnikById(idKorisnika)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[KorisnikService] Korisnik nije pronađen: " + idKorisnika);
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen"));
+                    }
+
+                    if (!"ZAHTJEV".equals(korisnik.getOglasivac())) {
+                        System.err.println("[KorisnikService] Korisnik nema zahtjev na čekanju");
+                        return Mono.error(new RuntimeException("Korisnik nema zahtjev na čekanju"));
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("oglasivac", "DA");
+
+                    System.out.println("[KorisnikService] Ažuriram oglasivac na DA");
+
+                    return webClient.patch()
+                            .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updates)
+                            .retrieve()
+                            .bodyToMono(Korisnik[].class)
+                            .doOnNext(niz -> {
+                                if (niz.length > 0) {
+                                    System.out.println("[KorisnikService] ✓ Zahtjev je odobren");
+                                }
+                            })
+                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                });
+    }
+
+    // Odbij zahtjev za oglašivanje
+    public Mono<Korisnik> rejectAdvertiserRequest(Integer idKorisnika) {
+        System.out.println("[KorisnikService] Odbijanje zahtjeva za oglašivanje za ID: " + idKorisnika);
+
+        return getKorisnikById(idKorisnika)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[KorisnikService] Korisnik nije pronađen: " + idKorisnika);
+                        return Mono.error(new RuntimeException("Korisnik nije pronađen"));
+                    }
+
+                    if (!"ZAHTJEV".equals(korisnik.getOglasivac())) {
+                        System.err.println("[KorisnikService] Korisnik nema zahtjev na čekanju");
+                        return Mono.error(new RuntimeException("Korisnik nema zahtjev na čekanju"));
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("oglasivac", "NE");
+
+                    System.out.println("[KorisnikService] Ažuriram oglasivac na NE");
+
+                    return webClient.patch()
+                            .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updates)
+                            .retrieve()
+                            .bodyToMono(Korisnik[].class)
+                            .doOnNext(niz -> {
+                                if (niz.length > 0) {
+                                    System.out.println("[KorisnikService] ✓ Zahtjev je odbijen");
+                                }
+                            })
+                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                });
     }
 }

@@ -44,7 +44,7 @@ function AdCard({ ad }) {
                         {ad.grad || "Nepoznat grad"}
                     </p>
                     <p className="ad-card-price">
-                        <strong>{cijena}</strong>
+                        <strong>{cijena} / h</strong>
                     </p>
                 </div>
             </div>

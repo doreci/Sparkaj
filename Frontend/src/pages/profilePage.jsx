@@ -49,6 +49,31 @@ function ProfilePage() {
         }
     };
 
+    const handleRequestAdvertiser = async () => {
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/user/request-advertiser",
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Greška pri slanju zahtjeva");
+            }
+
+            const updatedUser = await response.json();
+            setUser(updatedUser);
+        } catch (error) {
+            console.error("Greška:", error);
+            alert("Greška pri slanju zahtjeva: " + error.message);
+        }
+    };
+
     if (loading) {
         return (
             <div className="loading-spinner">
@@ -130,9 +155,38 @@ function ProfilePage() {
                             </Link>
                             <Link to="/transaction-history">
                                 <button className="btn-transactions">
-                                    Povijest Transakcija
+                                    povijest Transakcija
                                 </button>
                             </Link>
+                            {user.oglasivac === "NE" && (
+                                <button 
+                                    className="btn-advertiser"
+                                    onClick={handleRequestAdvertiser}
+                                    style={{
+                                        backgroundColor: "#ff9800",
+                                        color: "white",
+                                        padding: "10px 20px",
+                                        border: "none",
+                                        borderRadius: "5px",
+                                        cursor: "pointer",
+                                        fontSize: "14px",
+                                        fontWeight: "600"
+                                    }}
+                                >
+                                    Postani oglasivac
+                                </button>
+                            )}
+                            {user.oglasivac === "ZAHTJEV" && (
+                                <div style={{
+                                    padding: "10px 20px",
+                                    backgroundColor: "#ffd700",
+                                    borderRadius: "5px",
+                                    fontWeight: "600",
+                                    textAlign: "center"
+                                }}>
+                                    Zahtjev na čekanju
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

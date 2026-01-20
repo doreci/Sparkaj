@@ -275,7 +275,7 @@ function HomePage() {
                     )}
                 </div>
                 <div className="header-buttons">
-                    {user != null && (
+                    {user != null && user.oglasivac === "DA" && (
                         <Link to="/napravi-oglas">
                             <button>Napravi oglas</button>
                         </Link>

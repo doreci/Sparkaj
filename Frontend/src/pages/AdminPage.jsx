@@ -12,6 +12,7 @@ function AdminPage() {
     const ads = useSelector(selectAdsList);
     const [users, setUsers] = useState([]);
     const [prijave, setPrijave] = useState([]);
+    const [zahtjevi, setZahtjevi] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -34,6 +35,7 @@ function AdminPage() {
                 dispatch(fetchAllAds());
                 fetchUsers();
                 fetchPrijave();
+                fetchZahtjevi();
             } else {
                 console.warn("✗ Korisnik nije admin, redirekcija na home");
                 navigate("/");
@@ -68,6 +70,19 @@ function AdminPage() {
             setPrijave(data);
         } catch (error) {
             console.error("Error fetching prijave:", error);
+        }
+    };
+
+    const fetchZahtjevi = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/admin/pending-advertisers", {
+                credentials: "include",
+            });
+            if (!response.ok) throw new Error("Greška pri dohvaćanju zahtjeva");
+            const data = await response.json();
+            setZahtjevi(data.zahtjevi || []);
+        } catch (error) {
+            console.error("Error fetching zahtjevi:", error);
         }
     };
 
@@ -123,6 +138,46 @@ function AdminPage() {
             }
         } catch (error) {
             console.error("Error updating prijava:", error);
+        }
+    };
+
+    const approveAdvertiser = async (id) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/admin/approve-advertiser/${id}`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                }
+            );
+            if (response.ok) {
+                fetchZahtjevi(); // Refresh zahtjevi
+                alert("Zahtjev je odobren");
+            } else {
+                console.error("Failed to approve advertiser:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error approving advertiser:", error);
+        }
+    };
+
+    const rejectAdvertiser = async (id) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/admin/reject-advertiser/${id}`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                }
+            );
+            if (response.ok) {
+                fetchZahtjevi(); // Refresh zahtjevi
+                alert("Zahtjev je odbijen");
+            } else {
+                console.error("Failed to reject advertiser:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error rejecting advertiser:", error);
         }
     };
 
@@ -210,6 +265,72 @@ function AdminPage() {
                                     </td>
                                 </tr>
                             ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="admin-section">
+                    <h2>Zahtjevi za Oglašivanje</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ime i Prezime</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {zahtjevi.length > 0 ? (
+                                zahtjevi.map((korisnik) => (
+                                    <tr key={korisnik.id_korisnika}>
+                                        <td>{korisnik.id_korisnika}</td>
+                                        <td>
+                                            {korisnik.ime} {korisnik.prezime}
+                                        </td>
+                                        <td>{korisnik.email}</td>
+                                        <td>
+                                            <div style={{ display: "flex", gap: "8px" }}>
+                                                <button
+                                                    onClick={() =>
+                                                        approveAdvertiser(korisnik.id_korisnika)
+                                                    }
+                                                    style={{
+                                                        backgroundColor: "#4caf50",
+                                                        color: "white",
+                                                        border: "none",
+                                                        padding: "8px 16px",
+                                                        borderRadius: "4px",
+                                                        cursor: "pointer"
+                                                    }}
+                                                >
+                                                    Prihvati
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        rejectAdvertiser(korisnik.id_korisnika)
+                                                    }
+                                                    style={{
+                                                        backgroundColor: "#f44336",
+                                                        color: "white",
+                                                        border: "none",
+                                                        padding: "8px 16px",
+                                                        borderRadius: "4px",
+                                                        cursor: "pointer"
+                                                    }}
+                                                >
+                                                    Odbij
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" style={{ textAlign: "center" }}>
+                                        Nema zahtjeva na čekanju
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
