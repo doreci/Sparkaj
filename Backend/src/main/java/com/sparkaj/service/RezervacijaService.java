@@ -20,6 +20,10 @@ public class RezervacijaService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime later = now.plusHours(1);
         
+        return createRezervacijaWithDetails(korisnikId, oglasId, now, later);
+    }
+
+    public Mono<Rezervacija> createRezervacijaWithDetails(Long korisnikId, Long oglasId, LocalDateTime datumOd, LocalDateTime datumDo) {
         // Format dates as ISO strings
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         
@@ -38,8 +42,8 @@ public class RezervacijaService {
                     String jsonBody = "{\"id_rezervacije\":" + nextId +
                                      ",\"id_korisnika\":" + korisnikId + 
                                      ",\"id_oglasa\":" + oglasId + 
-                                     ",\"datumOd\":\"" + now.format(formatter) + "\"" +
-                                     ",\"datumDo\":\"" + later.format(formatter) + "\"}";
+                                     ",\"datumOd\":\"" + datumOd.format(formatter) + "\"" +
+                                     ",\"datumDo\":\"" + datumDo.format(formatter) + "\"}";
                     
                     System.out.println("Creating reservation with ID: " + nextId + " for user: " + korisnikId + ", ad: " + oglasId);
                     System.out.println("Reservation JSON: " + jsonBody);

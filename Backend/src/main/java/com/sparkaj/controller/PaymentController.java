@@ -42,9 +42,54 @@ public class PaymentController {
     @PostMapping("/create-payment-intent")
     public Mono<ResponseEntity<?>> createPaymentIntent(@RequestBody Map<String, Object> request) {
         try {
+            // Prvo pokušaj s `amount` (za nove rezervacije)
+            Object amountObj = request.get("amount");
+            if (amountObj != null) {
+                Long amount = null;
+                if (amountObj instanceof Integer) {
+                    amount = ((Integer) amountObj).longValue();
+                } else if (amountObj instanceof Long) {
+                    amount = (Long) amountObj;
+                } else if (amountObj instanceof Double) {
+                    amount = ((Double) amountObj).longValue();
+                }
+
+                if (amount != null && amount > 0) {
+                    System.out.println("[PaymentController] Kreiram payment intent za iznos: " + amount + " centima");
+
+                    try {
+                        if (stripeSecretKey == null || stripeSecretKey.isEmpty()) {
+                            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Stripe configuration error"));
+                        }
+
+                        Stripe.apiKey = stripeSecretKey;
+
+                        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                                .setAmount(amount)
+                                .setCurrency("eur")
+                                .build();
+
+                        PaymentIntent paymentIntent = PaymentIntent.create(params);
+
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("clientSecret", paymentIntent.getClientSecret());
+                        response.put("paymentIntentId", paymentIntent.getId());
+
+                        System.out.println("[PaymentController] ✓ Payment intent kreiran: " + paymentIntent.getId());
+                        return Mono.just(ResponseEntity.ok(response));
+                    } catch (Exception e) {
+                        System.err.println("[PaymentController] Greška: " + e.getMessage());
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("error", e.getMessage());
+                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse));
+                    }
+                }
+            }
+
+            // Fallback na `oglasId` (stari pristup)
             Object oglasIdObj = request.get("oglasId");
             if (oglasIdObj == null) {
-                return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing oglasId"));
+                return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing amount or oglasId"));
             }
             
             Integer oglasId;

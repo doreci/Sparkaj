@@ -23,8 +23,8 @@ createRoot(document.getElementById("root")).render(
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/blocked" element={<BlockedPage />} />
-                    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-                    <Route path="/editprofile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/ad/:id" element={<AdPage />} />
                     <Route path="/ad/:id" element={<ProtectedRoute><AdPage /></ProtectedRoute>} />
                     <Route path="/napravi-oglas" element={<ProtectedRoute><CreateAdPage/></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />

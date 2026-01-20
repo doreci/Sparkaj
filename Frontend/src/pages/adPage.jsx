@@ -55,10 +55,11 @@ function AdPage() {
             if (data.authenticated) {
                 setUser(data);
             } else {
+                // Not authenticated, redirect to login
                 navigate("/login");
             }
         } catch (error) {
-            console.log("Korisnik nije autentificiran");
+            console.log("Greška pri provjeri autentifikacije:", error);
             navigate("/login");
         }
     };
@@ -298,18 +299,6 @@ function AdPage() {
                     {/* Akcije */}
                     <div className="ad-actions">
                         <button
-                            className="pay-button"
-                            onClick={() => {
-                                if (!user) {
-                                    alert("Please log in to make a payment");
-                                    return;
-                                }
-                                handlePayment(ad);
-                            }}
-                        >
-                            Pay Now
-                        </button>
-                        <button
                             className="btn-secondary btn-large"
                             onClick={() => setShowReportModal(true)}
                         >
@@ -371,6 +360,8 @@ function AdPage() {
             <ParkingReservationCalendar
                 oglasId={ad.id_oglasa}
                 userId={user?.id_korisnika}
+                cijena={ad.cijena}
+                stripePromise={stripePromise}
             />
 
             {/* Payment Modal */}

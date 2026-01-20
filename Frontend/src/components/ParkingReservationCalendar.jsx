@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
-function ParkingReservationCalendar({ oglasId, userId }) {
+function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) {
   const [reservations, setReservations] = useState([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(new Date()));
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const hours = Array.from({ length: 24 }, (_, i) => i); // 0:00 - 23:00
 
@@ -70,16 +74,72 @@ function ParkingReservationCalendar({ oglasId, userId }) {
     return selectedSlots.includes(slotKey);
   };
 
+  /**
+   * Validira da li su slotovi kontinuirani (bez praznih mjesta između)
+   */
+  const areSlotsContinuous = (slots) => {
+    if (slots.length <= 1) return true;
+
+    // Custom sort - sortiraj po datumu, pa po satu kao broju
+    const sortedSlots = [...slots].sort((a, b) => {
+      const [dateA, hourA] = a.split('-');
+      const [dateB, hourB] = b.split('-');
+      
+      if (dateA === dateB) {
+        // Isti datum, sortiraj po satu kao broju
+        return parseInt(hourA) - parseInt(hourB);
+      }
+      // Različiti datumi, sortiraj po datumu kao string
+      return dateA.localeCompare(dateB);
+    });
+
+    for (let i = 0; i < sortedSlots.length - 1; i++) {
+      const currentSlot = sortedSlots[i];
+      const nextSlot = sortedSlots[i + 1];
+
+      const [currentDateStr, currentHourStr] = currentSlot.split('-');
+      const [nextDateStr, nextHourStr] = nextSlot.split('-');
+
+      const currentHour = parseInt(currentHourStr);
+      const nextHour = parseInt(nextHourStr);
+
+      // Ako su na istoj liniji (isti datum string)
+      if (currentDateStr === nextDateStr) {
+        // Satovi trebaju biti susjedni (razlika od 1)
+        if (nextHour !== currentHour + 1) {
+          return false;
+        }
+      } else {
+        // Ako su na različitim linijama, trebalo bi:
+        // Trenutni sat mora biti 23 (zadnji sat dana)
+        // Sljedeći sat mora biti 0 (prvi sat sljedećeg dana)
+        if (currentHour !== 23 || nextHour !== 0) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSlotClick = (date, hour) => {
     if (isSlotReserved(date, hour)) return;
 
     const slotKey = `${date.toDateString()}-${hour}`;
+    let newSelectedSlots;
     
     if (selectedSlots.includes(slotKey)) {
-      setSelectedSlots(selectedSlots.filter(s => s !== slotKey));
+      newSelectedSlots = selectedSlots.filter(s => s !== slotKey);
     } else {
-      setSelectedSlots([...selectedSlots, slotKey]);
+      newSelectedSlots = [...selectedSlots, slotKey];
+      
+      // Provjeri da li su slotovi kontinuirani
+      if (!areSlotsContinuous(newSelectedSlots)) {
+        alert("Možete birati samo kontinuirane termine (bez praznih mjesta između)!");
+        return;
+      }
     }
+    
+    setSelectedSlots(newSelectedSlots);
   };
 
   const handleMouseDown = (date, hour) => {
@@ -92,7 +152,12 @@ function ParkingReservationCalendar({ oglasId, userId }) {
     if (isDragging && !isSlotReserved(date, hour)) {
       const slotKey = `${date.toDateString()}-${hour}`;
       if (!selectedSlots.includes(slotKey)) {
-        setSelectedSlots([...selectedSlots, slotKey]);
+        const newSelectedSlots = [...selectedSlots, slotKey];
+        
+        // Validira kontinuitet kada se povlači miš
+        if (areSlotsContinuous(newSelectedSlots)) {
+          setSelectedSlots(newSelectedSlots);
+        }
       }
     }
   };
@@ -112,8 +177,13 @@ function ParkingReservationCalendar({ oglasId, userId }) {
       return;
     }
 
-    setLoading(true);
+    // Otvori payment modal umjesto direktne rezervacije
+    setShowPaymentModal(true);
+  };
+
+  const createReservationInDatabase = async () => {
     try {
+      setLoading(true);
       // Grupiraj slotove po kontinuiranim periodima
       const sortedSlots = selectedSlots.sort();
       const reservationsToCreate = [];
@@ -144,36 +214,49 @@ function ParkingReservationCalendar({ oglasId, userId }) {
         }
       });
 
-      // Kreiraj rezervacije
-      const insertPromises = reservationsToCreate.map(group => {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+      // Kreiraj rezervacije kroz backend endpoint
+      const slots = reservationsToCreate.map(group => {
         const startDate = new Date(group[0].date);
         startDate.setHours(group[0].hour, 0, 0, 0);
 
         const endDate = new Date(group[group.length - 1].date);
         endDate.setHours(group[group.length - 1].hour + 1, 0, 0, 0);
 
-        return supabase
-          .from("Rezervacija")
-          .insert([
-            {
-              id_korisnika: userId,
-              id_oglasa: oglasId,
-              datumOd: startDate.toISOString(),
-              datumDo: endDate.toISOString(),
-            },
-          ]);
+        return {
+          datumOd: startDate.toISOString(),
+          datumDo: endDate.toISOString(),
+        };
       });
 
-      const results = await Promise.all(insertPromises);
-      
-      const hasError = results.some(result => result.error);
-      if (hasError) {
-        throw new Error("Greška pri kreiranju neke od rezervacija");
+      const response = await fetch(`${API_BASE_URL}/api/reservations/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          id_oglasa: oglasId,
+          slots: slots,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Greška pri kreiranju rezervacija");
       }
 
-      alert("Rezervacija uspješno kreirana!");
+      // Prikaži success modal umjesto alerta
+      const startDate = new Date(selectedSlots[0].split('-')[0]);
+      const endDate = new Date(selectedSlots[selectedSlots.length - 1].split('-')[0]);
+      const message = `Plaćanje uspješno!\n\nRezervacija od ${startDate.toLocaleDateString('hr-HR')} do ${endDate.toLocaleDateString('hr-HR')}\nUkupno sati: ${selectedSlots.length}`;
+      
+      setSuccessMessage(message);
+      setShowSuccessModal(true);
       setSelectedSlots([]);
       fetchReservations();
+      setShowPaymentModal(false);
     } catch (error) {
       console.error("Greška pri kreiranju rezervacije:", error);
       alert("Greška pri kreiranju rezervacije: " + error.message);
@@ -276,10 +359,10 @@ function ParkingReservationCalendar({ oglasId, userId }) {
                         key={dayIndex}
                         style={{
                           ...styles.slotCell,
+                          ...(isToday(day) ? styles.todayColumn : {}),
+                          ...(isPast && !reserved ? styles.pastSlot : {}),
                           ...(reserved ? styles.reservedSlot : {}),
                           ...(selected ? styles.selectedSlot : {}),
-                          ...(isPast && !reserved ? styles.pastSlot : {}),
-                          ...(isToday(day) ? styles.todayColumn : {}),
                         }}
                         onMouseDown={() => !isPast && handleMouseDown(day, hour)}
                         onMouseEnter={() => !isPast && handleMouseEnter(day, hour)}
@@ -301,22 +384,22 @@ function ParkingReservationCalendar({ oglasId, userId }) {
       <div style={styles.legend}>
         <div style={styles.legendItem}>
           <div style={{ ...styles.legendBox, backgroundColor: "#fff", border: "2px solid #e0e0e0" }}></div>
-          <span>Dostupno</span>
+          <span style={{ color: "#000" }}>Dostupno</span>
         </div>
         <div style={styles.legendItem}>
           <div style={{ ...styles.legendBox, backgroundColor: "#f01111" }}></div>
-          <span>Rezervirano</span>
+          <span style={{ color: "#f01111" }}>Rezervirano</span>
         </div>
         <div style={styles.legendItem}>
           <div style={{ ...styles.legendBox, backgroundColor: "#3498db" }}></div>
-          <span>Odabrano</span>
+          <span style={{ color: "#3498db" }}>Odabrano</span>
         </div>
       </div>
 
       {selectedSlots.length > 0 && (
         <div style={styles.selectionInfo}>
           <p style={styles.selectionText}>
-            <strong>Odabrano termina:</strong> {selectedSlots.length}
+            <strong style={{ color: "#000" }}>Odabrano termina: {selectedSlots.length}</strong> 
           </p>
           <div style={styles.actionButtons}>
             <button
@@ -338,7 +421,175 @@ function ParkingReservationCalendar({ oglasId, userId }) {
           </div>
         </div>
       )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3 style={{ marginBottom: "20px" }}>Potvrdi plaćanje za rezervaciju</h3>
+            <p><strong>Broj sati:</strong> {selectedSlots.length}</p>
+            <p><strong>Cijena po satu:</strong> {cijena} €</p>
+            <p style={{ fontSize: "18px", fontWeight: "bold", color: "#2196F3", marginBottom: "20px" }}>
+              <strong>Ukupno:</strong> {(selectedSlots.length * cijena).toFixed(2)} €
+            </p>
+            
+            {stripePromise && (
+              <Elements stripe={stripePromise}>
+                <StripePaymentForm
+                  amount={selectedSlots.length * cijena}
+                  onSuccess={createReservationInDatabase}
+                  onCancel={() => setShowPaymentModal(false)}
+                />
+              </Elements>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <div style={styles.successIcon}>✓</div>
+            <h3 style={styles.successTitle}>Plaćanje uspješno!</h3>
+            <p style={styles.successText}>{successMessage}</p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              style={styles.successButton}
+            >
+              Zatvori
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// Stripe Payment Form Component
+function StripePaymentForm({ amount, onSuccess, onCancel }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      setError("Stripe has not loaded yet. Please try again.");
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setError("Card element not found. Please refresh and try again.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      
+      // Kreiraj payment intent
+      const response = await fetch(`${API_BASE_URL}/api/payments/create-payment-intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ amount: Math.round(amount * 100) }), // U centima
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create payment intent: ${response.statusText}`);
+      }
+
+      const { clientSecret } = await response.json();
+
+      // Potvrdi plaćanje
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardElement,
+        },
+      });
+
+      if (confirmError) {
+        throw new Error(confirmError.message);
+      }
+
+      if (paymentIntent.status === "succeeded") {
+        console.log("Payment successful:", paymentIntent);
+        setLoading(false);
+        onSuccess();
+      } else {
+        throw new Error("Payment was not successful");
+      }
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || "Payment failed. Please try again.");
+      console.error("Payment error:", err);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+          Kartični podaci
+        </label>
+        <div style={{
+          padding: "12px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          backgroundColor: "#f9f9f9"
+        }}>
+          <CardElement />
+        </div>
+      </div>
+
+      {error && (
+        <div style={{ color: "#d32f2f", marginBottom: "15px", fontSize: "14px" }}>
+          {error}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={loading}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#95a5a6",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          Odustani
+        </button>
+        <button
+          type="submit"
+          disabled={loading || !stripe}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#2196F3",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          {loading ? "Procesira se..." : "Plaćaj sada"}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -463,7 +714,9 @@ const styles = {
     position: "relative",
   },
   todayColumn: {
-    backgroundColor: "#f0f8ff",
+    // Dodaj samo border, ne menjaj backgroundColor jer to prekriva rezervirane slotove
+    borderLeft: "3px solid #3498db",
+    borderRight: "3px solid #3498db",
   },
   reservedSlot: {
     backgroundColor: "#f01111",
@@ -535,6 +788,59 @@ const styles = {
     fontSize: "15px",
     fontWeight: "600",
     cursor: "pointer",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modal: {
+    backgroundColor: "white",
+    borderRadius: "8px",
+    padding: "30px",
+    maxWidth: "500px",
+    width: "90%",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+  },
+  successIcon: {
+    fontSize: "48px",
+    color: "#27ae60",
+    textAlign: "center",
+    marginBottom: "15px",
+  },
+  successTitle: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#27ae60",
+    textAlign: "center",
+    marginBottom: "15px",
+  },
+  successText: {
+    fontSize: "16px",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: "25px",
+    whiteSpace: "pre-line",
+    lineHeight: "1.6",
+  },
+  successButton: {
+    width: "100%",
+    backgroundColor: "#27ae60",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "12px 24px",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "background-color 0.2s",
   },
 };
 
