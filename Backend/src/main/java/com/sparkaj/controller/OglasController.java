@@ -212,4 +212,64 @@ public class OglasController {
                     return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
                 });
     }
+
+    @PostMapping("/{id}/recenzija")
+    public Mono<ResponseEntity<?>> submitReview(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> request,
+            @AuthenticationPrincipal OAuth2User principal) {
+        
+        try {
+            if (principal == null) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Niste ulogirani");
+                return Mono.just(ResponseEntity.status(401).body((Object) error));
+            }
+
+            String email = principal.getAttribute("email");
+            Long ocjena = ((Number) request.get("ocjena")).longValue();
+
+            if (ocjena < 1 || ocjena > 5) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Ocjena mora biti između 1 i 5");
+                return Mono.just(ResponseEntity.status(400).body((Object) error));
+            }
+
+            return korisnikService.getKorisnikByEmail(email)
+                    .flatMap(korisnik -> {
+                        if (korisnik == null) {
+                            Map<String, String> error = new HashMap<>();
+                            error.put("error", "Korisnik nije pronađen");
+                            return Mono.just(ResponseEntity.status(404).body((Object) error));
+                        }
+
+                        // Provjerit da li korisnik ima rezervaciju na ovaj oglas
+                        return oglasService.findReservation(korisnik.getIdKorisnika(), id)
+                                .flatMap(rezervacijaId -> {
+                                    if (rezervacijaId == null) {
+                                        Map<String, String> error = new HashMap<>();
+                                        error.put("error", "Trebali ste prethodno rezervirati ovo parkiralište");
+                                        return Mono.just(ResponseEntity.status(403).body((Object) error));
+                                    }
+
+                                    return oglasService.submitReview(rezervacijaId, ocjena)
+                                            .map(result -> {
+                                                Map<String, Object> response = new HashMap<>();
+                                                response.put("success", true);
+                                                response.put("message", "Recenzija uspješno sprema");
+                                                return ResponseEntity.ok((Object) response);
+                                            })
+                                            .onErrorResume(error -> {
+                                                Map<String, String> errorResponse = new HashMap<>();
+                                                errorResponse.put("error", error.getMessage());
+                                                return Mono.just(ResponseEntity.status(400).body((Object) errorResponse));
+                                            });
+                                });
+                    });
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Greška pri spremanju recenzije: " + e.getMessage());
+            return Mono.just(ResponseEntity.status(400).body((Object) error));
+        }
+    }
 }

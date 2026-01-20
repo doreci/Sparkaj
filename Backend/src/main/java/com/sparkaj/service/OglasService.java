@@ -201,4 +201,75 @@ public class OglasService {
                     return lista;
                 });
     }
+
+    // Pronađi ID rezervacije za korisnika na ovaj oglas
+    public Mono<Long> findReservation(Integer idKorisnika, Integer idOglasa) {
+        return webClient.get()
+                .uri("/rest/v1/Rezervacija?id_korisnika=eq." + idKorisnika + "&id_oglasa=eq." + idOglasa + "&select=id_rezervacije&limit=1")
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(response -> {
+                    try {
+                        // Parse JSON array to find id_rezervacije
+                        if (response.contains("id_rezervacije")) {
+                            // Simple extraction - assumes response like [{"id_rezervacije":123}]
+                            int startIdx = response.indexOf("id_rezervacije") + 15;
+                            int endIdx = response.indexOf("}", startIdx);
+                            String idStr = response.substring(startIdx, endIdx).trim().replaceAll("[^0-9]", "");
+                            if (!idStr.isEmpty()) {
+                                return Mono.just(Long.parseLong(idStr));
+                            }
+                        }
+                        return Mono.just((Long) null);
+                    } catch (Exception e) {
+                        System.err.println("Error parsing reservation: " + e.getMessage());
+                        return Mono.just((Long) null);
+                    }
+                })
+                .onErrorResume(error -> {
+                    System.err.println("Error finding reservation: " + error.getMessage());
+                    return Mono.just((Long) null);
+                });
+    }
+
+    // Spremi ili ažurira recenziju sa id_rezervacije
+    public Mono<Object> submitReview(Long idRezervacije, Long ocjena) {
+        // Prvo provjeri postoji li recenzija za ovu rezervaciju
+        return webClient.get()
+                .uri("/rest/v1/Recenzija?id_rezervacije=eq." + idRezervacije + "&select=id_recenzije")
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(response -> {
+                    // Ako recenzija postoji, ažuriraj je
+                    if (response.contains("id_recenzije")) {
+                        System.out.println("Existing review found, updating...");
+                        String updateBody = "{\"ocjena\":" + ocjena + "}";
+                        return webClient.patch()
+                                .uri("/rest/v1/Recenzija?id_rezervacije=eq." + idRezervacije)
+                                .header("Content-Type", "application/json")
+                                .header("Prefer", "return=representation")
+                                .bodyValue(updateBody)
+                                .retrieve()
+                                .bodyToMono(Object.class);
+                    } else {
+                        // Ako ne postoji, kreiraj novu
+                        System.out.println("No existing review, creating new one...");
+                        String insertBody = "{" +
+                                "\"id_rezervacije\":" + idRezervacije + "," +
+                                "\"ocjena\":" + ocjena +
+                                "}";
+                        return webClient.post()
+                                .uri("/rest/v1/Recenzija")
+                                .header("Content-Type", "application/json")
+                                .header("Prefer", "return=representation")
+                                .bodyValue(insertBody)
+                                .retrieve()
+                                .bodyToMono(Object.class);
+                    }
+                })
+                .onErrorResume(error -> {
+                    System.err.println("Review submission error: " + error.getMessage());
+                    return Mono.error(new RuntimeException("Greška pri spremanju recenzije: " + error.getMessage()));
+                });
+    }
 }

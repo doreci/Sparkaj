@@ -40,6 +40,8 @@ function AdPage() {
     const [reviewRating, setReviewRating] = useState(0); // ocjena 1-5
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [showReviewSuccess, setShowReviewSuccess] = useState(false);
+    const [reviewLoadingState, setReviewLoadingState] = useState(false);
 
     // Provjera je li korisnik ulogiran kroz Spring Boot
     useEffect(() => {
@@ -166,6 +168,47 @@ function AdPage() {
         } catch (error) {
             console.error("Greška:", error);
             alert("Greška pri slanju prijave: " + error.message);
+        }
+    };
+
+    const handleSubmitReview = async (rating) => {
+        if (!user) {
+            alert("Molimo prijavite se prije nego što ostavite recenziju");
+            return;
+        }
+
+        setReviewLoadingState(true);
+
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/oglasi/${id}/recenzija`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ ocjena: rating }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Greška pri spremanju recenzije");
+            }
+
+            const data = await response.json();
+            console.log("Recenzija uspješno sprema:", data);
+            setReviewRating(rating); // Sačuva odabranu ocjenu
+            setShowReviewSuccess(true);
+            
+            // Automatski zatvori popup nakon 2 sekunde
+            setTimeout(() => setShowReviewSuccess(false), 2000);
+        } catch (error) {
+            console.error("Greška:", error);
+            alert("Greška pri spremanju recenzije: " + error.message);
+        } finally {
+            setReviewLoadingState(false);
         }
     };
 
@@ -312,15 +355,17 @@ function AdPage() {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <span
                                         key={star}
-                                        onClick={() => setReviewRating(star)}
+                                        onClick={() => handleSubmitReview(star)}
                                         style={{
                                             fontSize: "32px",
-                                            cursor: "pointer",
+                                            cursor: reviewLoadingState ? "not-allowed" : "pointer",
                                             color:
                                                 star <= reviewRating
                                                     ? "#f39c12"
                                                     : "#ccc",
+                                            opacity: reviewLoadingState ? 0.6 : 1,
                                         }}
+                                        title="Klikni da ostavi recenziju"
                                     >
                                         ★
                                     </span>
@@ -441,6 +486,40 @@ function AdPage() {
                     </div>
                 </div>
             )}
+
+            {/* Review Success Popup */}
+            {showReviewSuccess && (
+                <div style={{
+                    position: "fixed",
+                    top: "20px",
+                    right: "20px",
+                    backgroundColor: "#27ae60",
+                    color: "white",
+                    padding: "15px 25px",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    zIndex: 10000,
+                    animation: "slideIn 0.3s ease-in-out",
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ fontSize: "20px" }}>✓</span>
+                        <span style={{ fontWeight: "600" }}>Recenzija ažurirana!</span>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
