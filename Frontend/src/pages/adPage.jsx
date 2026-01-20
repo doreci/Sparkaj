@@ -264,6 +264,8 @@ function AdPage() {
                                         src={korisnik.profilna}
                                         alt={"Prodavač"}
                                         className="avatar-image"
+                                        crossOrigin="anonymous"
+                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             )}

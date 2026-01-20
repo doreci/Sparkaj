@@ -44,6 +44,8 @@ function ProfilePage() {
             });
             if (response.ok) {
                 const data = await response.json();
+                console.log("Učitani korisnik:", data);
+                console.log("Profilna slika:", data.profilna);
                 setUser(data);
                 setIsOwnProfile(false);
             }
@@ -146,6 +148,8 @@ function ProfilePage() {
                                     src={user.profilna || user.picture}
                                     alt="Profilna slika"
                                     className="profile-image"
+                                    crossOrigin="anonymous"
+                                    referrerPolicy="no-referrer"
                                 />
                             ) : (
                                 <div className="profile-image-placeholder">

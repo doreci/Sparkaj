@@ -297,7 +297,10 @@ function HomePage() {
                         <Link to={getProfileRoute(user)} className="profile-icon-link">
                             <div className="profile-icon">
                                 {user.picture ? (
-                                    <img src={user.picture} alt="Profile" />
+                                    <img src={user.picture} alt="Profile" 
+                                        crossOrigin="anonymous"
+                                        referrerPolicy="no-referrer"
+                                    />
                                 ) : (
                                     <div className="profile-icon-placeholder">
                                         {user.given_name
