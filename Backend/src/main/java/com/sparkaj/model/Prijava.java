@@ -15,6 +15,9 @@ public class Prijava {
     @JsonProperty("opis")
     private String opis;
 
+    @JsonProperty("status")
+    private Boolean status; // true = odrađena, false = neodrađena
+
     public Prijava() {
     }
 
@@ -22,6 +25,7 @@ public class Prijava {
         this.id_korisnika = id_korisnika;
         this.id_oglasa = id_oglasa;
         this.opis = opis;
+        this.status = false;
     }
 
     public Integer getId_korisnika() {
@@ -56,6 +60,14 @@ public class Prijava {
         this.opis = opis;
     }
 
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "Prijava{" +
@@ -63,6 +75,7 @@ public class Prijava {
                 ", id_oglasa=" + id_oglasa +
                 ", id_prijave=" + id_prijave +
                 ", opis='" + opis + '\'' +
+                ", status=" + status +
                 '}';
     }
 }

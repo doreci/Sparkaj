@@ -142,4 +142,74 @@ public class OglasController {
                     return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
                 });
     }
+
+    @GetMapping("/prijave/all")
+    public Mono<ResponseEntity<List<Prijava>>> getAllPrijave() {
+        System.out.println("[OglasController] GET /api/oglasi/prijave/all - Dohvaćam sve prijave");
+        return prijavaService.getPrijave()
+                .map(ResponseEntity::ok)
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri dohvaćanju prijava: " + error.getMessage());
+                    return Mono.just(ResponseEntity.status(500).build());
+                });
+    }
+
+    @PutMapping("/prijave/{id}/status")
+    public Mono<ResponseEntity<Object>> azurirajStatusPrijave(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal OAuth2User principal,
+            @RequestBody Map<String, Object> body) {
+        System.out.println("[OglasController] PUT /api/oglasi/prijave/{id}/status - Ažuriram status prijave: " + id);
+        
+        if (principal == null) {
+            System.err.println("[OglasController] ✗ Korisnik nije autentificiran");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Korisnik nije autentificiran");
+            return Mono.just(ResponseEntity.status(401).body((Object) error));
+        }
+
+        String email = principal.getAttribute("email");
+        Object statusObj = body.get("status");
+        
+        if (statusObj == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Status je obavezan");
+            return Mono.just(ResponseEntity.status(400).body((Object) error));
+        }
+        
+        final Boolean noviStatus;
+        if (statusObj instanceof Boolean) {
+            noviStatus = (Boolean) statusObj;
+        } else if (statusObj instanceof String) {
+            noviStatus = Boolean.parseBoolean((String) statusObj);
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Neispravan format statusa");
+            return Mono.just(ResponseEntity.status(400).body((Object) error));
+        }
+        
+        System.out.println("[OglasController] Email: " + email + ", novi status: " + noviStatus);
+
+        // Pronađi id_korisnika po emailu i provjeri je li admin
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[OglasController] ✗ Korisnik nije pronađen sa emailom: " + email);
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Korisnik nije pronađen");
+                        return Mono.just(ResponseEntity.status(404).body((Object) error));
+                    }
+                    
+                    System.out.println("[OglasController] Pronađen korisnik sa ID: " + korisnik.getIdKorisnika());
+                    return prijavaService.azurirajStatus(id, noviStatus)
+                            .map(prijava -> ResponseEntity.ok((Object) prijava));
+                })
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri ažuriranju statusa: " + error.getMessage());
+                    error.printStackTrace();
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
+                });
+    }
 }

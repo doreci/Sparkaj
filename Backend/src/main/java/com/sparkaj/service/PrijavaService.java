@@ -26,6 +26,7 @@ public class PrijavaService {
         prijavaMapa.put("id_korisnika", idKorisnika);
         prijavaMapa.put("id_oglasa", idOglasa);
         prijavaMapa.put("opis", opis);
+        prijavaMapa.put("status", false);
 
         return webClient.post()
                 .uri("/rest/v1/prijava")
@@ -42,6 +43,21 @@ public class PrijavaService {
                                 return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
                             });
                     }
+                });
+    }
+
+    // Dohvati sve prijave
+    public Mono<List<Prijava>> getPrijave() {
+        System.out.println("[PrijavaService] Dohvaćam sve prijave");
+        
+        return webClient.get()
+                .uri("/rest/v1/prijava?select=*")
+                .retrieve()
+                .bodyToMono(Prijava[].class)
+                .map(Arrays::asList)
+                .onErrorResume(e -> {
+                    System.err.println("[PrijavaService] Greška pri dohvaćanju prijava: " + e.getMessage());
+                    return Mono.just(Arrays.asList());
                 });
     }
 
@@ -72,6 +88,40 @@ public class PrijavaService {
                 .onErrorResume(e -> {
                     System.err.println("[PrijavaService] Greška pri dohvaćanju prijava: " + e.getMessage());
                     return Mono.just(Arrays.asList());
+                });
+    }
+
+    // Ažuriraj status prijave
+    public Mono<Prijava> azurirajStatus(Integer idPrijave, Boolean noviStatus) {
+        System.out.println("[PrijavaService] Ažuriram status prijave: " + idPrijave + " na: " + noviStatus);
+        
+        Map<String, Object> updateMapa = new HashMap<>();
+        updateMapa.put("status", noviStatus);
+
+        return webClient.patch()
+                .uri("/rest/v1/prijava?id_prijave=eq." + idPrijave)
+                .bodyValue(updateMapa)
+                .exchangeToMono(response -> {
+                    System.out.println("[PrijavaService] Response status: " + response.statusCode());
+                    if (response.statusCode().is2xxSuccessful()) {
+                        System.out.println("[PrijavaService] ✓ Status uspješno ažuriran");
+                        // Supabase PATCH obično vraća prazan niz, pa kreiramo Prijavu s novim statusom
+                        Prijava updatedPrijava = new Prijava();
+                        updatedPrijava.setId_prijave(idPrijave);
+                        updatedPrijava.setStatus(noviStatus);
+                        return Mono.just(updatedPrijava);
+                    } else {
+                        return response.bodyToMono(String.class)
+                            .flatMap(body -> {
+                                System.err.println("[PrijavaService] ✗ Greška: " + response.statusCode() + " " + body);
+                                return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
+                            });
+                    }
+                })
+                .onErrorResume(e -> {
+                    System.err.println("[PrijavaService] ✗ Greška pri ažuriranju: " + e.getMessage());
+                    e.printStackTrace();
+                    return Mono.error(e);
                 });
     }
 
