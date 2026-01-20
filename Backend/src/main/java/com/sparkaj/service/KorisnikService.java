@@ -194,4 +194,21 @@ public class KorisnikService {
                 .doOnError(e -> System.err.println("[updateKorisnikUuid] ✗ Greška pri ažuriranju UUID-a: " + e.getMessage()))
                 .then();
     }
+
+    // Blokiranje
+    public Mono<Korisnik> blokirajKorisnika(Integer id) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("blokiran", true);
+
+        return webClient.patch()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/rest/v1/korisnik")
+                        .queryParam("id_korisnika", "eq." + id)
+                        .build())
+                .header("Prefer", "return=representation")
+                .bodyValue(updates)
+                .retrieve()
+                .bodyToMono(Korisnik[].class)
+                .map(niz -> niz[0]);
+    }
 }

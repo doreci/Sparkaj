@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Korisnik {
     @JsonProperty("id_korisnika")
-    private int idKorisnika;
+    private Integer idKorisnika;
 
     private String ime;
 
@@ -18,6 +18,10 @@ public class Korisnik {
     private String profilna;
 
     private String uuid;
+
+    private String oglasivac;
+
+    private Boolean blokiran;
 
     public Korisnik() {}
 
@@ -82,6 +86,22 @@ public class Korisnik {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getOglasivac() {
+        return oglasivac;
+    }
+
+    public void setOglasivac(String oglasivac) {
+        this.oglasivac = oglasivac;
+    }
+
+    public Boolean getBlokiran() {
+        return blokiran;
+    }
+
+    public void setBlokiran(Boolean blokiran) {
+        this.blokiran = blokiran;
     }
 }
 

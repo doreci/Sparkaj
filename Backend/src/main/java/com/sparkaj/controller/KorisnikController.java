@@ -61,6 +61,11 @@ public class KorisnikController {
                 .onErrorResume(e -> Mono.just(createErrorResponse("Greška pri ažuriranju: " + e.getMessage())));
     }
 
+    @PatchMapping("/{id}/blokiraj")
+    public Mono<Korisnik> blokirajKorisnika(@PathVariable Integer id) {
+        return korisnikService.blokirajKorisnika(id);
+    }
+
     private Map<String, Object> createSuccessResponse(String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
