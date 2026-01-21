@@ -79,4 +79,16 @@ public class RezervacijaService {
                 .doOnError(error -> System.err.println("Reservation creation failed: " + error.getMessage()))
                 .map(niz -> niz != null && niz.length > 0 ? niz[0] : null);
     }
+
+    public Mono<List<Rezervacija>> getRezervacijeByIdKorisnika(Long idKorisnika) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/rest/v1/Rezervacija")
+                        .queryParam("id_korisnika", "eq." + idKorisnika)
+                        .build())
+                .retrieve()
+                .bodyToMono(Rezervacija[].class)
+                .map(Arrays::asList)
+                .defaultIfEmpty(java.util.Collections.emptyList());
+    }
 }

@@ -225,6 +225,11 @@ function ProfilePage() {
                                             povijest Transakcija
                                         </button>
                                     </Link>
+                                    <Link to="/my-reservations-reviews">
+                                        <button className="btn-reservations">
+                                            Moje rezervacije i recenzije
+                                        </button>
+                                    </Link>
                                     {user.oglasivac === "NE" && (
                                         <button 
                                             className="btn-advertiser"

@@ -177,4 +177,28 @@ public class RezervacijaController {
             return Mono.just(ResponseEntity.status(400).body(response));
         }
     }
+
+    /**
+     * Get all reservations for the logged-in user
+     */
+    @GetMapping("/korisnik")
+    public Mono<ResponseEntity<List<Rezervacija>>> getRezervacijeByCurrentUser(
+            @AuthenticationPrincipal OAuth2User principal) {
+        
+        if (principal == null) {
+            return Mono.just(ResponseEntity.status(401).body(new ArrayList<>()));
+        }
+
+        String email = principal.getAttribute("email");
+        
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        return Mono.just(ResponseEntity.status(401).body(new ArrayList<>()));
+                    }
+                    return rezervacijaService.getRezervacijeByIdKorisnika((long) korisnik.getIdKorisnika())
+                            .map(ResponseEntity::ok)
+                            .defaultIfEmpty(ResponseEntity.ok(new ArrayList<>()));
+                });
+    }
 }

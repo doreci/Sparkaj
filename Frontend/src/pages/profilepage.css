@@ -257,6 +257,26 @@
     transform: translateY(-2px);
 }
 
+.btn-reservations {
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    padding: 14px 50px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.btn-reservations:hover {
+    background-color: white;
+    color: #6f42c1;
+    border: 2px solid #6f42c1;
+    transform: translateY(-2px);
+}
+
 /* Footer */
 .footer {
     width: 100%;

@@ -15,6 +15,7 @@ import AdminPage from "./pages/AdminPage.jsx"
 import ProfilePage from "./pages/profilePage.jsx"
 import TransactionHistoryPage from "./pages/TransactionHistoryPage.jsx"
 import BlockedPage from "./pages/BlockedPage.jsx"
+import MyReservationsReviewsPage from "./pages/MyReservationsReviewsPage.jsx"
 import ProtectedRoute from "./components/ProtectedRoute.jsx"
 
 createRoot(document.getElementById("root")).render(
@@ -34,6 +35,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/profile/:id" element={<ProfilePage />} />
                     <Route path="/editprofile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                     <Route path="/transaction-history" element={<ProtectedRoute><TransactionHistoryPage /></ProtectedRoute>} />
+                    <Route path="/my-reservations-reviews" element={<ProtectedRoute><MyReservationsReviewsPage /></ProtectedRoute>} />
                 </Routes>
             </BrowserRouter>
         </Provider>
