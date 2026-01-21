@@ -65,12 +65,6 @@ function AdCard({ ad, isOwned = false, onDelete = null }) {
                     >
                         ✏️ Uredi
                     </Link>
-                    <button
-                        onClick={handleDeleteClick}
-                        className="btn-delete"
-                    >
-                        🗑️ Obriši
-                    </button>
                 </div>
             )}
         </div>

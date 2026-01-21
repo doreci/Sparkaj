@@ -110,11 +110,10 @@
     padding: 10px 15px;
     background: #f8f9fa;
     border-top: 1px solid #e0e0e0;
+    justify-content: center;
 }
 
-.btn-edit,
-.btn-delete {
-    flex: 1;
+.btn-edit {
     padding: 8px 12px;
     border: none;
     border-radius: 6px;
@@ -127,25 +126,13 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-}
-
-.btn-edit {
+    min-width: max-content;
     background: #667eea;
     color: white;
 }
 
 .btn-edit:hover {
     background: #5568d3;
-    transform: scale(1.02);
-}
-
-.btn-delete {
-    background: #ff6b6b;
-    color: white;
-}
-
-.btn-delete:hover {
-    background: #ee5a52;
     transform: scale(1.02);
 }
 
@@ -181,10 +168,10 @@
         font-size: 12px;
     }
 
-    .btn-edit,
-    .btn-delete {
+    .btn-edit {
         font-size: 12px;
         padding: 6px 10px;
+        flex: 0 1 auto;
     }
 }
 
@@ -205,9 +192,9 @@
         font-size: 11px;
     }
 
-    .btn-edit,
-    .btn-delete {
+    .btn-edit {
         font-size: 11px;
+        flex: 0 1 auto;
         padding: 5px 8px;
     }
 }

@@ -153,14 +153,14 @@ input:focus {
 .submit-button button {
     background-color: rgb(0, 0, 61);
     color: white;
-    padding: 14px 50px;
+    padding: 12px 30px;
     border: none;
     border-radius: 6px;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 200px;
+    width: max-content;
 }
 
 .submit-button button:hover {
@@ -259,9 +259,9 @@ input:focus {
     }
 
     .submit-button button {
-        padding: 12px 40px;
+        padding: 11px 25px;
         font-size: 15px;
-        min-width: 150px;
+        width: max-content;
     }
 }
 
@@ -328,9 +328,9 @@ input:focus {
     }
 
     .submit-button button {
-        padding: 11px 30px;
+        padding: 10px 20px;
         font-size: 14px;
-        min-width: 120px;
+        width: max-content;
     }
 
     .footer {
