@@ -1,6 +1,7 @@
 package com.sparkaj.controller;
 
 import com.sparkaj.model.CreateOglasRequest;
+import com.sparkaj.model.UpdateOglasRequest;
 import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.model.Prijava;
@@ -90,15 +91,105 @@ public class OglasController {
     }
     
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<List<Oglas>>> azurirajOglas(@PathVariable("id") Long id, @RequestBody Oglas oglas) {
-        return oglasService.azurirajOglas(id, oglas)
-                .map(ResponseEntity::ok);
+    public Mono<ResponseEntity<Object>> azurirajOglas(
+            @PathVariable("id") Integer id,
+            @AuthenticationPrincipal OAuth2User principal,
+            @RequestBody UpdateOglasRequest request) {
+        System.out.println("[OglasController] PUT /api/oglasi/{id} - Ažuriram oglas: " + id);
+        System.out.println("[OglasController] Request: " + request);
+        
+        if (principal == null) {
+            System.err.println("[OglasController] ✗ Korisnik nije autentificiran");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Korisnik nije autentificiran");
+            return Mono.just(ResponseEntity.status(401).body((Object) error));
+        }
+
+        String email = principal.getAttribute("email");
+        System.out.println("[OglasController] Email korisnika: " + email);
+
+        // Pronađi id_korisnika po emailu
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[OglasController] ✗ Korisnik nije pronađen sa emailom: " + email);
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Korisnik nije pronađen");
+                        return Mono.just(ResponseEntity.status(404).body((Object) error));
+                    }
+                    
+                    System.out.println("[OglasController] Pronađen korisnik sa ID: " + korisnik.getIdKorisnika());
+                    return oglasService.azurirajOglas(id.longValue(), request, korisnik.getIdKorisnika())
+                            .map(result -> {
+                                Map<String, Object> response = new HashMap<>();
+                                response.put("success", true);
+                                response.put("message", "Oglas je uspješno ažuriran");
+                                response.put("oglas", result);
+                                return ResponseEntity.ok((Object) response);
+                            })
+                            .onErrorResume(error -> {
+                                System.err.println("[OglasController] ✗ Greška pri ažuriranju oglasa: " + error.getMessage());
+                                Map<String, String> errorResponse = new HashMap<>();
+                                errorResponse.put("error", error.getMessage());
+                                return Mono.just(ResponseEntity.status(400).body((Object) errorResponse));
+                            });
+                })
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri ažuriranju oglasa: " + error.getMessage());
+                    error.printStackTrace();
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
+                });
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteOglas(@PathVariable Integer id) {
-        return oglasService.obrisiOglas(id.longValue())
-                .map(oglasi -> ResponseEntity.noContent().build());
+    public Mono<ResponseEntity<Object>> deleteOglas(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal OAuth2User principal) {
+        System.out.println("[OglasController] DELETE /api/oglasi/{id} - Brišem oglas: " + id);
+        
+        if (principal == null) {
+            System.err.println("[OglasController] ✗ Korisnik nije autentificiran");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Korisnik nije autentificiran");
+            return Mono.just(ResponseEntity.status(401).body((Object) error));
+        }
+
+        String email = principal.getAttribute("email");
+        System.out.println("[OglasController] Email korisnika: " + email);
+
+        // Pronađi id_korisnika po emailu
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(korisnik -> {
+                    if (korisnik == null) {
+                        System.err.println("[OglasController] ✗ Korisnik nije pronađen sa emailom: " + email);
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Korisnik nije pronađen");
+                        return Mono.just(ResponseEntity.status(404).body((Object) error));
+                    }
+                    
+                    System.out.println("[OglasController] Pronađen korisnik sa ID: " + korisnik.getIdKorisnika());
+                    return oglasService.obrisiOglas(id.longValue(), korisnik.getIdKorisnika())
+                            .map(result -> {
+                                Map<String, String> response = new HashMap<>();
+                                response.put("message", "Oglas je uspješno obrisan");
+                                return ResponseEntity.ok((Object) response);
+                            })
+                            .onErrorResume(error -> {
+                                System.err.println("[OglasController] ✗ Greška pri brisanju oglasa: " + error.getMessage());
+                                Map<String, String> errorResponse = new HashMap<>();
+                                errorResponse.put("error", error.getMessage());
+                                return Mono.just(ResponseEntity.status(400).body((Object) errorResponse));
+                            });
+                })
+                .onErrorResume(error -> {
+                    System.err.println("[OglasController] ✗ Greška pri brisanju oglasa: " + error.getMessage());
+                    error.printStackTrace();
+                    Map<String, String> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body((Object) errorResponse));
+                });
     }
 
     @PostMapping("/{id}/prijava")

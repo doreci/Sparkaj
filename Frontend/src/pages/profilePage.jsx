@@ -106,6 +106,37 @@ function ProfilePage() {
         }
     };
 
+    const handleDeleteAd = async (adId) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/oglasi/${adId}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = "Greška pri brisanju oglasa";
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.error || errorMessage;
+                } catch {
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+
+            alert("Oglas uspješno obrisan!");
+            // Ponovno učitaj oglase
+            window.location.reload();
+        } catch (error) {
+            console.error("Greška pri brisanju oglasa:", error);
+            alert("Greška pri brisanju oglasa: " + error.message);
+        }
+    };
+
     if (loading) {
         return (
             <div className="loading-spinner">
@@ -251,7 +282,12 @@ function ProfilePage() {
                     {adsStatus !== "loading" && userAds.length > 0 && (
                         <div className="ads-grid">
                             {userAds.map(ad => (
-                                <AdCard key={ad.id_oglasa} ad={ad} />
+                                <AdCard 
+                                    key={ad.id_oglasa} 
+                                    ad={ad} 
+                                    isOwned={isOwnProfile}
+                                    onDelete={handleDeleteAd}
+                                />
                             ))}
                         </div>
                     )}

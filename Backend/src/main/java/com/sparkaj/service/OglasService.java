@@ -3,11 +3,13 @@ package com.sparkaj.service;
 
 import com.sparkaj.model.GradBody;
 import com.sparkaj.model.CreateOglasRequest;
+import com.sparkaj.model.UpdateOglasRequest;
 import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
 import com.sparkaj.model.Rezervacija;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
 import javax.swing.plaf.basic.BasicListUI;
@@ -195,24 +197,104 @@ public class OglasService {
                 .map(Arrays::asList);
     }
     
-    public Mono<List<Oglas>> azurirajOglas(Long id, Oglas oglas) {
-        System.out.println(" Azuriram oglas " + id.toString());
-        oglas.setIdOglasa(id.intValue());
-        return webClient.put()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
-                .bodyValue(oglas)
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
+    public Mono<Oglas> azurirajOglas(Long id, UpdateOglasRequest request, Integer idKorisnika) {
+        System.out.println("[azurirajOglas] Ažuriram oglas " + id.toString() + " za korisnika " + idKorisnika);
+        System.out.println("[azurirajOglas] Request: " + request);
+        
+        // Prvo provjeri je li korisnik vlasnik oglasa
+        return getOglasById(id.intValue())
+                .flatMap(postojeciOglas -> {
+                    if (postojeciOglas == null) {
+                        return Mono.error(new RuntimeException("Oglas nije pronađen"));
+                    }
+                    
+                    if (!postojeciOglas.getIdKorisnika().equals(idKorisnika)) {
+                        System.err.println("[azurirajOglas] ✗ Korisnik " + idKorisnika + " nije vlasnik oglasa " + id);
+                        return Mono.error(new RuntimeException("Nemate dozvolu za ažuriranje ovog oglasa"));
+                    }
+                    
+                    System.out.println("[azurirajOglas] ✓ Korisnik je vlasnik oglasa, ažuriram...");
+                    
+                    // Konvertiraj UpdateOglasRequest u Map - samo updateable polja!
+                    Map<String, Object> updateMap = new HashMap<>();
+                    if (request.getNazivOglasa() != null) {
+                        updateMap.put("naziv_oglasa", request.getNazivOglasa());
+                    }
+                    if (request.getOpisOglasa() != null) {
+                        updateMap.put("opis_oglasa", request.getOpisOglasa());
+                    }
+                    if (request.getCijena() != null) {
+                        updateMap.put("cijena", request.getCijena());
+                    }
+                    if (request.getGrad() != null) {
+                        updateMap.put("grad", request.getGrad());
+                    }
+                    if (request.getUlicaBroj() != null) {
+                        updateMap.put("ulica_broj", request.getUlicaBroj());
+                    }
+                    if (request.getPostanskiBroj() != null) {
+                        updateMap.put("postanski_broj", request.getPostanskiBroj());
+                    }
+                    if (request.getSlika() != null) {
+                        updateMap.put("slika", request.getSlika());
+                    }
+                    
+                    System.out.println("[azurirajOglas] UpdateMap: " + updateMap);
+                    
+                    return webClient.patch()
+                            .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                            .header("Prefer", "return=representation")
+                            .bodyValue(updateMap)
+                            .exchangeToMono(response -> {
+                                System.out.println("[azurirajOglas] Response status: " + response.statusCode());
+                                if (response.statusCode().is2xxSuccessful()) {
+                                    System.out.println("[azurirajOglas] ✓ Oglas uspješno ažuriran");
+                                    return response.bodyToMono(Oglas[].class)
+                                            .map(niz -> niz.length > 0 ? niz[0] : null);
+                                } else {
+                                    return response.bodyToMono(String.class)
+                                        .flatMap(body -> {
+                                            System.err.println("[azurirajOglas] ✗ Greška: " + response.statusCode() + " " + body);
+                                            return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
+                                        });
+                                }
+                            });
+                });
     }
     
-    public Mono<List<Oglas>> obrisiOglas(Long id) {
-        System.out.println(" Brisem oglas " + id.toString());
-        return webClient.delete()
-                .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
-                .retrieve()
-                .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
+    public Mono<String> obrisiOglas(Long id, Integer idKorisnika) {
+        System.out.println("[obrisiOglas] Brišem oglas " + id.toString() + " za korisnika " + idKorisnika);
+        
+        // Prvo provjeri je li korisnik vlasnik oglasa
+        return getOglasById(id.intValue())
+                .flatMap(postojeciOglas -> {
+                    if (postojeciOglas == null) {
+                        return Mono.error(new RuntimeException("Oglas nije pronađen"));
+                    }
+                    
+                    if (!postojeciOglas.getIdKorisnika().equals(idKorisnika)) {
+                        System.err.println("[obrisiOglas] ✗ Korisnik " + idKorisnika + " nije vlasnik oglasa " + id);
+                        return Mono.error(new RuntimeException("Nemate dozvolu za brisanje ovog oglasa"));
+                    }
+                    
+                    System.out.println("[obrisiOglas] ✓ Korisnik je vlasnik oglasa, brišem...");
+                    return webClient.delete()
+                            .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
+                            .header("Prefer", "return=representation")
+                            .exchangeToMono(response -> {
+                                System.out.println("[obrisiOglas] Response status: " + response.statusCode());
+                                if (response.statusCode().is2xxSuccessful() || response.statusCode().value() == 204) {
+                                    System.out.println("[obrisiOglas] ✓ Oglas uspješno obrisan");
+                                    return Mono.just("Oglas uspješno obrisan");
+                                } else {
+                                    return response.bodyToMono(String.class)
+                                        .flatMap(body -> {
+                                            System.err.println("[obrisiOglas] ✗ Greška: " + response.statusCode() + " " + body);
+                                            return Mono.error(new RuntimeException("Supabase error: " + response.statusCode() + " " + body));
+                                        });
+                                }
+                            });
+                });
     }
 
     // Dohvati podatke o oglasu

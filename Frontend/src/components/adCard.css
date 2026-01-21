@@ -103,6 +103,52 @@
     gap: 5px;
 }
 
+/* Akcije za vlasnika oglasa */
+.ad-card-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-edit,
+.btn-delete {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn-edit {
+    background: #667eea;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #5568d3;
+    transform: scale(1.02);
+}
+
+.btn-delete {
+    background: #ff6b6b;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #ee5a52;
+    transform: scale(1.02);
+}
+
 /* Responsive za manje ekrane */
 @media (max-width: 768px) {
     .ad-card {
@@ -134,6 +180,12 @@
     .rating-value {
         font-size: 12px;
     }
+
+    .btn-edit,
+    .btn-delete {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -151,5 +203,11 @@
 
     .ad-card-location {
         font-size: 11px;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        font-size: 11px;
+        padding: 5px 8px;
     }
 }

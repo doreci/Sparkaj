@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import EditProfilePage from "./pages/EditProfilePage.jsx";
 import AdPage from "./pages/adPage.jsx";
 import CreateAdPage from "./pages/CreateAdPage.jsx"
+import EditAdPage from "./pages/EditAdPage.jsx"
 import AdminPage from "./pages/AdminPage.jsx"
 import ProfilePage from "./pages/profilePage.jsx"
 import TransactionHistoryPage from "./pages/TransactionHistoryPage.jsx"
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="/ad/:id" element={<AdPage />} />
                     <Route path="/ad/:id" element={<ProtectedRoute><AdPage /></ProtectedRoute>} />
                     <Route path="/napravi-oglas" element={<ProtectedRoute><CreateAdPage/></ProtectedRoute>} />
+                    <Route path="/edit-ad/:id" element={<ProtectedRoute><EditAdPage /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/profile/:id" element={<ProfilePage />} />

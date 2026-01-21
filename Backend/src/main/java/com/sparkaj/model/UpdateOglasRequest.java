@@ -1,16 +1,10 @@
 package com.sparkaj.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sparkaj.model.Rezervacija;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Oglas {
-
-    @JsonProperty("id_oglasa")
-    private Integer idOglasa;
+public class UpdateOglasRequest {
 
     @JsonProperty("naziv_oglasa")
     private String nazivOglasa;
@@ -19,9 +13,6 @@ public class Oglas {
     private String opisOglasa;
 
     private Double cijena;
-
-    @JsonProperty("prosj_ocjena")
-    private Double prosjOcjena;
 
     @JsonProperty("grad")
     private String grad;
@@ -34,47 +25,24 @@ public class Oglas {
 
     private String slika;
 
-    @JsonProperty("id_korisnika")
-    private Integer idKorisnika;
+    public UpdateOglasRequest() {}
 
-    @JsonProperty("korisnik")
-    public Korisnik korisnik;
-
-    @JsonProperty("Rezervacija")
-    private List<Rezervacija> rezervacije;
-
-    public Oglas() {}
-
-    public Oglas(String nazivOglasa, String opisOglasa, Double cijena, String grad, String ulicaBroj, Integer postanskiBroj, Integer idKorisnika, String slika) {
+    public UpdateOglasRequest(String nazivOglasa, String opisOglasa, Double cijena, 
+                            String grad, String ulicaBroj, Integer postanskiBroj, String slika) {
         this.nazivOglasa = nazivOglasa;
         this.opisOglasa = opisOglasa;
         this.cijena = cijena;
         this.grad = grad;
         this.ulicaBroj = ulicaBroj;
         this.postanskiBroj = postanskiBroj;
-        this.idKorisnika = idKorisnika;
         this.slika = slika;
     }
 
-    @JsonProperty("korisnik")
-    public Korisnik getKorisnik(){
-        return korisnik;
-    }
-
-    public void setKorisnik(Korisnik korisnik) {
-        this.korisnik = korisnik;
-    }
-
-    public Integer getIdOglasa() {
-        return idOglasa;
-    }
-    public void setIdOglasa(Integer idOglasa) {
-        this.idOglasa = idOglasa;
-    }
-
+    // Getters and Setters
     public String getNazivOglasa() {
         return nazivOglasa;
     }
+
     public void setNazivOglasa(String nazivOglasa) {
         this.nazivOglasa = nazivOglasa;
     }
@@ -82,6 +50,7 @@ public class Oglas {
     public String getOpisOglasa() {
         return opisOglasa;
     }
+
     public void setOpisOglasa(String opisOglasa) {
         this.opisOglasa = opisOglasa;
     }
@@ -89,15 +58,9 @@ public class Oglas {
     public Double getCijena() {
         return cijena;
     }
+
     public void setCijena(Double cijena) {
         this.cijena = cijena;
-    }
-
-    public Double getProsjOcjena() {
-        return prosjOcjena;
-    }
-    public void setProsjOcjena(Double prosjOcjena) {
-        this.prosjOcjena = prosjOcjena;
     }
 
     public String getGrad() {
@@ -132,19 +95,16 @@ public class Oglas {
         this.slika = slika;
     }
 
-    public Integer getIdKorisnika() {
-        return idKorisnika;
-    }
-
-    public void setIdKorisnika(Integer idKorisnika) {
-        this.idKorisnika = idKorisnika;
-    }
-
-    public List<Rezervacija> getRezervacije() {
-        return rezervacije;
-    }
-
-    public void setRezervacije(List<Rezervacija> rezervacije) {
-        this.rezervacije = rezervacije;
+    @Override
+    public String toString() {
+        return "UpdateOglasRequest{" +
+                "nazivOglasa='" + nazivOglasa + '\'' +
+                ", opisOglasa='" + opisOglasa + '\'' +
+                ", cijena=" + cijena +
+                ", grad='" + grad + '\'' +
+                ", ulicaBroj='" + ulicaBroj + '\'' +
+                ", postanskiBroj=" + postanskiBroj +
+                ", slika='" + slika + '\'' +
+                '}';
     }
 }
