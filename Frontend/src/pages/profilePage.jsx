@@ -170,13 +170,13 @@ function ProfilePage() {
                         {/* Osnovne informacije */}
                         <div className="profile-details">
                             <div className="detail-item">
-                                <label>Email</label>
+                                <label>Email: </label>
                                 <p>{user.email || "Nije dostupno"}</p>
                             </div>
 
                             <div className="detail-item">
-                                <label>ID Korisnika</label>
-                                <p>{user.id_korisnika || "Nije dostupno"}</p>
+                                <label>Kontakt: </label>
+                                <p>{user.broj_mobitela ? "+385 " + user.broj_mobitela : "Nije upisan"}</p>
                             </div>
                         </div>
 

@@ -180,16 +180,20 @@
     background: #f9f9f9;
     border-radius: 6px;
     border-left: 4px solid rgb(0, 0, 61);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .detail-item label {
-    display: block;
+    display: inline;
     font-weight: 600;
     color: rgb(0, 0, 61);
-    margin-bottom: 5px;
+    margin-bottom: 0;
     font-size: 13px;
-    text-transform: uppercase;
     letter-spacing: 0.8px;
+    text-transform: none;
+    white-space: nowrap;
 }
 
 .detail-item p {
@@ -197,6 +201,7 @@
     font-size: 16px;
     word-break: break-all;
     font-weight: 500;
+    margin: 0;
 }
 
 /* Akcije */
