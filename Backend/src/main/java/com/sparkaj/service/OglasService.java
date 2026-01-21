@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.swing.plaf.basic.BasicListUI;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,26 +48,56 @@ public class OglasService {
                 .map(Arrays::asList).map(list -> list.stream().distinct().collect(Collectors.toList()));
                 
     }
-    
+
     public Mono<List<Oglas>> pretraziOglase(FilterOglasBody fob) {
-        System.out.println(" Dohvaćam oglase iz baze...");
-        String query = "?";
-        if(fob.getLocation() != null) {
-        	query += "adresa_full=ilike.*" + fob.getLocation() + "*&";
+        StringBuilder query = new StringBuilder("?select=*,Rezervacija(*)&");
+
+        if (fob.getLocation() != null && !fob.getLocation().isEmpty()) {
+            query.append("adresa_full=ilike.*").append(fob.getLocation()).append("*&");
         }
-        if(fob.getPriceMin() > 0.0f) {
-        	query += "cijena=gte." + fob.getPriceMin() + "&";
+        if (fob.getPriceMin() > 0.0f) {
+            query.append("cijena=gte.").append(fob.getPriceMin()).append("&");
         }
-        if(fob.getPriceMax() > 0.0f) {
-        	query += "cijena=lte." + fob.getPriceMax() + "&";
+        if (fob.getPriceMax() > 0.0f) {
+            query.append("cijena=lte.").append(fob.getPriceMax()).append("&");
         }
-        query = query.substring(0, query.length() - 1);
-        System.out.println("Query: " + query);
+
+        String finalQuery = query.substring(0, query.length() - 1);
+
         return webClient.get()
-                .uri("/rest/v1/oglasi_fulladresa" + query)
+                .uri("/rest/v1/oglasi_fulladresa" + finalQuery)
                 .retrieve()
                 .bodyToMono(Oglas[].class)
-                .map(Arrays::asList);
+                .map(oglasi -> Arrays.stream(oglasi)
+                        .filter(oglas -> isDostupan(oglas, fob.getDateFrom(), fob.getDateTo()))
+                        .collect(Collectors.toList()));
+    }
+
+    private boolean isDostupan(Oglas oglas, String dateFrom, String dateTo) {
+        // 1. Ako korisnik nije odabrao datume, prikaži oglas
+        if (dateFrom == null || dateTo == null || dateFrom.isEmpty() || dateTo.isEmpty()) {
+            return true;
+        }
+
+        // 2. Ako oglas nema nikakvih rezervacija, slobodan je
+        if (oglas.getRezervacije() == null || oglas.getRezervacije().isEmpty()) {
+            return true;
+        }
+
+        // 3. Parsiraj samo datume koji dolaze s frontenda (jer su oni Stringovi)
+        LocalDateTime filterStart = LocalDateTime.parse(dateFrom);
+        LocalDateTime filterEnd = LocalDateTime.parse(dateTo);
+
+        // 4. Provjera preklapanja
+        for (Rezervacija rez : oglas.getRezervacije()) {
+            LocalDateTime rezStart = rez.getDatumOd();
+            LocalDateTime rezEnd = rez.getDatumDo();
+
+            if (filterStart.isBefore(rezEnd) && filterEnd.isAfter(rezStart)) {
+                return false; // Parking je ZAUZET u ovom terminu
+            }
+        }
+        return true;
     }
         
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
