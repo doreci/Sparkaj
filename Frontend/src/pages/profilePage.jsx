@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { selectUserProfile, selectUserStatus } from "../store/userSlice";
-import { selectAdsList, selectAdsStatus } from "../store/adSlice";
+import { selectAdsList, selectAdsStatus, fetchAllAds } from "../store/adSlice";
 import AdCard from "../components/adCard";
 import "./profilepage.css";
 import { isAdmin } from "../utils/authHelpers";
 
 function ProfilePage() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { id } = useParams(); // ID korisnika koji se gleda iz URL-a
     const userProfile = useSelector(selectUserProfile);
     const status = useSelector(selectUserStatus);
@@ -22,17 +23,24 @@ function ProfilePage() {
     const displayedUserId = id ? parseInt(id) : user?.id_korisnika;
     const userAds = ads.filter(ad => ad.id_korisnika === displayedUserId);
 
+    // Dohvati sve oglase
+    useEffect(() => {
+        if (adsStatus === "idle") {
+            dispatch(fetchAllAds());
+        }
+    }, [dispatch, adsStatus]);
+
     useEffect(() => {
         checkAuthentication();
     }, []);
 
     useEffect(() => {
         // Ako je id u URL-u i razlikuje se od prijavljenog korisnika, učitaj druge korisnikove podatke
-        if (id && id !== user?.id_korisnika) {
+        if (id && id !== user?.id_korisnika && user) {
             fetchUserProfile(parseInt(id));
-        } else if (!id) {
-            setIsOwnProfile(true);
-        } else {
+            setIsOwnProfile(false);
+        } else if (!id && user?.id_korisnika) {
+            // Ako nema ID-a u URL-u, to je vlastiti profil
             setIsOwnProfile(true);
         }
     }, [id, user?.id_korisnika]);
@@ -129,8 +137,8 @@ function ProfilePage() {
             }
 
             alert("Oglas uspješno obrisan!");
-            // Ponovno učitaj oglase
-            window.location.reload();
+            // Ponovno učitaj sve oglase jer je oglas obrisan
+            dispatch(fetchAllAds());
         } catch (error) {
             console.error("Greška pri brisanju oglasa:", error);
             alert("Greška pri brisanju oglasa: " + error.message);
