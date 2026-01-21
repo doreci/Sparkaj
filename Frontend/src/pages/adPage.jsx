@@ -206,7 +206,7 @@ function AdPage() {
             setTimeout(() => setShowReviewSuccess(false), 2000);
         } catch (error) {
             console.error("Greška:", error);
-            alert("Greška pri spremanju recenzije: " + error.message);
+            alert("Ne postoji prethodna rezervaija za ovaj oglas. Recenziju možete ostaviti samo ako ste rezervirali oglas.");
         } finally {
             setReviewLoadingState(false);
         }
@@ -367,7 +367,7 @@ function AdPage() {
                                                     : "#ccc",
                                             opacity: reviewLoadingState ? 0.6 : 1,
                                         }}
-                                        title="Klikni da ostavi recenziju"
+                                        title="Klikni da ostaviš recenziju"
                                     >
                                         ★
                                     </span>

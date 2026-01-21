@@ -326,24 +326,34 @@ public class OglasService {
                 .bodyToMono(String.class)
                 .flatMap(response -> {
                     try {
+                        // Provjeri je li response prazna array (nema rezervacije)
+                        if (response.trim().equals("[]")) {
+                            System.out.println("[findReservation] Nema rezervacije za korisnika " + idKorisnika + " na oglasu " + idOglasa);
+                            return Mono.just((Long) null);
+                        }
+                        
                         // Parse JSON array to find id_rezervacije
                         if (response.contains("id_rezervacije")) {
                             // Simple extraction - assumes response like [{"id_rezervacije":123}]
                             int startIdx = response.indexOf("id_rezervacije") + 15;
                             int endIdx = response.indexOf("}", startIdx);
-                            String idStr = response.substring(startIdx, endIdx).trim().replaceAll("[^0-9]", "");
-                            if (!idStr.isEmpty()) {
-                                return Mono.just(Long.parseLong(idStr));
+                            if (endIdx > startIdx) {
+                                String idStr = response.substring(startIdx, endIdx).trim().replaceAll("[^0-9]", "");
+                                if (!idStr.isEmpty()) {
+                                    System.out.println("[findReservation] Pronađena rezervacija ID: " + idStr);
+                                    return Mono.just(Long.parseLong(idStr));
+                                }
                             }
                         }
+                        System.out.println("[findReservation] Nema rezervacije (ne može se parsirati)");
                         return Mono.just((Long) null);
                     } catch (Exception e) {
-                        System.err.println("Error parsing reservation: " + e.getMessage());
+                        System.err.println("[findReservation] Greška pri parsiranju: " + e.getMessage());
                         return Mono.just((Long) null);
                     }
                 })
                 .onErrorResume(error -> {
-                    System.err.println("Error finding reservation: " + error.getMessage());
+                    System.err.println("[findReservation] Greška pri pronalaženju: " + error.getMessage());
                     return Mono.just((Long) null);
                 });
     }
