@@ -132,3 +132,24 @@ input:focus {
 .submit-button button:hover {
     background-color: rgb(38, 38, 129);
 }
+
+.error-message {
+    background-color: #f8d7da;
+    border: 2px solid #f5c6cb;
+    color: #721c24;
+    padding: 30px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+    max-width: 600px;
+}
+
+.error-message h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+}
+
+.error-message p {
+    margin: 10px 0;
+    font-size: 16px;
+}

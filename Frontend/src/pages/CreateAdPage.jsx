@@ -9,6 +9,8 @@ function CreateAdPage() {
 
     const [session, setSession] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAdvertiser, setIsAdvertiser] = useState(false);
+    const [isAdvertiserLoading, setIsAdvertiserLoading] = useState(true);
     const [imagePreview, setImagePreview] = useState("./parking-placeholder.png");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,12 +36,20 @@ function CreateAdPage() {
             if (data.authenticated) {
                 setSession(data);
                 setIsAuthenticated(true);
+                // Provjeri je li korisnik oglašivač
+                const isAdvertiserStatus = data.oglasivac === "DA";
+                setIsAdvertiser(isAdvertiserStatus);
+                console.log("Oglašivač status:", data.oglasivac);
             } else {
                 setIsAuthenticated(false);
+                setIsAdvertiser(false);
             }
         } catch (error) {
             console.log("Korisnik nije autentificiran");
             setIsAuthenticated(false);
+            setIsAdvertiser(false);
+        } finally {
+            setIsAdvertiserLoading(false);
         }
     };
 
@@ -69,6 +79,11 @@ function CreateAdPage() {
 
         if (!isAuthenticated) {
             alert("Nisi prijavljen!");
+            return;
+        }
+
+        if (!isAdvertiser) {
+            alert("Moraš biti oglašivač da kreirajš oglas! Traži pristup kao oglašivač u profilu.");
             return;
         }
 
@@ -189,6 +204,12 @@ function CreateAdPage() {
             {!isAuthenticated ? (
                 <div className="content-wrapper">
                     <p>Trebas biti prijavljen da kreirajš oglas. Molimo prijavi se prvo.</p>
+                </div>
+            ) : !isAdvertiser && !isAdvertiserLoading ? (
+                <div className="content-wrapper">
+                    <div className="error-message">
+                        <h2>⛔ Nemaš dozvolu da kreiraš oglase</h2>
+                    </div>
                 </div>
             ) : (
             <div className="content-wrapper">
