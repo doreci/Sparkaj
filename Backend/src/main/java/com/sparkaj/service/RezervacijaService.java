@@ -1,11 +1,14 @@
 package com.sparkaj.service;
 
+import com.sparkaj.model.Oglas;
 import com.sparkaj.model.Rezervacija;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class RezervacijaService {

@@ -1,14 +1,13 @@
 package com.sparkaj.service;
 
 import com.sparkaj.model.Korisnik;
+import com.sparkaj.model.Rezervacija;
 import com.sparkaj.model.UpdateProfileRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class KorisnikService {
@@ -385,5 +384,16 @@ public class KorisnikService {
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
                 .doOnNext(niz -> System.out.println("[KorisnikService] ✓ Pronađeno " + niz.length + " blokiranih korisnika"));
+    }
+
+    public Mono<List<Rezervacija>> getRezervacijeByIdKorisnika(Integer idKorisnika) {
+        return webClient.get()
+                .uri("/rest/v1/Rezervacija?id_korisnika=eq." + idKorisnika + "&select=*")
+                .retrieve()
+                .bodyToMono(Rezervacija[].class)
+                .map(niz -> {
+                    if (niz == null) return Collections.emptyList();
+                    return Arrays.asList(niz);
+                });
     }
 }

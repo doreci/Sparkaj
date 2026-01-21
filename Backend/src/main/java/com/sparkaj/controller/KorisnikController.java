@@ -2,6 +2,7 @@ package com.sparkaj.controller;
 
 import com.sparkaj.model.Korisnik;
 import com.sparkaj.model.Oglas;
+import com.sparkaj.model.Rezervacija;
 import com.sparkaj.model.UpdateProfileRequest;
 import com.sparkaj.service.KorisnikService;
 import com.sparkaj.service.OglasService;
@@ -79,4 +80,11 @@ public class KorisnikController {
         response.put("message", message);
         return response;
     }
+
+    @GetMapping("/{id}/rezervacije")
+    public Mono<List<Rezervacija>> getRezervacije(@PathVariable Integer id) {
+        return korisnikService.getRezervacijeByIdKorisnika(id);
+    }
+
+
 }

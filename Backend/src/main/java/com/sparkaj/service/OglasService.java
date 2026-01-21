@@ -5,9 +5,12 @@ import com.sparkaj.model.GradBody;
 import com.sparkaj.model.CreateOglasRequest;
 import com.sparkaj.model.FilterOglasBody;
 import com.sparkaj.model.Oglas;
+import com.sparkaj.model.Rezervacija;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import javax.swing.plaf.basic.BasicListUI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
