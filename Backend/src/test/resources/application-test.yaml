@@ -1,0 +1,45 @@
+# Test Configuration - Koristi istu Supabase bazu kao i glavni app
+# za sada, jer nemamo odvojenu testnu bazu
+
+# Supabase Configuration
+supabase:
+  url: https://hdxfgcduitknwjwiuuif.supabase.co
+  api:
+    key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkeGZnY2R1aXRrbndqd2l1dWlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxODI2MzAsImV4cCI6MjA3Nzc1ODYzMH0.h7zHO6Lge2V6oWVux1SzvQAEMUoOkfENRfCHN0evpAg
+    secret: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkeGZnY2R1aXRrbndqd2l1dWlmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjE4MjYzMCwiZXhwIjoyMDc3NzU4NjMwfQ._wJOq4A-z5GHwH5QhEhCynLvtkelSLuq4BsdwGhrJXs
+
+# Server Configuration
+server:
+  port: 8080
+
+
+# CORS Configuration za testove
+cors:
+  allowed-origins: http://localhost:3000, http://localhost:8080, http://localhost:10000
+
+# Stripe Configuration za testove (test ključevi)
+stripe:
+  secret:
+    key: sk_test_51SebNeCxvTBjwGGPbQR3tDSrD3vqTrJ9AWEDjYd2elCdfQzjwIeOTL4YcKTME1zsI2h6WbDubHacg9VlhGrnmA0L00OpfEEkW4
+
+# OAuth2 Configuration
+spring:
+  application:
+    name: sparkaj-app-test
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 1037227751449-vnk1ihmcvnbje5sq3b6e67u4o1klfqrv.apps.googleusercontent.com
+            client-secret: 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
+            scope: profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            user-name-attribute: sub
+
+# OAuth2 Login URL
+oauth2:
+  success-url: http://localhost:10000
+  failure-url: http://localhost:10000/login?error=true

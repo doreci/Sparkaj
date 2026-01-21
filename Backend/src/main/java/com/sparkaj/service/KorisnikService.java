@@ -5,6 +5,8 @@ import com.sparkaj.model.Rezervacija;
 import com.sparkaj.model.UpdateProfileRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import reactor.core.publisher.Mono;
 
 import java.util.*;
