@@ -80,17 +80,21 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
   const areSlotsContinuous = (slots) => {
     if (slots.length <= 1) return true;
 
-    // Custom sort - sortiraj po datumu, pa po satu kao broju
+    // Custom sort - sortiraj po datumu (kao Date objekat), pa po satu kao broju
     const sortedSlots = [...slots].sort((a, b) => {
       const [dateA, hourA] = a.split('-');
       const [dateB, hourB] = b.split('-');
       
-      if (dateA === dateB) {
+      // Konvertiraj stringove datuma u Date objekte za ispravnu usporedbu
+      const dateObjA = new Date(dateA);
+      const dateObjB = new Date(dateB);
+      
+      if (dateObjA.getTime() === dateObjB.getTime()) {
         // Isti datum, sortiraj po satu kao broju
         return parseInt(hourA) - parseInt(hourB);
       }
-      // Različiti datumi, sortiraj po datumu kao string
-      return dateA.localeCompare(dateB);
+      // Različiti datumi, sortiraj po datumu kao Date objekat
+      return dateObjA.getTime() - dateObjB.getTime();
     });
 
     for (let i = 0; i < sortedSlots.length - 1; i++) {
@@ -103,8 +107,14 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
       const currentHour = parseInt(currentHourStr);
       const nextHour = parseInt(nextHourStr);
 
-      // Ako su na istoj liniji (isti datum string)
-      if (currentDateStr === nextDateStr) {
+      // Konvertiraj u Date objekte za usporedu
+      const currentDate = new Date(currentDateStr);
+      const nextDate = new Date(nextDateStr);
+      const currentTime = currentDate.getTime();
+      const nextTime = nextDate.getTime();
+
+      // Ako su na istoj liniji (isti datum)
+      if (currentTime === nextTime) {
         // Satovi trebaju biti susjedni (razlika od 1)
         if (nextHour !== currentHour + 1) {
           return false;
@@ -113,7 +123,14 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
         // Ako su na različitim linijama, trebalo bi:
         // Trenutni sat mora biti 23 (zadnji sat dana)
         // Sljedeći sat mora biti 0 (prvi sat sljedećeg dana)
+        // I sljedeći datum mora biti točno 1 dan nakon trenutnog
         if (currentHour !== 23 || nextHour !== 0) {
+          return false;
+        }
+        
+        // Provjeri je li razlika između datuma točno 1 dan (86400000 ms)
+        const dayInMs = 24 * 60 * 60 * 1000;
+        if (nextTime - currentTime !== dayInMs) {
           return false;
         }
       }
@@ -128,7 +145,14 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
     let newSelectedSlots;
     
     if (selectedSlots.includes(slotKey)) {
+      // Deselektuj slot i provjeri je li rezultat i dalje kontinuiran
       newSelectedSlots = selectedSlots.filter(s => s !== slotKey);
+      
+      // Ako postoje preostali slotovi, provjeri su li kontinuirani
+      if (newSelectedSlots.length > 1 && !areSlotsContinuous(newSelectedSlots)) {
+        alert("Brisanjem ovog termina nastaje rupa! Možete birati samo kontinuirane termine (bez praznih mjesta između)!");
+        return;
+      }
     } else {
       newSelectedSlots = [...selectedSlots, slotKey];
       
