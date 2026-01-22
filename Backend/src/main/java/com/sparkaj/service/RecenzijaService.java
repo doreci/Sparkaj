@@ -21,10 +21,11 @@ public class RecenzijaService {
                 .uri(uriBuilder -> uriBuilder
                         .path("/rest/v1/Recenzija")
                         .queryParam("Rezervacija.id_korisnika", "eq." + idKorisnika)
-                        .queryParam("select", "*,Rezervacija!inner(*)")
+                        .queryParam("select", "*,Rezervacija(*)")
                         .build())
                 .retrieve()
                 .bodyToMono(Recenzija[].class)
-                .map(Arrays::asList);
+                .map(Arrays::asList)
+                .onErrorResume(e -> Mono.just(List.of()));
     }
 }
