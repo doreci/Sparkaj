@@ -52,6 +52,10 @@ public class OglasService {
     }
 
     public Mono<List<Oglas>> pretraziOglase(FilterOglasBody fob) {
+        System.out.println("[pretraziOglase] Primljeni filtri - Location: " + fob.getLocation() + 
+                ", PriceMin: " + fob.getPriceMin() + ", PriceMax: " + fob.getPriceMax() + 
+                ", DateFrom: " + fob.getDateFrom() + ", DateTo: " + fob.getDateTo());
+        
         StringBuilder query = new StringBuilder("?select=*,Rezervacija(*)&");
 
         if (fob.getLocation() != null && !fob.getLocation().isEmpty()) {
@@ -77,29 +81,41 @@ public class OglasService {
 
     private boolean isDostupan(Oglas oglas, String dateFrom, String dateTo) {
         // 1. Ako korisnik nije odabrao datume, prikaži oglas
-        if (dateFrom == null || dateTo == null || dateFrom.isEmpty() || dateTo.isEmpty()) {
+        if (dateFrom == null || dateFrom.isEmpty() || dateTo == null || dateTo.isEmpty()) {
+            System.out.println("[isDostupan] Korisnik nije odabrao datume - prikaži oglas");
             return true;
         }
 
         // 2. Ako oglas nema nikakvih rezervacija, slobodan je
         if (oglas.getRezervacije() == null || oglas.getRezervacije().isEmpty()) {
+            System.out.println("[isDostupan] Nema rezervacija - oglas je dostupan");
             return true;
         }
 
         // 3. Parsiraj samo datume koji dolaze s frontenda (jer su oni Stringovi)
-        LocalDateTime filterStart = LocalDateTime.parse(dateFrom);
-        LocalDateTime filterEnd = LocalDateTime.parse(dateTo);
+        try {
+            LocalDateTime filterStart = LocalDateTime.parse(dateFrom);
+            LocalDateTime filterEnd = LocalDateTime.parse(dateTo);
+            System.out.println("[isDostupan] Parsirani datumi - filterStart: " + filterStart + ", filterEnd: " + filterEnd);
 
-        // 4. Provjera preklapanja
-        for (Rezervacija rez : oglas.getRezervacije()) {
-            LocalDateTime rezStart = rez.getDatumOd();
-            LocalDateTime rezEnd = rez.getDatumDo();
+            // 4. Provjera preklapanja
+            for (Rezervacija rez : oglas.getRezervacije()) {
+                LocalDateTime rezStart = rez.getDatumOd();
+                LocalDateTime rezEnd = rez.getDatumDo();
+                System.out.println("[isDostupan] Provjera presjeka - rezStart: " + rezStart + ", rezEnd: " + rezEnd);
 
-            if (filterStart.isBefore(rezEnd) && filterEnd.isAfter(rezStart)) {
-                return false; // Parking je ZAUZET u ovom terminu
+                if (filterStart.isBefore(rezEnd) && filterEnd.isAfter(rezStart)) {
+                    System.out.println("[isDostupan] Pronađen presjek - oglas nije dostupan");
+                    return false; // Parking je ZAUZET u ovom terminu
+                }
             }
+            System.out.println("[isDostupan] Nema presjeka - oglas je dostupan");
+            return true;
+        } catch (Exception e) {
+            System.err.println("Greška pri parsiranju datuma: dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", greška=" + e.getMessage());
+            e.printStackTrace();
+            return true; // Ako se datumi ne mogu parsirati, prikaži oglas (fallback)
         }
-        return true;
     }
         
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {

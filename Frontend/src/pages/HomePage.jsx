@@ -102,8 +102,11 @@ function HomePage() {
     const handleFilterChange = (e) => {
         const { name, value, type } = e.target;
         let newValue = value;
-        if (type === "datetime-local") {
+        if (type === "datetime-local" && value) {
+            // Fiksira minute na :00 - zamjenjuje zadnje :XX sa :00
             newValue = value.replace(/:\d{2}$/, ":00");
+            // Dodaj :00 za sekunde
+            newValue = newValue + ":00";
         }
         setFilters((prev) => ({
             ...prev,
@@ -143,8 +146,8 @@ function HomePage() {
             location: "",
             priceMin: "",
             priceMax: "",
-            dateFrom: "0000-00-00T00:00",
-            dateTo: "0000-00-00T00:00",
+            dateFrom: "",
+            dateTo: "",
         });
     };
 
