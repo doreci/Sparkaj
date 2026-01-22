@@ -221,6 +221,11 @@
     color: #555;
 }
 
+.report-textarea {
+    color: #000000;
+    color-scheme: normal;
+}
+
 .profile-link {
     color: rgb(0, 0, 61);
     text-decoration: none;
@@ -578,7 +583,7 @@
 }
 
 .cancel-button {
-    background: #6c757d;
+    background: #ff4040;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -589,7 +594,7 @@
 }
 
 .cancel-button:hover {
-    background: #5a6268;
+    background: #ff0000;
 }
 
 .pay-button {

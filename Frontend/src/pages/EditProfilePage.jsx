@@ -6,6 +6,24 @@ import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 
 const API_URL = "http://localhost:8080";
 
+// Funkcija za provjeru je li slika dostupna
+const isValidImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    
+    // Ako je lokalna datoteka, provjeri da li postoji
+    if (url.startsWith('./') || url.startsWith('/')) {
+        return true;
+    }
+    
+    // Za eksterne URL-e, samo provjeri format
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
 function EditProfilePage() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
@@ -80,10 +98,11 @@ function EditProfilePage() {
                     profile_image_url: dbProfilna,
                 });
 
-                if (dbProfilna) {
+                if (dbProfilna && isValidImageUrl(dbProfilna)) {
                     setProfileImage(dbProfilna);
                 } else {
-                    console.log("Nema URLa za sliku");
+                    console.log("Nema URLa za sliku ili URL nije dostupan");
+                    setProfileImage("./avatar-icon.png");
                 }
             }
         } catch (error) {
@@ -266,12 +285,17 @@ function EditProfilePage() {
                         <img
                             src={profileImage}
                             alt="Profilna slika"
+                            loading="lazy"
+                            crossOrigin="anonymous"
                             onError={(e) => {
-                                console.error(
-                                    "Greška pri učitavanju slike:",
-                                    e.target.src
-                                );
-                                e.target.src = "./avatar-icon.png"; // Fallback ako URL nije dostupan
+                                // Ako je Google slika, zamijeni sa fallback ikonom
+                                if (e.target.src && (e.target.src.includes("lh3.googleusercontent") || e.target.src.includes("googleusercontent"))) {
+                                    console.warn("Google slika nije dostupna, koristi fallback icon");
+                                    e.target.src = "./avatar-icon.png";
+                                } else {
+                                    console.error("Greška pri učitavanju slike:", e.target.src);
+                                    e.target.src = "./avatar-icon.png";
+                                }
                             }}
                         />
                     </div>

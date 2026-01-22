@@ -462,16 +462,16 @@ function AdPage() {
                     <div className="payment-modal">
                         <h2>Prijava oglasa</h2>
 
-                        <textarea
+                        <textarea className ="report-textarea"
                             placeholder="Opišite razlog prijave..."
                             value={reportText}
                             onChange={(e) => setReportText(e.target.value)}
                             style={{
                                 width: "100%",
                                 minHeight: "120px",
-                                padding: "10px",
+                                padding: "10px 5px",
                                 borderRadius: "8px",
-                                border: "1px solid #ccc",
+                                border: "1px solid #5c5c5c",
                                 marginBottom: "20px",
                             }}
                         />
