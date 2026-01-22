@@ -238,7 +238,7 @@
 }
 
 .btn-transactions {
-    background-color: #0066cc;
+    background-color: rgb(0, 0, 61);
     color: white;
     border: none;
     padding: 14px 50px;
@@ -252,13 +252,13 @@
 
 .btn-transactions:hover {
     background-color: white;
-    color: #0066cc;
-    border: 2px solid #0066cc;
+    color: rgb(0, 0, 61);
+    border: 2px solid rgb(0, 0, 61);
     transform: translateY(-2px);
 }
 
 .btn-reservations {
-    background-color: #6f42c1;
+    background-color: rgb(0, 0, 61);
     color: white;
     border: none;
     padding: 14px 50px;
@@ -272,8 +272,8 @@
 
 .btn-reservations:hover {
     background-color: white;
-    color: #6f42c1;
-    border: 2px solid #6f42c1;
+    color: rgb(0, 0, 61);
+    border: 2px solid rgb(0, 0, 61);
     transform: translateY(-2px);
 }
 

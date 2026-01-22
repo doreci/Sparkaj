@@ -230,7 +230,7 @@ function ProfilePage() {
                                     </Link>
                                     <Link to="/transaction-history">
                                         <button className="btn-transactions">
-                                            povijest Transakcija
+                                            Povijest transakcija
                                         </button>
                                     </Link>
                                     <Link to="/my-reservations-reviews">

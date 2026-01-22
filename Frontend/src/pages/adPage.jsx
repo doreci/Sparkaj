@@ -55,14 +55,19 @@ function AdPage() {
             });
             const data = await response.json();
             if (data.authenticated) {
+                // Provjeri je li blokiran
+                if (data.blokiran) {
+                    navigate("/blocked", { replace: true });
+                    return;
+                }
                 setUser(data);
             } else {
                 // Not authenticated, redirect to login
-                navigate("/login");
+                navigate("/login", { replace: true });
             }
         } catch (error) {
             console.log("Greška pri provjeri autentifikacije:", error);
-            navigate("/login");
+            navigate("/login", { replace: true });
         }
     };
 
