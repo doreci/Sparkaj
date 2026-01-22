@@ -268,7 +268,10 @@ function EditAdPage() {
                 // Pokušaj parsirati JSON response
                 try {
                     const errorData = JSON.parse(errorText);
-                    alert("Greška pri brisanju oglasa: " + errorData.error);
+                    if(errorData.error.includes("CONFLICT")) {
+                        alert("Oglas ne može biti obrisan jer ima aktivne rezervacije.");
+                    }
+                    else alert("Greška pri brisanju oglasa: " + errorData.error);
                 } catch {
                     alert("Greška pri brisanju oglasa [" + response.status + "]: " + errorText);
                 }

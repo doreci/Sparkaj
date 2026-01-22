@@ -1,5 +1,6 @@
 .myreservationsreviews-page-wrapper {
     min-height: 100vh;
+    width: 100vw;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     padding: 20px;
     padding-bottom: 60px;
@@ -7,6 +8,9 @@
 
 .myreservationsreviews-header {
     max-width: 1200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     margin: 0 auto 30px;
     padding: 20px;
     background: white;
