@@ -12,6 +12,19 @@ function MyReservationsReviewsPage() {
 
     useEffect(() => {
         fetchReservationsAndReviews();
+
+        // Osvježi podatke kada korisnik dolazi na stranicu (visibility change)
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchReservationsAndReviews();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, []);
 
     const fetchReservationsAndReviews = async () => {
@@ -35,7 +48,13 @@ function MyReservationsReviewsPage() {
             }
 
             const reservationsData = await reservationsResponse.json();
-            setReservations(reservationsData || []);
+            
+            // Sortiraj rezervacije po id_rezervacije od najvećeg do najmanjeg
+            const sortedReservations = (reservationsData || []).sort((a, b) => {
+                return b.id_rezervacije - a.id_rezervacije; // Descending order po id_rezervacije
+            });
+            
+            setReservations(sortedReservations);
 
             // Dohvati recenzije
             const reviewsResponse = await fetch(

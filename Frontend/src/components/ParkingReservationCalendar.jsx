@@ -190,6 +190,20 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
     setIsDragging(false);
   };
 
+  const handlePaymentSuccess = async () => {
+    // Plaćanje je bilo uspješno, pokazat će se success modal
+    // Rezervacije i transakcije su već kreirane na backenda kroz confirm-payment
+    const startDate = new Date(selectedSlots[0].split('-')[0]);
+    const endDate = new Date(selectedSlots[selectedSlots.length - 1].split('-')[0]);
+    const message = `Plaćanje uspješno!\n\nRezervacija od ${startDate.toLocaleDateString('hr-HR')} do ${endDate.toLocaleDateString('hr-HR')}\nUkupno sati: ${selectedSlots.length}`;
+    
+    setSuccessMessage(message);
+    setShowSuccessModal(true);
+    setSelectedSlots([]);
+    await fetchReservations();
+    setShowPaymentModal(false);
+  };
+
   const handleReservation = async () => {
     if (selectedSlots.length === 0) {
       alert("Molimo odaberite barem jedan termin");
@@ -203,90 +217,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
 
     // Otvori payment modal umjesto direktne rezervacije
     setShowPaymentModal(true);
-  };
-
-  const createReservationInDatabase = async () => {
-    try {
-      setLoading(true);
-      // Grupiraj slotove po kontinuiranim periodima
-      const sortedSlots = selectedSlots.sort();
-      const reservationsToCreate = [];
-      let currentGroup = [];
-
-      sortedSlots.forEach((slot, index) => {
-        const [dateStr, hourStr] = slot.split('-');
-        const hour = parseInt(hourStr);
-        const date = new Date(dateStr);
-        
-        if (currentGroup.length === 0) {
-          currentGroup.push({ date, hour });
-        } else {
-          const lastSlot = currentGroup[currentGroup.length - 1];
-          const isSameDay = lastSlot.date.toDateString() === date.toDateString();
-          const isNextHour = lastSlot.hour + 1 === hour;
-
-          if (isSameDay && isNextHour) {
-            currentGroup.push({ date, hour });
-          } else {
-            reservationsToCreate.push(currentGroup);
-            currentGroup = [{ date, hour }];
-          }
-        }
-
-        if (index === sortedSlots.length - 1) {
-          reservationsToCreate.push(currentGroup);
-        }
-      });
-
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-
-      // Kreiraj rezervacije kroz backend endpoint
-      const slots = reservationsToCreate.map(group => {
-        const startDate = new Date(group[0].date);
-        startDate.setHours(group[0].hour, 0, 0, 0);
-
-        const endDate = new Date(group[group.length - 1].date);
-        endDate.setHours(group[group.length - 1].hour + 1, 0, 0, 0);
-
-        return {
-          datumOd: startDate.toISOString(),
-          datumDo: endDate.toISOString(),
-        };
-      });
-
-      const response = await fetch(`${API_BASE_URL}/api/reservations/batch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          id_oglasa: oglasId,
-          slots: slots,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Greška pri kreiranju rezervacija");
-      }
-
-      // Prikaži success modal umjesto alerta
-      const startDate = new Date(selectedSlots[0].split('-')[0]);
-      const endDate = new Date(selectedSlots[selectedSlots.length - 1].split('-')[0]);
-      const message = `Plaćanje uspješno!\n\nRezervacija od ${startDate.toLocaleDateString('hr-HR')} do ${endDate.toLocaleDateString('hr-HR')}\nUkupno sati: ${selectedSlots.length}`;
-      
-      setSuccessMessage(message);
-      setShowSuccessModal(true);
-      setSelectedSlots([]);
-      fetchReservations();
-      setShowPaymentModal(false);
-    } catch (error) {
-      console.error("Greška pri kreiranju rezervacije:", error);
-      alert("Greška pri kreiranju rezervacije: " + error.message);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const weekDays = getWeekDays(currentWeekStart);
@@ -461,7 +391,11 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
               <Elements stripe={stripePromise}>
                 <StripePaymentForm
                   amount={selectedSlots.length * cijena}
-                  onSuccess={createReservationInDatabase}
+                  oglasId={oglasId}
+                  userId={userId}
+                  selectedSlots={selectedSlots}
+                  cijena={cijena}
+                  onSuccess={handlePaymentSuccess}
                   onCancel={() => setShowPaymentModal(false)}
                 />
               </Elements>
@@ -491,7 +425,7 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
 }
 
 // Stripe Payment Form Component
-function StripePaymentForm({ amount, onSuccess, onCancel }) {
+function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onSuccess, onCancel }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -531,7 +465,7 @@ function StripePaymentForm({ amount, onSuccess, onCancel }) {
         throw new Error(`Failed to create payment intent: ${response.statusText}`);
       }
 
-      const { clientSecret } = await response.json();
+      const { clientSecret, paymentIntentId } = await response.json();
 
       // Potvrdi plaćanje
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -546,6 +480,39 @@ function StripePaymentForm({ amount, onSuccess, onCancel }) {
 
       if (paymentIntent.status === "succeeded") {
         console.log("Payment successful:", paymentIntent);
+        
+        // Pozovi confirm-payment endpoint sa vremenskim detaljima
+        const sortedSlots = selectedSlots.sort();
+        const confirmPayload = {
+          paymentIntentId: paymentIntent.id,
+          oglasId: parseInt(oglasId),
+          korisnikId: parseInt(userId),
+          iznos: amount,
+          selectedSlots: sortedSlots, // Proslijedi vremenske slotove
+          cijena: cijena,
+        };
+        
+        console.log("Sending confirm-payment with payload:", confirmPayload);
+        
+        const confirmResponse = await fetch(`${API_BASE_URL}/api/payments/confirm-payment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(confirmPayload),
+        });
+
+        if (!confirmResponse.ok) {
+          const errorData = await confirmResponse.json().catch(() => ({}));
+          console.error("Confirm payment error response:", errorData);
+          console.error("Full response status:", confirmResponse.status, confirmResponse.statusText);
+          throw new Error(`Failed to confirm payment: ${confirmResponse.statusText}`);
+        }
+
+        const confirmData = await confirmResponse.json();
+        console.log("Payment confirmed and transaction saved:", confirmData);
+        
         setLoading(false);
         onSuccess();
       } else {

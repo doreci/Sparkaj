@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.text.SimpleDateFormat;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -157,10 +158,17 @@ public class PaymentController {
     public Mono<ResponseEntity<Object>> confirmPayment(@RequestBody PaymentConfirmationRequest request) {
         try {
             System.out.println("=== Confirm Payment Request ===");
+            if (request == null) {
+                System.err.println("Request is null!");
+                return Mono.just(new ResponseEntity<>((Object) "Request body is null", HttpStatus.BAD_REQUEST));
+            }
+            
             System.out.println("Payment Intent ID: " + request.getPaymentIntentId());
             System.out.println("Oglas ID: " + request.getOglasId());
             System.out.println("Korisnik ID: " + request.getKorisnikId());
             System.out.println("Iznos: " + request.getIznos());
+            System.out.println("Selected Slots: " + request.getSelectedSlots());
+            System.out.println("Cijena: " + request.getCijena());
             
             if (request.getPaymentIntentId() == null || request.getIznos() == null) {
                 System.out.println("Missing required fields!");
@@ -174,42 +182,58 @@ public class PaymentController {
 
             System.out.println("Confirming payment: " + request.getPaymentIntentId());
 
-            // Create a reservation first
-            return rezervacijaService.createRezervacija(request.getKorisnikId(), request.getOglasId().longValue())
-                    .flatMap(rezervacija -> {
-                        if (rezervacija == null) {
-                            System.err.println("Failed to create reservation");
-                            return Mono.just(new ResponseEntity<>((Object) "Failed to create reservation", HttpStatus.INTERNAL_SERVER_ERROR));
-                        }
+            // Ako su dostupni vremenske slotove, kreiraj batch rezervacije
+            if (request.getSelectedSlots() != null && !request.getSelectedSlots().isEmpty()) {
+                System.out.println("Processing batch reservations with " + request.getSelectedSlots().size() + " slots");
+                
+                // Grupiraj slotove po kontinuiranim periodima (kao frontend)
+                return createBatchReservationsAndTransaction(
+                    request.getKorisnikId(),
+                    request.getOglasId().longValue(),
+                    request.getSelectedSlots(),
+                    request.getPaymentIntentId(),
+                    request.getIznos()
+                );
+            } else {
+                // Stariji pristup - kreiraj default 1-satnu rezervaciju
+                System.out.println("Processing single reservation without time slots");
+                
+                return rezervacijaService.createRezervacija(request.getKorisnikId(), request.getOglasId().longValue())
+                        .flatMap(rezervacija -> {
+                            if (rezervacija == null) {
+                                System.err.println("Failed to create reservation");
+                                return Mono.just(new ResponseEntity<>((Object) "Failed to create reservation", HttpStatus.INTERNAL_SERVER_ERROR));
+                            }
 
-                        Long reservationId = rezervacija.getIdRezervacije();
-                        System.out.println("Reservation created with ID: " + reservationId);
-                        System.out.println("Saving transaction with amount: " + request.getIznos());
+                            Long reservationId = rezervacija.getIdRezervacije();
+                            System.out.println("Reservation created with ID: " + reservationId);
+                            System.out.println("Saving transaction with amount: " + request.getIznos());
 
-                        // Save the transaction with the valid reservation ID
-                        return transakcijaService.saveTransakcija(
-                                request.getPaymentIntentId(),
-                                reservationId,
-                                request.getIznos()
-                        ).flatMap(transakcija -> {
-                            System.out.println("Transaction saved successfully: " + transakcija.getIdTransakcija());
-                            Map<String, Object> response = new HashMap<>();
-                            response.put("success", true);
-                            response.put("transactionId", transakcija.getIdTransakcija());
-                            response.put("reservationId", reservationId);
-                            response.put("message", "Payment confirmed and reservation created");
-                            ResponseEntity<Object> entity = new ResponseEntity<>(response, HttpStatus.OK);
+                            // Save the transaction with the valid reservation ID
+                            return transakcijaService.saveTransakcija(
+                                    request.getPaymentIntentId(),
+                                    reservationId,
+                                    request.getIznos()
+                            ).flatMap(transakcija -> {
+                                System.out.println("Transaction saved successfully: " + transakcija.getIdTransakcija());
+                                Map<String, Object> response = new HashMap<>();
+                                response.put("success", true);
+                                response.put("transactionId", transakcija.getIdTransakcija());
+                                response.put("reservationId", reservationId);
+                                response.put("message", "Payment confirmed and reservation created");
+                                ResponseEntity<Object> entity = new ResponseEntity<>(response, HttpStatus.OK);
+                                return Mono.just(entity);
+                            });
+                        })
+                        .onErrorResume(error -> {
+                            System.err.println("Error in payment confirmation: " + error.getMessage());
+                            error.printStackTrace();
+                            Map<String, Object> errorResponse = new HashMap<>();
+                            errorResponse.put("error", "Payment confirmation failed: " + error.getMessage());
+                            ResponseEntity<Object> entity = new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
                             return Mono.just(entity);
                         });
-                    })
-                    .onErrorResume(error -> {
-                        System.err.println("Error in payment confirmation: " + error.getMessage());
-                        error.printStackTrace();
-                        Map<String, Object> errorResponse = new HashMap<>();
-                        errorResponse.put("error", "Payment confirmation failed: " + error.getMessage());
-                        ResponseEntity<Object> entity = new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-                        return Mono.just(entity);
-                    });
+            }
 
         } catch (Exception e) {
             System.err.println("Exception in confirmPayment: " + e.getMessage());
@@ -218,6 +242,195 @@ public class PaymentController {
             errorResponse.put("error", "Internal server error: " + e.getMessage());
             return Mono.just(new ResponseEntity<>((Object) errorResponse, HttpStatus.INTERNAL_SERVER_ERROR));
         }
+    }
+
+    private Mono<ResponseEntity<Object>> createBatchReservationsAndTransaction(
+            Long korisnikId, Long oglasId, java.util.List<String> selectedSlots,
+            String paymentIntentId, Double iznos) {
+        
+        try {
+            System.out.println("=== Creating Batch Reservations and Transaction ===");
+            System.out.println("Korisnik ID: " + korisnikId);
+            System.out.println("Oglas ID: " + oglasId);
+            System.out.println("Selected Slots Count: " + (selectedSlots != null ? selectedSlots.size() : 0));
+            if (selectedSlots != null && !selectedSlots.isEmpty()) {
+                System.out.println("First slot: " + selectedSlots.get(0));
+                System.out.println("Last slot: " + selectedSlots.get(selectedSlots.size() - 1));
+            }
+            
+            if (selectedSlots == null || selectedSlots.isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "No selected slots provided");
+                return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Object) errorResponse));
+            }
+            
+            // Grupiraj slotove po kontinuiranim periodima
+            java.util.List<java.util.List<java.util.Map<String, Object>>> groupedSlots = groupSlots(selectedSlots);
+            System.out.println("Created " + groupedSlots.size() + " groups");
+            
+            if (groupedSlots.isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to parse time slots");
+                return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Object) errorResponse));
+            }
+            
+            java.util.List<java.util.Map<String, Object>> slotsForBackend = new java.util.ArrayList<>();
+
+            for (java.util.List<java.util.Map<String, Object>> group : groupedSlots) {
+                if (!group.isEmpty()) {
+                    java.util.Map<String, Object> firstSlot = group.get(0);
+                    java.util.Map<String, Object> lastSlot = group.get(group.size() - 1);
+
+                    java.time.LocalDateTime datumOd = (java.time.LocalDateTime) firstSlot.get("dateTime");
+                    java.time.LocalDateTime datumDo = (java.time.LocalDateTime) lastSlot.get("dateTime");
+                    // Dodaj 1 sat za datumDo
+                    datumDo = datumDo.plusHours(1);
+
+                    java.util.Map<String, Object> slotData = new java.util.HashMap<>();
+                    slotData.put("datumOd", datumOd.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+                    slotData.put("datumDo", datumDo.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+                    slotsForBackend.add(slotData);
+                    
+                    System.out.println("Group: " + slotData.get("datumOd") + " -> " + slotData.get("datumDo"));
+                }
+            }
+
+            System.out.println("Created " + slotsForBackend.size() + " reservation groups");
+
+            // Kreiraj sve rezervacije
+            java.util.List<reactor.core.publisher.Mono<com.sparkaj.model.Rezervacija>> reservationMonos = new java.util.ArrayList<>();
+            
+            for (java.util.Map<String, Object> slot : slotsForBackend) {
+                java.time.LocalDateTime datumOd = java.time.LocalDateTime.parse(
+                    (String) slot.get("datumOd"),
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                );
+                java.time.LocalDateTime datumDo = java.time.LocalDateTime.parse(
+                    (String) slot.get("datumDo"),
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                );
+                
+                reservationMonos.add(
+                    rezervacijaService.createRezervacijaWithDetails(korisnikId, oglasId, datumOd, datumDo)
+                );
+            }
+
+            // Kombiniraj sve rezervacije
+            return reactor.core.publisher.Flux.fromIterable(reservationMonos)
+                    .flatMap(mono -> mono)
+                    .collectList()
+                    .flatMap(results -> {
+                        if (results.isEmpty()) {
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("error", "Greška pri kreiranju rezervacija");
+                            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Object) response));
+                        }
+
+                        // Spremi transakciju s prvi rezervacije (ili aggregated)
+                        Long firstReservationId = results.get(0).getIdRezervacije();
+                        System.out.println("Saving transaction for first reservation ID: " + firstReservationId);
+
+                        return transakcijaService.saveTransakcija(paymentIntentId, firstReservationId, iznos)
+                                .flatMap(transakcija -> {
+                                    System.out.println("Transaction saved successfully: " + transakcija.getIdTransakcija());
+                                    Map<String, Object> response = new HashMap<>();
+                                    response.put("success", true);
+                                    response.put("transactionId", transakcija.getIdTransakcija());
+                                    response.put("reservationCount", results.size());
+                                    response.put("message", "Payment confirmed and batch reservations created");
+                                    return Mono.just(ResponseEntity.ok((Object) response));
+                                });
+                    })
+                    .onErrorResume(error -> {
+                        System.err.println("Error in batch reservation: " + error.getMessage());
+                        error.printStackTrace();
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("error", "Batch reservation failed: " + error.getMessage());
+                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((Object) errorResponse));
+                    });
+        } catch (Exception e) {
+            System.err.println("Exception in createBatchReservationsAndTransaction: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error processing batch reservations: " + e.getMessage());
+            return Mono.just(new ResponseEntity<>((Object) errorResponse, HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    private java.util.List<java.util.List<java.util.Map<String, Object>>> groupSlots(java.util.List<String> selectedSlots) {
+        // Parsiraj slotove u format: datum-sat -> datetime
+        // Format od frontendu je "Mon Jan 20 2026-10" gdje je datum.toDateString() i sat
+        java.util.List<java.util.Map<String, Object>> parsedSlots = new java.util.ArrayList<>();
+        
+        for (String slot : selectedSlots) {
+            try {
+                // Odjeli sat od datuma
+                int lastDashIndex = slot.lastIndexOf("-");
+                if (lastDashIndex > 0) {
+                    String dateStr = slot.substring(0, lastDashIndex);  // "Mon Jan 20 2026"
+                    String hourStr = slot.substring(lastDashIndex + 1);  // "10"
+                    
+                    // Parsiraj datum iz JavaScript toDateString() formata
+                    // "Mon Jan 20 2026" -> Date object
+                    java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("EEE MMM dd yyyy", java.util.Locale.ENGLISH);
+                    java.util.Date parsedDate = formatter.parse(dateStr);
+                    java.time.LocalDate date = parsedDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                    int hour = Integer.parseInt(hourStr);
+                    java.time.LocalDateTime dateTime = java.time.LocalDateTime.of(date, java.time.LocalTime.of(hour, 0, 0));
+                    
+                    java.util.Map<String, Object> slotData = new java.util.HashMap<>();
+                    slotData.put("date", date);
+                    slotData.put("hour", hour);
+                    slotData.put("dateTime", dateTime);
+                    parsedSlots.add(slotData);
+                    
+                    System.out.println("Parsed slot: " + dateStr + " hour " + hour + " -> " + dateTime);
+                }
+            } catch (Exception e) {
+                System.err.println("Error parsing slot: " + slot + " - " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // Sortiraj po datumu i satu
+        parsedSlots.sort((a, b) -> {
+            java.time.LocalDateTime timeA = (java.time.LocalDateTime) a.get("dateTime");
+            java.time.LocalDateTime timeB = (java.time.LocalDateTime) b.get("dateTime");
+            return timeA.compareTo(timeB);
+        });
+
+        // Grupiraj kontinuirane slotove
+        java.util.List<java.util.List<java.util.Map<String, Object>>> groups = new java.util.ArrayList<>();
+        java.util.List<java.util.Map<String, Object>> currentGroup = new java.util.ArrayList<>();
+
+        for (int i = 0; i < parsedSlots.size(); i++) {
+            java.util.Map<String, Object> currentSlot = parsedSlots.get(i);
+            
+            if (currentGroup.isEmpty()) {
+                currentGroup.add(currentSlot);
+            } else {
+                java.util.Map<String, Object> lastSlot = currentGroup.get(currentGroup.size() - 1);
+                java.time.LocalDateTime lastTime = (java.time.LocalDateTime) lastSlot.get("dateTime");
+                java.time.LocalDateTime currentTime = (java.time.LocalDateTime) currentSlot.get("dateTime");
+
+                // Ako je razlika 1 sat, priklj očni trenutnom grupi
+                if (currentTime.equals(lastTime.plusHours(1))) {
+                    currentGroup.add(currentSlot);
+                } else {
+                    // Inače kreni novu grupu
+                    groups.add(new java.util.ArrayList<>(currentGroup));
+                    currentGroup = new java.util.ArrayList<>();
+                    currentGroup.add(currentSlot);
+                }
+            }
+
+            // Dodaj zadnju grupu
+            if (i == parsedSlots.size() - 1) {
+                groups.add(currentGroup);
+            }
+        }
+
+        return groups;
     }
 
     @GetMapping("/transaction-history/{userId}")
