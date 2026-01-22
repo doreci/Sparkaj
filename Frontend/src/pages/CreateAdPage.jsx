@@ -87,6 +87,51 @@ function CreateAdPage() {
             return;
         }
 
+        // Validacija: Provjera praznih podataka
+        if (!formData.naziv_oglasa || formData.naziv_oglasa.trim() === "") {
+            alert("Naziv oglasa ne smije biti prazan!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!formData.opis_oglasa || formData.opis_oglasa.trim() === "") {
+            alert("Opis oglasa ne smije biti prazan!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!formData.lokacija || formData.lokacija.trim() === "") {
+            alert("Lokacija ne smije biti prazna!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!formData.cijena || formData.cijena.toString().trim() === "") {
+            alert("Cijena ne smije biti prazna!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Validacija: Cijena ne smije biti negativna
+        const cijenaValue = parseFloat(formData.cijena);
+        if (isNaN(cijenaValue)) {
+            alert("Cijena mora biti broj!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (cijenaValue < 0) {
+            alert("Cijena ne smije biti negativna!");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (cijenaValue === 0) {
+            alert("Cijena mora biti veća od 0!");
+            setIsSubmitting(false);
+            return;
+        }
+
         setIsSubmitting(true);
 
         // Safety timeout to reset button after 15 seconds
@@ -99,14 +144,28 @@ function CreateAdPage() {
         const lokacijaParts = formData.lokacija.split(',').map(s => s.trim());
         if (lokacijaParts.length !== 3) {
             alert("Lokacija mora biti u formatu: Ulica broj, postanski broj, grad");
+            setIsSubmitting(false);
             return;
         }
         const ulicaBroj = lokacijaParts[0];
         const postanskiBroj = parseInt(lokacijaParts[1]);
         const grad = lokacijaParts[2];
 
+        if (!ulicaBroj || ulicaBroj === "") {
+            alert("Ulica i broj ne smiju biti prazni!");
+            setIsSubmitting(false);
+            return;
+        }
+
         if (isNaN(postanskiBroj)) {
             alert("Postanski broj mora biti broj");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!grad || grad === "") {
+            alert("Grad ne smije biti prazan!");
+            setIsSubmitting(false);
             return;
         }
 
@@ -133,9 +192,9 @@ function CreateAdPage() {
 
         // Backend će preuzeti id_korisnika iz OAuth2 autentifikacije
         const payload = {
-            naziv_oglasa: formData.naziv_oglasa,
-            opis_oglasa: formData.opis_oglasa,
-            cijena: parseFloat(formData.cijena) || null,
+            naziv_oglasa: formData.naziv_oglasa.trim(),
+            opis_oglasa: formData.opis_oglasa.trim(),
+            cijena: cijenaValue,
             grad: grad,
             ulica_broj: ulicaBroj,
             postanski_broj: postanskiBroj,
