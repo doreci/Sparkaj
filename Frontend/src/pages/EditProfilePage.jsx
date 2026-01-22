@@ -1,6 +1,6 @@
 import "./editprofilepage.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 
@@ -256,7 +256,9 @@ function EditProfilePage() {
                     formData.profile_image_url
                 )}
             <div className="header">
-                <img src="./logo.png" alt="logo" />
+                <Link to="/" className="back-link">
+                    ← Nazad
+                </Link>
             </div>
             <div className="title">Uređivanje osobnih podataka</div>
 

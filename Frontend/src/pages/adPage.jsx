@@ -220,9 +220,9 @@ function AdPage() {
     return (
         <div className="ad-page-container">
             <div className="ad-page-header">
-                <button onClick={() => navigate(-1)} className="btn-back">
+                <Link to="/" className="back-link">
                     ← Nazad
-                </button>
+                </Link>
             </div>
 
             <div className="ad-page-content">
