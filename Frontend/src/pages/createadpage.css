@@ -14,6 +14,25 @@
     overflow-x: hidden;
 }
 
+.back-link {
+    text-decoration: none;
+    background-color: white;
+    color: rgb(0, 0, 61);
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 20px;
+    margin-left: 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    border: 2px solid rgb(0, 0, 61);
+}
+
+.back-link:hover {
+    transform: translateY(-2px);
+    border: 2px solid white;
+    color: rgb(0, 0, 61);
+}
+
 .header {
     position: fixed;
     top: 0;

@@ -1,6 +1,7 @@
 
 import "./createadpage.css";
 import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
 const API_URL = "http://localhost:8080";
@@ -255,7 +256,9 @@ function CreateAdPage() {
     return (
         <div className="container">
             <div className="header">
-                <img src="./logo.png" alt="logo" />
+                <Link to="/" className="back-link">
+                    ← Nazad
+                </Link>
             </div>
 
             <div className="title">Izrada oglasa</div>

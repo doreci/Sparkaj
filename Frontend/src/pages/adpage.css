@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: calc(100vw - 20px);
+    width: calc(100vw - 15px);
     background: white;
     overflow-x: hidden;
 }
@@ -17,23 +17,24 @@
     border-bottom: 1px solid #e0e0e0;
 }
 
-.btn-back {
-    background: white;
+.back-link {
+    text-decoration: none;
+    background-color: white;
     color: rgb(0, 0, 61);
-    border: none;
+    font-size: 18px;
+    font-weight: bold;
     padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    margin-left: 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    border: 2px solid rgb(0, 0, 61);
 }
 
-.btn-back:hover {
-    transform: translateX(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 61, 0.4);
+.back-link:hover {
+    transform: translateY(-2px);
+    border: 2px solid white;
+    color: rgb(0, 0, 61);
 }
-
 /* Glavni sadržaj */
 .ad-page-content {
     display: flex;
