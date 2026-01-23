@@ -67,7 +67,9 @@ function MyReservationsReviewsPage() {
 
             if (reviewsResponse.ok) {
                 const reviewsData = await reviewsResponse.json();
-                setReviews(reviewsData || []);
+                const reservationIds = (sortedReservations || []).map(r => r.id_rezervacije);
+                const filteredReviews = (reviewsData || []).filter(rv => reservationIds.includes(rv.id_rezervacije));
+                setReviews(filteredReviews);
             }
         } catch (err) {
             console.error("Greška:", err);
