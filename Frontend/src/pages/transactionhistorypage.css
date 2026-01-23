@@ -576,10 +576,6 @@ body {
         gap: 10px;
     }
 
-    .header-cell {
-        display: none;
-    }
-
     .table-cell {
         display: flex;
         justify-content: space-between;
@@ -597,23 +593,6 @@ body {
     .table-row:hover {
         background: white;
     }
-}
-
-/* Hide logout button and header elements */
-.header-top {
-    display: none !important;
-}
-
-.header-right {
-    display: none !important;
-}
-
-.btn-logout {
-    display: none !important;
-}
-
-.user-name {
-    display: none !important;
 }
 
 /* Make header flex */
