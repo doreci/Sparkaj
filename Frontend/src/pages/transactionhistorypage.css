@@ -15,7 +15,7 @@ body {
 .transaction-history-wrapper {
     width: calc(100vw - 15px);
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(180deg, rgb(0, 0, 61) 0%, rgb(200, 200, 255) 100%);
     padding: 0;
     margin: 0;
     display: flex;
@@ -198,7 +198,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(180deg, rgb(0, 0, 61) 0%, rgb(200, 200, 255) 100%);
     color: white;
     border: none;
     padding: 12px 30px;

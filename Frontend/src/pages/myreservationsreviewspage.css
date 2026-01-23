@@ -1,7 +1,7 @@
 .myreservationsreviews-page-wrapper {
     min-height: 100vh;
     width: calc(100vw - 70px);
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(180deg, rgb(0, 0, 61) 0%, rgb(200, 200, 255) 100%);
     padding: 20px;
     padding-bottom: 60px;
 }
