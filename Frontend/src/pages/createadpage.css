@@ -172,3 +172,12 @@ input:focus {
     margin: 10px 0;
     font-size: 16px;
 }
+
+@media (max-width: 768px) {
+    .container .back-link {
+        position: absolute;
+        left: 2px;
+        transform: none;
+        margin-top: 15px;
+    }
+}
