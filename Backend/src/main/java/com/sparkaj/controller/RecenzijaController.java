@@ -3,6 +3,7 @@ package com.sparkaj.controller;
 import com.sparkaj.model.Recenzija;
 import com.sparkaj.service.RecenzijaService;
 import com.sparkaj.service.KorisnikService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/recenzije")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "http://localhost:10000", "https://sparkaj-g53p.onrender.com"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "${api.url}", "https://sparkaj-g53p.onrender.com"})
 
 
 public class RecenzijaController {

@@ -16,7 +16,7 @@ public class SupabaseConfig {
 
     @Bean
     public WebClient supabaseWebClient() {
-        System.out.println("Connecting to Supabase: " + supabaseUrl);
+        // System.out.println("Connecting to Supabase: " + supabaseUrl);
 
         return WebClient.builder()
                 .baseUrl(supabaseUrl)

@@ -7,13 +7,12 @@ function LoginPage() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Proverite da li je korisnik već ulogovan
     checkAuthentication();
   }, []);
 
   const checkAuthentication = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/user", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -28,7 +27,7 @@ function LoginPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8080/logout", {
+      await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -35,31 +35,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String ime = oauth2User.getAttribute("given_name");
         String prezime = oauth2User.getAttribute("family_name");
         String profilna = oauth2User.getAttribute("picture");
-        String googleId = oauth2User.getAttribute("sub"); // Google user ID
+        String googleId = oauth2User.getAttribute("sub");
         
-        System.out.println("=== OAuth2 Login Success ===");
-        System.out.println("Email: " + email);
-        System.out.println("Ime: " + ime);
-        System.out.println("Prezime: " + prezime);
-        System.out.println("Google ID: " + googleId);
+        // System.out.println("=== OAuth2 Login Success ===");
+        // System.out.println("Email: " + email);
+        // System.out.println("Ime: " + ime);
+        // System.out.println("Prezime: " + prezime);
+        // System.out.println("Google ID: " + googleId);
         
         try {
-            // Pozovi saveOrUpdateOAuth2Korisnik UVIJEK
             // - Ako korisnik ne postoji, kreiraj ga
             // - Ako postoji, ažuriraj UUID ako se razlikuje
-            System.out.println("i Pozivam saveOrUpdateOAuth2Korisnik sa email: " + email);
-            System.out.println("i Proslijeđujem Google ID (UUID): " + googleId);
             korisnikService.saveOrUpdateOAuth2Korisnik(email, ime, prezime, profilna, googleId)
                     .block(java.time.Duration.ofSeconds(10));
-            System.out.println("OK Korisnik obrada završena: " + email);
         } catch (Exception e) {
             System.err.println("GREŠKA pri upravljanju korisnikom: " + e.getMessage());
             e.printStackTrace();
         }
         
         // Preusmjeravanje na frontend
-        System.out.println("Preusmjeravanje na: " + successUrl);
-        System.out.println("=== OAuth2SuccessHandler.onAuthenticationSuccess - ZAVRŠENO ===");
         response.sendRedirect(successUrl);
     }
 }

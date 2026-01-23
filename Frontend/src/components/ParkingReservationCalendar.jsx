@@ -12,7 +12,7 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const hours = Array.from({ length: 24 }, (_, i) => i); // 0:00 - 23:00
+  const hours = Array.from({ length: 24 }, (_, i) => i);
 
   function getMonday(date) {
     const d = new Date(date);
@@ -74,26 +74,19 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
     return selectedSlots.includes(slotKey);
   };
 
-  /**
-   * Validira da li su slotovi kontinuirani (bez praznih mjesta između)
-   */
   const areSlotsContinuous = (slots) => {
     if (slots.length <= 1) return true;
 
-    // Custom sort - sortiraj po datumu (kao Date objekat), pa po satu kao broju
     const sortedSlots = [...slots].sort((a, b) => {
       const [dateA, hourA] = a.split('-');
       const [dateB, hourB] = b.split('-');
       
-      // Konvertiraj stringove datuma u Date objekte za ispravnu usporedbu
       const dateObjA = new Date(dateA);
       const dateObjB = new Date(dateB);
       
       if (dateObjA.getTime() === dateObjB.getTime()) {
-        // Isti datum, sortiraj po satu kao broju
         return parseInt(hourA) - parseInt(hourB);
       }
-      // Različiti datumi, sortiraj po datumu kao Date objekat
       return dateObjA.getTime() - dateObjB.getTime();
     });
 
@@ -107,28 +100,21 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
       const currentHour = parseInt(currentHourStr);
       const nextHour = parseInt(nextHourStr);
 
-      // Konvertiraj u Date objekte za usporedu
       const currentDate = new Date(currentDateStr);
       const nextDate = new Date(nextDateStr);
       const currentTime = currentDate.getTime();
       const nextTime = nextDate.getTime();
 
-      // Ako su na istoj liniji (isti datum)
       if (currentTime === nextTime) {
-        // Satovi trebaju biti susjedni (razlika od 1)
         if (nextHour !== currentHour + 1) {
           return false;
         }
       } else {
-        // Ako su na različitim linijama, trebalo bi:
-        // Trenutni sat mora biti 23 (zadnji sat dana)
-        // Sljedeći sat mora biti 0 (prvi sat sljedećeg dana)
-        // I sljedeći datum mora biti točno 1 dan nakon trenutnog
         if (currentHour !== 23 || nextHour !== 0) {
           return false;
         }
         
-        // Provjeri je li razlika između datuma točno 1 dan (86400000 ms)
+        // Provjeri je li razlika između datuma točno 1 dan
         const dayInMs = 24 * 60 * 60 * 1000;
         if (nextTime - currentTime !== dayInMs) {
           return false;
@@ -145,10 +131,8 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
     let newSelectedSlots;
     
     if (selectedSlots.includes(slotKey)) {
-      // Deselektuj slot i provjeri je li rezultat i dalje kontinuiran
       newSelectedSlots = selectedSlots.filter(s => s !== slotKey);
       
-      // Ako postoje preostali slotovi, provjeri su li kontinuirani
       if (newSelectedSlots.length > 1 && !areSlotsContinuous(newSelectedSlots)) {
         alert("Brisanjem ovog termina nastaje rupa! Možete birati samo kontinuirane termine (bez praznih mjesta između)!");
         return;
@@ -156,7 +140,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
     } else {
       newSelectedSlots = [...selectedSlots, slotKey];
       
-      // Provjeri da li su slotovi kontinuirani
       if (!areSlotsContinuous(newSelectedSlots)) {
         alert("Možete birati samo kontinuirane termine (bez praznih mjesta između)!");
         return;
@@ -178,7 +161,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
       if (!selectedSlots.includes(slotKey)) {
         const newSelectedSlots = [...selectedSlots, slotKey];
         
-        // Validira kontinuitet kada se povlači miš
         if (areSlotsContinuous(newSelectedSlots)) {
           setSelectedSlots(newSelectedSlots);
         }
@@ -191,8 +173,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
   };
 
   const handlePaymentSuccess = async () => {
-    // Plaćanje je bilo uspješno, pokazat će se success modal
-    // Rezervacije i transakcije su već kreirane na backenda kroz confirm-payment
     const startDate = new Date(selectedSlots[0].split('-')[0]);
     const endDate = new Date(selectedSlots[selectedSlots.length - 1].split('-')[0]);
     const message = `Plaćanje uspješno!\n\nRezervacija od ${startDate.toLocaleDateString('hr-HR')} do ${endDate.toLocaleDateString('hr-HR')}\nUkupno sati: ${selectedSlots.length}`;
@@ -215,7 +195,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
       return;
     }
 
-    // Otvori payment modal umjesto direktne rezervacije
     setShowPaymentModal(true);
   };
 
@@ -376,7 +355,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
         </div>
       )}
 
-      {/* Payment Modal */}
       {showPaymentModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modal}>
@@ -404,7 +382,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
         </div>
       )}
 
-      {/* Success Modal */}
       {showSuccessModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modal}>
@@ -424,7 +401,6 @@ function ParkingReservationCalendar({ oglasId, userId, cijena, stripePromise }) 
   );
 }
 
-// Stripe Payment Form Component
 function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onSuccess, onCancel }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -449,9 +425,8 @@ function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onS
     setError(null);
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const API_BASE_URL = `${import.meta.env.VITE_API_URL}` || "http://localhost:8080";
       
-      // Kreiraj payment intent
       const response = await fetch(`${API_BASE_URL}/api/payments/create-payment-intent`, {
         method: "POST",
         headers: {
@@ -467,7 +442,6 @@ function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onS
 
       const { clientSecret, paymentIntentId } = await response.json();
 
-      // Potvrdi plaćanje
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
@@ -479,21 +453,20 @@ function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onS
       }
 
       if (paymentIntent.status === "succeeded") {
-        console.log("Payment successful:", paymentIntent);
+        // console.log("Payment successful:", paymentIntent);
         
-        // Pozovi confirm-payment endpoint sa vremenskim detaljima
         const sortedSlots = selectedSlots.sort();
         const confirmPayload = {
           paymentIntentId: paymentIntent.id,
           oglasId: parseInt(oglasId),
           korisnikId: parseInt(userId),
           iznos: amount,
-          selectedSlots: sortedSlots, // Proslijedi vremenske slotove
+          selectedSlots: sortedSlots, 
           cijena: cijena,
         };
-        
-        console.log("Sending confirm-payment with payload:", confirmPayload);
-        
+
+        // console.log("Sending confirm-payment with payload:", confirmPayload);
+
         const confirmResponse = await fetch(`${API_BASE_URL}/api/payments/confirm-payment`, {
           method: "POST",
           headers: {
@@ -511,7 +484,7 @@ function StripePaymentForm({ amount, oglasId, userId, selectedSlots, cijena, onS
         }
 
         const confirmData = await confirmResponse.json();
-        console.log("Payment confirmed and transaction saved:", confirmData);
+        // console.log("Payment confirmed and transaction saved:", confirmData);
         
         setLoading(false);
         onSuccess();
@@ -705,7 +678,6 @@ const styles = {
     position: "relative",
   },
   todayColumn: {
-    // Dodaj samo border, ne menjaj backgroundColor jer to prekriva rezervirane slotove
     borderLeft: "3px solid #3498db",
     borderRight: "3px solid #3498db",
   },

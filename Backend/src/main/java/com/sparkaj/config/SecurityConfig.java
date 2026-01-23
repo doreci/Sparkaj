@@ -2,6 +2,7 @@ package com.sparkaj.config;
 
 import com.sparkaj.security.OAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,9 +23,12 @@ public class SecurityConfig {
     @Autowired
     private OAuth2SuccessHandler oauth2SuccessHandler;
 
+    @Value("${api.url:http://localhost:10000}")
+    private String apiUrl;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("[SecurityConfig] Konfiguriranje OAuth2...");
+        // System.out.println("[SecurityConfig] Konfiguriranje OAuth2...");
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
@@ -41,13 +45,13 @@ public class SecurityConfig {
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> {
-                    System.out.println("[SecurityConfig] OAuth2 Login Handler je: " + oauth2SuccessHandler);
+                    // System.out.println("[SecurityConfig] OAuth2 Login Handler je: " + oauth2SuccessHandler);
                     oauth2.successHandler(oauth2SuccessHandler)
                     .failureUrl("/login?error=true");
                 })
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("http://localhost:10000")
+                        .logoutSuccessUrl(apiUrl)
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)
                 )
@@ -57,7 +61,7 @@ public class SecurityConfig {
     @Bean
 CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("http://localhost:10000", "https://sparkaj-g53p.onrender.com"));
+    config.setAllowedOrigins(List.of(apiUrl, "https://sparkaj-g53p.onrender.com"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setAllowCredentials(true);

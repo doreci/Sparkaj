@@ -37,7 +37,7 @@ function AdPage() {
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportText, setReportText] = useState("");
-    const [reviewRating, setReviewRating] = useState(0); // ocjena 1-5
+    const [reviewRating, setReviewRating] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [showReviewSuccess, setShowReviewSuccess] = useState(false);
@@ -50,7 +50,7 @@ function AdPage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -62,7 +62,6 @@ function AdPage() {
                 }
                 setUser(data);
             } else {
-                // Not authenticated, redirect to login
                 navigate("/login", { replace: true });
             }
         } catch (error) {
@@ -111,7 +110,6 @@ function AdPage() {
     const ulicaBroj = ad.ulica_broj;
     const postanskiBroj = ad.postanski_broj;
 
-    // složena adresa za mapu
     const fullLokacija = [ulicaBroj, postanskiBroj, grad]
         .filter(Boolean)
         .join(", ");
@@ -143,7 +141,7 @@ function AdPage() {
 
         try {
             const response = await fetch(
-                `http://localhost:8080/api/oglasi/${id}/prijava`,
+                `${import.meta.env.VITE_API_URL}/api/oglasi/${id}/prijava`,
                 {
                     method: "POST",
                     headers: {
@@ -166,7 +164,7 @@ function AdPage() {
                 );
             }
 
-            console.log("Prijava uspješno poslana:", data);
+            // console.log("Prijava uspješno poslana:", data);
             alert("Prijava oglasa je uspješno poslana!");
             setShowReportModal(false);
             setReportText("");
@@ -186,7 +184,7 @@ function AdPage() {
 
         try {
             const response = await fetch(
-                `http://localhost:8080/api/oglasi/${id}/recenzija`,
+                `${import.meta.env.VITE_API_URL}/api/oglasi/${id}/recenzija`,
                 {
                     method: "POST",
                     headers: {
@@ -203,11 +201,10 @@ function AdPage() {
             }
 
             const data = await response.json();
-            console.log("Recenzija uspješno sprema:", data);
-            setReviewRating(rating); // Sačuva odabranu ocjenu
+            // console.log("Recenzija se uspješno sprema:", data);
+            setReviewRating(rating); 
             setShowReviewSuccess(true);
             
-            // Automatski zatvori popup nakon 2 sekunde
             setTimeout(() => setShowReviewSuccess(false), 2000);
         } catch (error) {
             console.error("Greška:", error);
@@ -226,9 +223,7 @@ function AdPage() {
             </div>
 
             <div className="ad-page-content">
-                {/* Glavna sekcija sa informacijama */}
                 <div className="ad-main-section">
-                    {/* Naziv i osnovni podaci */}
                     <div className="ad-header-info">
                         <h1 className="ad-title">{ad.naziv_oglasa}</h1>
                         <div className="ad-meta">
@@ -243,7 +238,6 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Cijena - istaknuta */}
                     <div className="ad-price-section">
                         <div className="price-tag">
                             <span className="price-label">Cijena:</span>
@@ -251,7 +245,6 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Opis */}
                     <div className="ad-description-section">
                         <h2>Opis oglasa</h2>
                         <div className="ad-description">
@@ -259,7 +252,6 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Informacije o prodavaču */}
                     <div className="ad-seller-section">
                         <h2>O prodavaču</h2>
                         <div className="seller-card">
@@ -315,7 +307,6 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Dodatne informacije */}
                     <div className="ad-details-section">
                         <h2>Dodatne informacije</h2>
                         <div className="details-grid">
@@ -332,7 +323,6 @@ function AdPage() {
                         </div>
                     </div>
 
-                    {/* Slika oglasa */}
                     {ad.slika && (
                         <div className="ad-image-section">
                             <h2>Slika parkirnog mjesta</h2>
@@ -346,7 +336,6 @@ function AdPage() {
                         </div>
                     )}
 
-                    {/* Akcije */}
                     <div className="ad-actions">
                         <button
                             className="btn-secondary btn-large"
@@ -355,7 +344,6 @@ function AdPage() {
                             Prijavi oglas
                         </button>
 
-                        {/* Zvjezdice za recenziju */}
                         <div className="review-stars-inline" style={{ marginTop: "15px", marginBottom: "15px" }}>
                             <label style={{ display: "block", marginBottom: "10px", fontWeight: "600" }}>Ocijeni oglas:</label>
                             <div style={{ display: "flex", gap: "10px" }}>
@@ -385,7 +373,6 @@ function AdPage() {
 
             
 
-            {/* Lokacija */}
             {fullLokacija && (
                 <div className="ad-location-section">
                     <h2>Lokacija parkinga</h2>
@@ -416,7 +403,6 @@ function AdPage() {
                 stripePromise={stripePromise}
             />
 
-            {/* Payment Modal */}
             {selectedOglas && (
                 <div className="payment-modal-overlay">
                     <div className="payment-modal">
@@ -446,7 +432,6 @@ function AdPage() {
                 </div>
             )}
 
-            {/* Payment Success Modal */}
             {paymentSuccess && (
                 <PaymentSuccessModal
                     details={paymentDetails}
@@ -494,7 +479,6 @@ function AdPage() {
                 </div>
             )}
 
-            {/* Review Success Popup */}
             {showReviewSuccess && (
                 <div style={{
                     position: "fixed",
@@ -531,15 +515,7 @@ function AdPage() {
     );
 }
 
-{
-    /* Footer */
-}
-<div className="ad-page-footer">
-    <p>&copy; 2025 Sparkaj. Sva prava zadržana.</p>
-</div>;
 
-// Payment Form Component
-// Payment Form Component
 function PaymentForm({ oglas, user, onSuccess, onCancel }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -569,7 +545,6 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
         setError(null);
 
         try {
-            // 1. Create a payment intent on your backend
             const API_BASE_URL =
                 import.meta.env.VITE_API_URL || "http://localhost:8080";
             const response = await fetch(
@@ -592,7 +567,6 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
 
             const { clientSecret, paymentIntentId } = await response.json();
 
-            // 2. Use stripe.confirmCardPayment() to process the payment
             const { error: confirmError, paymentIntent } =
                 await stripe.confirmCardPayment(clientSecret, {
                     payment_method: {
@@ -605,9 +579,8 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
             }
 
             if (paymentIntent.status === "succeeded") {
-                console.log("Payment successful:", paymentIntent);
+                // console.log("Payment successful:", paymentIntent);
 
-                // 3. Confirm payment with backend and save transaction
                 const confirmResponse = await fetch(
                     `${API_BASE_URL}/api/payments/confirm-payment`,
                     {
@@ -638,7 +611,7 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
                 }
 
                 const confirmData = await confirmResponse.json();
-                console.log("Payment confirmed and saved:", confirmData);
+                // console.log("Payment confirmed and saved:", confirmData);
 
                 setLoading(false);
                 onSuccess({
@@ -704,7 +677,6 @@ function PaymentForm({ oglas, user, onSuccess, onCancel }) {
     );
 }
 
-// Success Modal Component
 function PaymentSuccessModal({ details, onClose }) {
     return (
         <div className="success-modal-overlay">

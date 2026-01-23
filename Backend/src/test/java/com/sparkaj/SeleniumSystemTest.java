@@ -30,7 +30,7 @@ class SeleniumSystemTest {
 
     private static WebDriver driver;
     private WebDriverWait wait;
-    private static final String BASE_URL = "http://localhost:10000";
+    private static final String BASE_URL = System.getProperty("api.url", "http://localhost:10000");
 
     @BeforeEach
     void setup() {

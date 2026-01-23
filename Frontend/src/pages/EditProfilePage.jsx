@@ -4,18 +4,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 
-const API_URL = "http://localhost:8080";
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
-// Funkcija za provjeru je li slika dostupna
 const isValidImageUrl = (url) => {
     if (!url || typeof url !== 'string') return false;
     
-    // Ako je lokalna datoteka, provjeri da li postoji
     if (url.startsWith('./') || url.startsWith('/')) {
         return true;
     }
     
-    // Za eksterne URL-e, samo provjeri format
     try {
         new URL(url);
         return true;
@@ -49,14 +46,13 @@ function EditProfilePage() {
             if (data.authenticated) {
                 // Provjeri je li admin i redirekcija na admin page
                 if (isAdmin(data)) {
-                    console.log("✓ Admin, redirekcija na /admin");
+                    // console.log("✓ Admin, redirekcija na /admin");
                     navigate("/admin");
                     return;
                 }
                 
                 setUser(data);
                 
-                // Prvo učitaj podatke iz baze
                 let dbIme = data.given_name || "";
                 let dbPrezime = data.family_name || "";
                 let dbBrojMobitela = "";
@@ -90,7 +86,6 @@ function EditProfilePage() {
                     console.log("Nije pronađen korisnik u bazi, koristim OAuth2 podatke");
                 }
 
-                // Postavi formData sa podacima
                 setFormData({
                     ime: dbIme,
                     prezime: dbPrezime,
@@ -101,7 +96,7 @@ function EditProfilePage() {
                 if (dbProfilna && isValidImageUrl(dbProfilna)) {
                     setProfileImage(dbProfilna);
                 } else {
-                    console.log("Nema URLa za sliku ili URL nije dostupan");
+                    // console.log("Nema URLa za sliku ili URL nije dostupan");
                     setProfileImage("./avatar-icon.png");
                 }
             }
@@ -251,9 +246,8 @@ function EditProfilePage() {
             const data = await response.json();
 
             if (data.success) {
-                console.log("Profil uspješno ažuriran");
+                // console.log("Profil uspješno ažuriran");
                 alert("Profil uspješno ažuriran");
-                // Osvježi podatke iz baze nakon što su ažurirani
                 checkAuthentication();
             } else {
                 console.error("Greška pri ažuriranju profila:", data.message);
@@ -267,13 +261,8 @@ function EditProfilePage() {
 
     return (
         <div className="container">
-            {profileImage &&
-                console.log("DEBUG: profileImage state:", profileImage)}
-            {formData.profile_image_url &&
-                console.log(
-                    "DEBUG: formData.profile_image_url:",
-                    formData.profile_image_url
-                )}
+            {profileImage}
+            {formData.profile_image_url}
             <div className="header">
                 <Link to="/" className="back-link">
                     ← Nazad
@@ -290,7 +279,6 @@ function EditProfilePage() {
                             loading="lazy"
                             crossOrigin="anonymous"
                             onError={(e) => {
-                                // Ako je Google slika, zamijeni sa fallback ikonom
                                 if (e.target.src && (e.target.src.includes("lh3.googleusercontent") || e.target.src.includes("googleusercontent"))) {
                                     console.warn("Google slika nije dostupna, koristi fallback icon");
                                     e.target.src = "./avatar-icon.png";

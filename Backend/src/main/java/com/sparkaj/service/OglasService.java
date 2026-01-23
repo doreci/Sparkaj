@@ -40,8 +40,7 @@ public class OglasService {
                 .map(Arrays::asList);
     }
        
-    public Mono<List<GradBody>> getLokacije() {
-        System.out.println(" Dohvaćam oglase iz baze...");        
+    public Mono<List<GradBody>> getLokacije() {   
         
         return webClient.get()
                 .uri("/rest/v1/oglas?select=grad")
@@ -52,9 +51,9 @@ public class OglasService {
     }
 
     public Mono<List<Oglas>> pretraziOglase(FilterOglasBody fob) {
-        System.out.println("[pretraziOglase] Primljeni filtri - Location: " + fob.getLocation() + 
-                ", PriceMin: " + fob.getPriceMin() + ", PriceMax: " + fob.getPriceMax() + 
-                ", DateFrom: " + fob.getDateFrom() + ", DateTo: " + fob.getDateTo());
+        // System.out.println("[pretraziOglase] Primljeni filtri - Location: " + fob.getLocation() + 
+        //         ", PriceMin: " + fob.getPriceMin() + ", PriceMax: " + fob.getPriceMax() + 
+        //         ", DateFrom: " + fob.getDateFrom() + ", DateTo: " + fob.getDateTo());
         
         StringBuilder query = new StringBuilder("?select=*,Rezervacija(*)&");
 
@@ -82,44 +81,37 @@ public class OglasService {
     private boolean isDostupan(Oglas oglas, String dateFrom, String dateTo) {
         // 1. Ako korisnik nije odabrao datume, prikaži oglas
         if (dateFrom == null || dateFrom.isEmpty() || dateTo == null || dateTo.isEmpty()) {
-            System.out.println("[isDostupan] Korisnik nije odabrao datume - prikaži oglas");
             return true;
         }
 
         // 2. Ako oglas nema nikakvih rezervacija, slobodan je
         if (oglas.getRezervacije() == null || oglas.getRezervacije().isEmpty()) {
-            System.out.println("[isDostupan] Nema rezervacija - oglas je dostupan");
             return true;
         }
 
-        // 3. Parsiraj samo datume koji dolaze s frontenda (jer su oni Stringovi)
+        // 3. Parsiraj samo datume koji dolaze s frontenda
         try {
             LocalDateTime filterStart = LocalDateTime.parse(dateFrom);
             LocalDateTime filterEnd = LocalDateTime.parse(dateTo);
-            System.out.println("[isDostupan] Parsirani datumi - filterStart: " + filterStart + ", filterEnd: " + filterEnd);
 
             // 4. Provjera preklapanja
             for (Rezervacija rez : oglas.getRezervacije()) {
                 LocalDateTime rezStart = rez.getDatumOd();
                 LocalDateTime rezEnd = rez.getDatumDo();
-                System.out.println("[isDostupan] Provjera presjeka - rezStart: " + rezStart + ", rezEnd: " + rezEnd);
 
                 if (filterStart.isBefore(rezEnd) && filterEnd.isAfter(rezStart)) {
-                    System.out.println("[isDostupan] Pronađen presjek - oglas nije dostupan");
                     return false; // Parking je ZAUZET u ovom terminu
                 }
             }
-            System.out.println("[isDostupan] Nema presjeka - oglas je dostupan");
             return true;
         } catch (Exception e) {
             System.err.println("Greška pri parsiranju datuma: dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", greška=" + e.getMessage());
             e.printStackTrace();
-            return true; // Ako se datumi ne mogu parsirati, prikaži oglas (fallback)
+            return true;
         }
     }
         
     public Mono<List<Oglas>> kreirajOglas(Oglas oglas) {
-        System.out.println(" Kreiram oglas");
 
         return webClient.post()
                 .uri("/rest/v1/oglas")
@@ -130,12 +122,11 @@ public class OglasService {
     }
 
     public Mono<Oglas> createOglas(CreateOglasRequest request) {
-        System.out.println("[createOglas] Počinjem kreiranje oglasa");
-        System.out.println("[createOglas] Request UUID: " + request.getUuid());
-        System.out.println("[createOglas] Request IdKorisnika: " + request.getIdKorisnika());
-        System.out.println("[createOglas] Naziv: " + request.getNazivOglasa());
+        // System.out.println("[createOglas] Počinjem kreiranje oglasa");
+        // System.out.println("[createOglas] Request UUID: " + request.getUuid());
+        // System.out.println("[createOglas] Request IdKorisnika: " + request.getIdKorisnika());
+        // System.out.println("[createOglas] Naziv: " + request.getNazivOglasa());
         
-        // Ako je id_korisnika dostupan (Spring Boot OAuth2), koristi ga direktno
         if (request.getIdKorisnika() != null) {
             Map<String, Object> oglasMap = new HashMap<>();
             oglasMap.put("naziv_oglasa", request.getNazivOglasa());
@@ -146,15 +137,11 @@ public class OglasService {
             oglasMap.put("postanski_broj", request.getPostanskiBroj());
             oglasMap.put("id_korisnika", request.getIdKorisnika());
             oglasMap.put("slika", request.getSlika());
-            System.out.println("[createOglas] Kreiram oglas sa id_korisnika: " + request.getIdKorisnika());
-            System.out.println("[createOglas] OglasMap: " + oglasMap);
             return webClient.post()
                     .uri("/rest/v1/oglas")
                     .bodyValue(oglasMap)
                     .exchangeToMono(response -> {
-                        System.out.println("[createOglas] Response status (id_korisnika path): " + response.statusCode());
                         if (response.statusCode().is2xxSuccessful()) {
-                            System.out.println("[createOglas] ✓ Oglas uspješno kreiran sa id_korisnika");
                             return response.bodyToMono(Oglas.class);
                         } else {
                             return response.bodyToMono(String.class)
@@ -166,11 +153,8 @@ public class OglasService {
                     });
         }
         
-        // Inače, traži korisnika po uuid (stari nacin)
-        System.out.println("[createOglas] ID korisnika je NULL, tražim po UUID-u: " + request.getUuid());
         return korisnikService.getKorisnikByUuid(request.getUuid())
                 .flatMap(korisnik -> {
-                    System.out.println("[createOglas] Pronađen korisnik: " + (korisnik != null ? korisnik.getIdKorisnika() : "NULL"));
                     if (korisnik == null) {
                         System.err.println("[createOglas] ✗ Korisnik nije pronađen sa UUID: " + request.getUuid());
                         return Mono.error(new RuntimeException("Korisnik not found for UUID: " + request.getUuid()));
@@ -184,15 +168,11 @@ public class OglasService {
                     oglasMap.put("postanski_broj", request.getPostanskiBroj());
                     oglasMap.put("id_korisnika", korisnik.getIdKorisnika());
                     oglasMap.put("slika", request.getSlika());
-                    System.out.println("[createOglas] Kreiram oglas sa id_korisnika iz UUID: " + korisnik.getIdKorisnika());
-                    System.out.println("[createOglas] OglasMap: " + oglasMap);
                     return webClient.post()
                             .uri("/rest/v1/oglas")
                             .bodyValue(oglasMap)
                             .exchangeToMono(response -> {
-                                System.out.println("[createOglas] Response status (UUID path): " + response.statusCode());
                                 if (response.statusCode().is2xxSuccessful()) {
-                                    System.out.println("[createOglas] ✓ Oglas uspješno kreiran sa UUID");
                                     return response.bodyToMono(Oglas.class);
                                 } else {
                                     return response.bodyToMono(String.class)
@@ -214,8 +194,6 @@ public class OglasService {
     }
     
     public Mono<Oglas> azurirajOglas(Long id, UpdateOglasRequest request, Integer idKorisnika) {
-        System.out.println("[azurirajOglas] Ažuriram oglas " + id.toString() + " za korisnika " + idKorisnika);
-        System.out.println("[azurirajOglas] Request: " + request);
         
         // Prvo provjeri je li korisnik vlasnik oglasa
         return getOglasById(id.intValue())
@@ -229,9 +207,6 @@ public class OglasService {
                         return Mono.error(new RuntimeException("Nemate dozvolu za ažuriranje ovog oglasa"));
                     }
                     
-                    System.out.println("[azurirajOglas] ✓ Korisnik je vlasnik oglasa, ažuriram...");
-                    
-                    // Konvertiraj UpdateOglasRequest u Map - samo updateable polja!
                     Map<String, Object> updateMap = new HashMap<>();
                     if (request.getNazivOglasa() != null) {
                         updateMap.put("naziv_oglasa", request.getNazivOglasa());
@@ -255,16 +230,13 @@ public class OglasService {
                         updateMap.put("slika", request.getSlika());
                     }
                     
-                    System.out.println("[azurirajOglas] UpdateMap: " + updateMap);
                     
                     return webClient.patch()
                             .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
                             .header("Prefer", "return=representation")
                             .bodyValue(updateMap)
                             .exchangeToMono(response -> {
-                                System.out.println("[azurirajOglas] Response status: " + response.statusCode());
                                 if (response.statusCode().is2xxSuccessful()) {
-                                    System.out.println("[azurirajOglas] ✓ Oglas uspješno ažuriran");
                                     return response.bodyToMono(Oglas[].class)
                                             .map(niz -> niz.length > 0 ? niz[0] : null);
                                 } else {
@@ -279,7 +251,6 @@ public class OglasService {
     }
     
     public Mono<String> obrisiOglas(Long id, Integer idKorisnika) {
-        System.out.println("[obrisiOglas] Brišem oglas " + id.toString() + " za korisnika " + idKorisnika);
         
         // Prvo provjeri je li korisnik vlasnik oglasa
         return getOglasById(id.intValue())
@@ -293,14 +264,11 @@ public class OglasService {
                         return Mono.error(new RuntimeException("Nemate dozvolu za brisanje ovog oglasa"));
                     }
                     
-                    System.out.println("[obrisiOglas] ✓ Korisnik je vlasnik oglasa, brišem...");
                     return webClient.delete()
                             .uri("/rest/v1/oglas?id_oglasa=eq." + id.toString())
                             .header("Prefer", "return=representation")
                             .exchangeToMono(response -> {
-                                System.out.println("[obrisiOglas] Response status: " + response.statusCode());
                                 if (response.statusCode().is2xxSuccessful() || response.statusCode().value() == 204) {
-                                    System.out.println("[obrisiOglas] ✓ Oglas uspješno obrisan");
                                     return Mono.just("Oglas uspješno obrisan");
                                 } else {
                                     return response.bodyToMono(String.class)
@@ -342,26 +310,20 @@ public class OglasService {
                 .bodyToMono(String.class)
                 .flatMap(response -> {
                     try {
-                        // Provjeri je li response prazna array (nema rezervacije)
                         if (response.trim().equals("[]")) {
-                            System.out.println("[findReservation] Nema rezervacije za korisnika " + idKorisnika + " na oglasu " + idOglasa);
                             return Mono.just((Long) null);
                         }
                         
-                        // Parse JSON array to find id_rezervacije
                         if (response.contains("id_rezervacije")) {
-                            // Simple extraction - assumes response like [{"id_rezervacije":123}]
                             int startIdx = response.indexOf("id_rezervacije") + 15;
                             int endIdx = response.indexOf("}", startIdx);
                             if (endIdx > startIdx) {
                                 String idStr = response.substring(startIdx, endIdx).trim().replaceAll("[^0-9]", "");
                                 if (!idStr.isEmpty()) {
-                                    System.out.println("[findReservation] Pronađena rezervacija ID: " + idStr);
                                     return Mono.just(Long.parseLong(idStr));
                                 }
                             }
                         }
-                        System.out.println("[findReservation] Nema rezervacije (ne može se parsirati)");
                         return Mono.just((Long) null);
                     } catch (Exception e) {
                         System.err.println("[findReservation] Greška pri parsiranju: " + e.getMessage());
@@ -384,7 +346,6 @@ public class OglasService {
                 .flatMap(response -> {
                     // Ako recenzija postoji, ažuriraj je
                     if (response.contains("id_recenzije")) {
-                        System.out.println("Existing review found, updating...");
                         String updateBody = "{\"ocjena\":" + ocjena + "}";
                         return webClient.patch()
                                 .uri("/rest/v1/Recenzija?id_rezervacije=eq." + idRezervacije)
@@ -395,7 +356,6 @@ public class OglasService {
                                 .bodyToMono(Object.class);
                     } else {
                         // Ako ne postoji, kreiraj novu
-                        System.out.println("No existing review, creating new one...");
                         String insertBody = "{" +
                                 "\"id_rezervacije\":" + idRezervacije + "," +
                                 "\"ocjena\":" + ocjena +

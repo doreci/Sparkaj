@@ -47,13 +47,13 @@ function ProfilePage() {
 
     const fetchUserProfile = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/korisnik/${userId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/korisnik/${userId}`, {
                 credentials: "include",
             });
             if (response.ok) {
                 const data = await response.json();
-                console.log("Učitani korisnik:", data);
-                console.log("Profilna slika:", data.profilna);
+                // console.log("Učitani korisnik:", data);
+                // console.log("Profilna slika:", data.profilna);
                 setUser(data);
                 setIsOwnProfile(false);
             }
@@ -64,14 +64,14 @@ function ProfilePage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
             if (data.authenticated) {
                 // Provjeri je li admin i redirekcija na admin page
                 if (isAdmin(data)) {
-                    console.log("✓ Admin, redirekcija na /admin");
+                    // console.log("Admin, redirekcija na /admin");
                     navigate("/admin");
                     return;
                 }
@@ -92,7 +92,7 @@ function ProfilePage() {
     const handleRequestAdvertiser = async () => {
         try {
             const response = await fetch(
-                "http://localhost:8080/api/user/request-advertiser",
+                `${import.meta.env.VITE_API_URL}/api/user/request-advertiser`,
                 {
                     method: "PUT",
                     headers: {
@@ -117,7 +117,7 @@ function ProfilePage() {
     const handleDeleteAd = async (adId) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/oglasi/${adId}`,
+                `${import.meta.env.VITE_API_URL}/api/oglasi/${adId}`,
                 {
                     method: "DELETE",
                     credentials: "include",

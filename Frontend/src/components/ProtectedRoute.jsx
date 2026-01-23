@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ children }) {
-    const [status, setStatus] = useState("loading"); // loading, allowed, blocked, notAuthenticated
+    const [status, setStatus] = useState("loading"); 
     const [user, setUser] = useState(null);
 
     useEffect(() => {
         const checkUserStatus = async () => {
             try {
-                const response = await fetch("http://localhost:8080/api/user", {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                     credentials: "include",
                 });
                 const data = await response.json();

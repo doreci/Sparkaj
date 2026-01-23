@@ -15,7 +15,7 @@ server:
 
 # CORS Configuration za testove
 cors:
-  allowed-origins: http://localhost:3000, http://localhost:8080, http://localhost:10000
+  allowed-origins: http://localhost:3000, http://localhost:8080, ${api.url}
 
 # Stripe Configuration za testove (test ključevi)
 stripe:
@@ -41,5 +41,7 @@ spring:
 
 # OAuth2 Login URL
 oauth2:
-  success-url: http://localhost:10000
-  failure-url: http://localhost:10000/login?error=true
+  api:
+    url: http://localhost:10000
+  success-url: ${api.url}
+  failure-url: ${api.url}/login?error=true

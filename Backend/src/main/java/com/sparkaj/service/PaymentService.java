@@ -11,13 +11,12 @@ import java.util.Map;
 public class PaymentService {
 
     public PaymentService() {
-        // Stripe API key - trebam ga postaviti u environment variable
         Stripe.apiKey = "sk_test_51SebNeCxvTBjwGGPhKUXVLx6dq9Z35bHmKr3YYe6iZi6NxFvqrPv1FW9nWkUnKNUHYQpQjE8bIEpEfBmNjPLnL4200IBbYo7BM";
     }
 
     public Map<String, Object> createPaymentIntent(Long amount) {
         try {
-            System.out.println("[PaymentService] Kreiram payment intent za iznos: " + amount + " centima");
+            // System.out.println("[PaymentService] Kreiram payment intent za iznos: " + amount + " centima");
 
             PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                     .setAmount(amount)
@@ -27,7 +26,6 @@ public class PaymentService {
 
             PaymentIntent paymentIntent = PaymentIntent.create(params);
 
-            System.out.println("[PaymentService] ✓ Payment intent kreiran: " + paymentIntent.getId());
 
             Map<String, Object> response = new HashMap<>();
             response.put("clientSecret", paymentIntent.getClientSecret());
@@ -41,11 +39,8 @@ public class PaymentService {
 
     public Map<String, Object> confirmPayment(String paymentIntentId) {
         try {
-            System.out.println("[PaymentService] Potvrđujem payment intent: " + paymentIntentId);
 
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-
-            System.out.println("[PaymentService] ✓ Payment status: " + paymentIntent.getStatus());
 
             Map<String, Object> response = new HashMap<>();
             response.put("id", paymentIntent.getId());

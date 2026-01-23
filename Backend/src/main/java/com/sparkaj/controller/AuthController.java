@@ -3,6 +3,7 @@ package com.sparkaj.controller;
 import com.sparkaj.model.Korisnik;
 import com.sparkaj.service.KorisnikService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "http://localhost:10000", "https://sparkaj-g53p.onrender.com"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "${api.url}", "https://sparkaj-g53p.onrender.com"})
 public class AuthController {
 
     @Autowired
@@ -34,7 +35,7 @@ public class AuthController {
                 Korisnik korisnik = korisnikService.getKorisnikByEmail(email).block();
                 if (korisnik != null) {
                     // Vrati podatke iz baze
-                    System.out.println("[AuthController] Pronađen korisnik u bazi, vraćam podatke iz baze");
+                    // System.out.println("[AuthController] Pronađen korisnik u bazi, vraćam podatke iz baze");
                     response.put("id_korisnika", korisnik.getIdKorisnika());
                     response.put("uuid", korisnik.getUuid());
                     response.put("given_name", korisnik.getIme());
@@ -45,7 +46,7 @@ public class AuthController {
                     response.put("blokiran", korisnik.getBlokiran());
                 } else {
                     // Ako nema u bazi, vrati OAuth2 podatke kao fallback
-                    System.out.println("[AuthController] Korisnik nije pronađen u bazi, vraćam OAuth2 podatke");
+                    // System.out.println("[AuthController] Korisnik nije pronađen u bazi, vraćam OAuth2 podatke");
                     response.put("given_name", principal.getAttribute("given_name"));
                     response.put("family_name", principal.getAttribute("family_name"));
                     response.put("picture", principal.getAttribute("picture"));
@@ -53,7 +54,7 @@ public class AuthController {
                 }
             } catch (Exception e) {
                 System.err.println("[AuthController] Greška pri pronalaženju korisnika: " + e.getMessage());
-                // Ako greška, vrati OAuth2 podatke
+                // Ako ima greške, vrati OAuth2 podatke
                 response.put("given_name", principal.getAttribute("given_name"));
                 response.put("family_name", principal.getAttribute("family_name"));
                 response.put("picture", principal.getAttribute("picture"));
@@ -83,7 +84,7 @@ public class AuthController {
         }
 
         String email = principal.getAttribute("email");
-        System.out.println("[AuthController] Zahtjev za oglašivanje od: " + email);
+        // System.out.println("[AuthController] Zahtjev za oglašivanje od: " + email);
 
         return korisnikService.requestAdvertiser(email)
                 .map(korisnik -> {
@@ -109,9 +110,9 @@ public class AuthController {
 
     @GetMapping("/admin/pending-advertisers")
     public Mono<Map<String, Object>> getPendingAdvertisers(@AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Dohvaćam sve zahtjeve za oglašivanje");
-        
-        // Provera da li je korisnik admin
+        // System.out.println("[AuthController] Dohvaćam sve zahtjeve za oglašivanje");
+
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");
@@ -134,9 +135,9 @@ public class AuthController {
 
     @PutMapping("/admin/approve-advertiser/{id}")
     public Mono<Map<String, Object>> approveAdvertiser(@PathVariable Integer id, @AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Odobravanje zahtjeva za ID: " + id);
+        // System.out.println("[AuthController] Odobravanje zahtjeva za ID: " + id);
         
-        // Provera da li je korisnik admin
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");
@@ -160,9 +161,9 @@ public class AuthController {
 
     @PutMapping("/admin/reject-advertiser/{id}")
     public Mono<Map<String, Object>> rejectAdvertiser(@PathVariable Integer id, @AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Odbijanje zahtjeva za ID: " + id);
+        // System.out.println("[AuthController] Odbijanje zahtjeva za ID: " + id);
         
-        // Provera da li je korisnik admin
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");
@@ -186,9 +187,9 @@ public class AuthController {
 
     @PutMapping("/admin/block-user/{id}")
     public Mono<Map<String, Object>> blockUser(@PathVariable Integer id, @AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Blokiranje korisnika sa ID: " + id);
+        // System.out.println("[AuthController] Blokiranje korisnika sa ID: " + id);
         
-        // Provera da li je korisnik admin
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");
@@ -212,9 +213,9 @@ public class AuthController {
 
     @PutMapping("/admin/unblock-user/{id}")
     public Mono<Map<String, Object>> unblockUser(@PathVariable Integer id, @AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Odblokiravanje korisnika sa ID: " + id);
+        // System.out.println("[AuthController] Odblokiravanje korisnika sa ID: " + id);
         
-        // Provera da li je korisnik admin
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");
@@ -238,9 +239,9 @@ public class AuthController {
 
     @GetMapping("/admin/blocked-users")
     public Mono<Map<String, Object>> getBlockedUsers(@AuthenticationPrincipal OAuth2User principal) {
-        System.out.println("[AuthController] Dohvaćam sve blokirane korisnike");
-        
-        // Provera da li je korisnik admin
+        //System.out.println("[AuthController] Dohvaćam sve blokirane korisnike");
+
+        // Provjera je li korisnik admin
         if (principal == null || !isAdmin(principal)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Nemate dozvolu za ovu akciju");

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
-const API_URL = "http://localhost:8080";
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
 function EditAdPage() {
     const { id } = useParams();
@@ -26,7 +26,6 @@ function EditAdPage() {
     });
 
     useEffect(() => {
-        // Provjeri OAuth2 autentifikaciju
         checkAuthentication();
     }, []);
 
@@ -50,7 +49,7 @@ function EditAdPage() {
                 navigate("/login");
             }
         } catch (error) {
-            console.log("Korisnik nije autentificiran");
+            // console.log("Korisnik nije autentificiran");
             setIsAuthenticated(false);
             navigate("/login");
         }
@@ -77,7 +76,6 @@ function EditAdPage() {
 
             setAdData(ad);
             
-            // Postavi formData iz ad podataka
             const lokacija = `${ad.ulica_broj}, ${ad.postanski_broj}, ${ad.grad}`;
             setFormData({
                 naziv_oglasa: ad.naziv_oglasa || "",
@@ -87,7 +85,6 @@ function EditAdPage() {
                 slika: null
             });
 
-            // Postavi image preview
             if (ad.slika) {
                 setImagePreview(ad.slika);
             }
@@ -131,14 +128,12 @@ function EditAdPage() {
 
         setIsSubmitting(true);
 
-        // Safety timeout to reset button after 15 seconds
         const safetyTimeout = setTimeout(() => setIsSubmitting(false), 15000);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
         try {
-            // Parse lokacija: "Ulica broj, postanski, grad"
             const lokacijaParts = formData.lokacija.split(',').map(s => s.trim());
             if (lokacijaParts.length !== 3) {
                 alert("Lokacija mora biti u formatu: Ulica broj, postanski broj, grad");
@@ -157,7 +152,6 @@ function EditAdPage() {
 
             let imageUrl = adData.slika;
             if (formData.slika) {
-                // Upload image to Supabase storage
                 const fileName = `ads/${Date.now()}_${formData.slika.name}`;
                 const { data, error } = await supabase.storage
                     .from('slika_oglasa')
@@ -166,9 +160,7 @@ function EditAdPage() {
                 if (error) {
                     console.error("Error uploading image:", error);
                     alert("Greška pri uploadu slike: " + error.message + ". Slika neće biti ažurirana.");
-                    // Continue with old image
                 } else {
-                    // Get public URL
                     const { data: urlData } = supabase.storage
                         .from('slika_oglasa')
                         .getPublicUrl(fileName);
@@ -176,7 +168,6 @@ function EditAdPage() {
                 }
             }
 
-            // Pripremi payload za ažuriranje
             const payload = {
                 naziv_oglasa: formData.naziv_oglasa,
                 opis_oglasa: formData.opis_oglasa,
@@ -187,7 +178,7 @@ function EditAdPage() {
                 slika: imageUrl
             };
 
-            console.log("Update payload:", payload);
+            // console.log("Update payload:", payload);
 
             const response = await fetch(`${API_URL}/api/oglasi/${id}`, {
                 method: 'PUT',
@@ -199,19 +190,18 @@ function EditAdPage() {
                 signal: controller.signal,
             });
 
-            console.log("Response status:", response.status);
+            // console.log("Response status:", response.status);
 
             if (response.ok) {
-                console.log("✓ Oglas uspješno ažuriran!");
+                // console.log("Oglas uspješno ažuriran!");
                 alert("Oglas uspješno ažuriran!");
                 navigate(`/ad/${id}`);
             } else {
                 const errorText = await response.text();
-                console.error("✗ Greška pri ažuriranju oglasa:");
+                console.error("Greška pri ažuriranju oglasa:");
                 console.error("Status:", response.status);
                 console.error("Error text:", errorText);
                 
-                // Pokušaj parsirati JSON response
                 try {
                     const errorData = JSON.parse(errorText);
                     alert("Greška pri ažuriranju oglasa: " + errorData.error);
@@ -241,7 +231,7 @@ function EditAdPage() {
         setIsDeleting(true);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         try {
             const response = await fetch(`${API_URL}/api/oglasi/${id}`, {
@@ -253,19 +243,18 @@ function EditAdPage() {
                 signal: controller.signal,
             });
 
-            console.log("Delete response status:", response.status);
+            // console.log("Delete response status:", response.status);
 
             if (response.ok) {
-                console.log("✓ Oglas uspješno obrisan!");
+                // console.log("Oglas uspješno obrisan!");
                 alert("Oglas uspješno obrisan!");
                 navigate("/");
             } else {
                 const errorText = await response.text();
-                console.error("✗ Greška pri brisanju oglasa:");
+                console.error("Greška pri brisanju oglasa:");
                 console.error("Status:", response.status);
                 console.error("Error text:", errorText);
                 
-                // Pokušaj parsirati JSON response
                 try {
                     const errorData = JSON.parse(errorText);
                     if(errorData.error.includes("CONFLICT")) {

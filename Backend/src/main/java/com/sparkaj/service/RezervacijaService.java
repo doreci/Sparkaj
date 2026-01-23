@@ -27,10 +27,8 @@ public class RezervacijaService {
     }
 
     public Mono<Rezervacija> createRezervacijaWithDetails(Long korisnikId, Long oglasId, LocalDateTime datumOd, LocalDateTime datumDo) {
-        // Format dates as ISO strings
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         
-        // First, get the max ID from existing reservations to generate next ID
         return webClient.get()
                 .uri("/rest/v1/Rezervacija?select=id_rezervacije&order=id_rezervacije.desc&limit=1")
                 .retrieve()
@@ -41,15 +39,11 @@ public class RezervacijaService {
                         nextId = existing[0].getIdRezervacije() + 1;
                     }
                     
-                    // Create JSON string with the generated ID
                     String jsonBody = "{\"id_rezervacije\":" + nextId +
                                      ",\"id_korisnika\":" + korisnikId + 
                                      ",\"id_oglasa\":" + oglasId + 
                                      ",\"datumOd\":\"" + datumOd.format(formatter) + "\"" +
                                      ",\"datumDo\":\"" + datumDo.format(formatter) + "\"}";
-                    
-                    System.out.println("Creating reservation with ID: " + nextId + " for user: " + korisnikId + ", ad: " + oglasId);
-                    System.out.println("Reservation JSON: " + jsonBody);
                     
                     return insertReservacija(jsonBody);
                 });

@@ -22,16 +22,15 @@ public class KorisnikService {
 
     // Salje upit Supabase-u, natrag dobiva podatke o korisniku
     public Mono<Korisnik> getKorisnikByUuid(String uuid) {
-        System.out.println("[getKorisnikByUuid] Tražim korisnika sa UUID: " + uuid);
         return webClient.get()
                 .uri("/rest/v1/korisnik?uuid=eq." + uuid + "&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
                 .doOnNext(korisnici -> {
                     if (korisnici != null && korisnici.length > 0) {
-                        System.out.println("[getKorisnikByUuid] ✓ Pronađen korisnik: ID=" + korisnici[0].getIdKorisnika() + ", Email=" + korisnici[0].getEmail());
+                        System.out.println("[getKorisnikByUuid] Pronađen korisnik: ID=" + korisnici[0].getIdKorisnika() + ", Email=" + korisnici[0].getEmail());
                     } else {
-                        System.out.println("[getKorisnikByUuid] ✗ Korisnik nije pronađen za UUID: " + uuid);
+                        System.out.println("[getKorisnikByUuid] Korisnik nije pronađen za UUID: " + uuid);
                     }
                 })
                 .map(korisnici -> korisnici.length > 0 ? korisnici[0] : null)
@@ -48,7 +47,6 @@ public class KorisnikService {
 
     // OAuth2 metode
     public Mono<Void> saveOrUpdateOAuth2Korisnik(String email, String ime, String prezime, String profilna, String uuid) {
-        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] POČETO - email: " + email + ", UUID: " + uuid);
         
         return getKorisnikByEmail(email)
                 .hasElement()
@@ -57,21 +55,17 @@ public class KorisnikService {
                         // Korisnik postoji - ažuriraj UUID ako se razlikuje
                         return getKorisnikByEmail(email)
                                 .flatMap(korisnik -> {
-                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik postoji");
-                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Postojeći UUID: " + korisnik.getUuid());
-                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Novi UUID: " + uuid);
+                                    // System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik postoji");
+                                    // System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Postojeći UUID: " + korisnik.getUuid());
+                                    // System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Novi UUID: " + uuid);
                                     
-                                    // Provjeri da li je UUID null ili se razlikuje
                                     if (uuid != null && (korisnik.getUuid() == null || !uuid.equals(korisnik.getUuid()))) {
-                                        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] UUID se razlikuje ili je null, ažuriram sa novim UUID-om");
                                         return updateKorisnikUuid(email, uuid);
                                     }
-                                    System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] UUID je isti, nema potrebe za ažuriranjem");
                                     return Mono.empty();
                                 });
                     } else {
                         // Korisnik ne postoji - kreiraj novog
-                        System.out.println("[KorisnikService.saveOrUpdateOAuth2Korisnik] Korisnik ne postoji, kreiramo novog");
                         return createOAuth2Korisnik(email, ime, prezime, profilna, uuid);
                     }
                 })
@@ -92,10 +86,8 @@ public class KorisnikService {
                 .bodyToMono(Korisnik[].class)
                 .flatMap(korisnici -> {
                     if (korisnici != null && korisnici.length > 0) {
-                        System.out.println("[getKorisnikByEmail] Pronađen korisnik: " + email);
                         return Mono.just(korisnici[0]);
                     }
-                    System.out.println("[getKorisnikByEmail] Korisnik nije pronađen: " + email);
                     return Mono.empty();
                 })
                 .onErrorResume(e -> {
@@ -110,16 +102,14 @@ public class KorisnikService {
         if (prezime != null) updates.put("prezime", prezime);
         if (profilna != null) updates.put("profilna", profilna);
         if (uuid != null) updates.put("uuid", uuid);
-
-        System.out.println("[updateKorisnik] Ažuriramo korisnika: " + email + " sa podacima: " + updates);
         
         return webClient.patch()
                 .uri("/rest/v1/korisnik?email=eq." + email)
                 .bodyValue(updates)
                 .retrieve()
                 .toBodilessEntity()
-                .doOnSuccess(r -> System.out.println("[updateKorisnik] ✓ Korisnik ažuriran: " + email))
-                .doOnError(e -> System.err.println("[updateKorisnik] ✗ Greška pri ažuriranju: " + e.getMessage()))
+                .doOnSuccess(r -> System.out.println("[updateKorisnik] Korisnik ažuriran: " + email))
+                .doOnError(e -> System.err.println("[updateKorisnik] Greška pri ažuriranju: " + e.getMessage()))
                 .then();
     }
 
@@ -132,23 +122,19 @@ public class KorisnikService {
         newKorisnik.put("uuid", uuid != null ? uuid : UUID.randomUUID().toString());
         newKorisnik.put("oglasivac", "NE");
         newKorisnik.put("blokiran", false);
-
-        System.out.println("[createOAuth2Korisnik] Kreiramo novog korisnika sa podacima: " + newKorisnik);
-        
         
         return webClient.post()
                 .uri("/rest/v1/korisnik")
                 .bodyValue(newKorisnik)
                 .retrieve()
                 .toBodilessEntity()
-                .doOnSuccess(r -> System.out.println("[createOAuth2Korisnik] ✓ Novi korisnik kreiran: " + email))
-                .doOnError(e -> System.err.println("[createOAuth2Korisnik] ✗ Greška pri kreiranju: " + e.getMessage()))
+                .doOnSuccess(r -> System.out.println("[createOAuth2Korisnik] Novi korisnik kreiran: " + email))
+                .doOnError(e -> System.err.println("[createOAuth2Korisnik] Greška pri kreiranju: " + e.getMessage()))
                 .then();
     }
 
     // Ažuriranje profila korisnika
     public Mono<Void> updateUserProfile(String email, UpdateProfileRequest updateRequest) {
-        System.out.println("[updateUserProfile] Ažuriramo profil za email: " + email);
         
         Map<String, Object> updates = new HashMap<>();
         if (updateRequest.getIme() != null && !updateRequest.getIme().isEmpty()) {
@@ -169,21 +155,19 @@ public class KorisnikService {
             updates.put("profilna", updateRequest.getProfileImageUrl());
         }
 
-        System.out.println("[updateUserProfile] Podatci za ažuriranje: " + updates);
 
         return webClient.patch()
                 .uri("/rest/v1/korisnik?email=eq." + email)
                 .bodyValue(updates)
                 .retrieve()
                 .toBodilessEntity()
-                .doOnSuccess(r -> System.out.println("[updateUserProfile] ✓ Profil ažuriran za: " + email))
-                .doOnError(e -> System.err.println("[updateUserProfile] ✗ Greška pri ažuriranju: " + e.getMessage()))
+                .doOnSuccess(r -> System.out.println("[updateUserProfile] Profil ažuriran za: " + email))
+                .doOnError(e -> System.err.println("[updateUserProfile] Greška pri ažuriranju: " + e.getMessage()))
                 .then();
     }
 
     // Ažuriranje UUID-a korisnika
     private Mono<Void> updateKorisnikUuid(String email, String uuid) {
-        System.out.println("[updateKorisnikUuid] Ažuriram UUID za email: " + email + ", novi UUID: " + uuid);
         
         Map<String, Object> updates = new HashMap<>();
         updates.put("uuid", uuid);
@@ -193,14 +177,13 @@ public class KorisnikService {
                 .bodyValue(updates)
                 .retrieve()
                 .toBodilessEntity()
-                .doOnSuccess(r -> System.out.println("[updateKorisnikUuid] ✓ UUID ažuriran za: " + email))
-                .doOnError(e -> System.err.println("[updateKorisnikUuid] ✗ Greška pri ažuriranju UUID-a: " + e.getMessage()))
+                .doOnSuccess(r -> System.out.println("[updateKorisnikUuid] UUID ažuriran za: " + email))
+                .doOnError(e -> System.err.println("[updateKorisnikUuid] Greška pri ažuriranju UUID-a: " + e.getMessage()))
                 .then();
     }
 
     // Blokiranje
     public Mono<Korisnik> blockUser(Integer idKorisnika) {
-        System.out.println("[KorisnikService] Blokiranje korisnika sa ID: " + idKorisnika);
 
         return getKorisnikById(idKorisnika)
                 .flatMap(korisnik -> {
@@ -212,8 +195,6 @@ public class KorisnikService {
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("blokiran", true);
 
-                    System.out.println("[KorisnikService] Ažuriram blokiran na true");
-
                     return webClient.patch()
                             .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
                             .header("Prefer", "return=representation")
@@ -222,7 +203,7 @@ public class KorisnikService {
                             .bodyToMono(Korisnik[].class)
                             .doOnNext(niz -> {
                                 if (niz.length > 0) {
-                                    System.out.println("[KorisnikService] ✓ Korisnik je blokiran");
+                                    System.out.println("[KorisnikService] Korisnik je blokiran");
                                 }
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
@@ -231,17 +212,15 @@ public class KorisnikService {
 
     // Dohvati sve korisnike sa zahtjevom za oglašivanje
     public Mono<Korisnik[]> getPendingAdvertiserRequests() {
-        System.out.println("[KorisnikService] Dohvaćam sve zahtjeve za oglašivanje");
         return webClient.get()
                 .uri("/rest/v1/korisnik?oglasivac=eq.ZAHTJEV&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
-                .doOnNext(niz -> System.out.println("[KorisnikService] ✓ Pronađeno " + niz.length + " zahtjeva"));
+                .doOnNext(niz -> System.out.println("[KorisnikService] Pronađeno " + niz.length + " zahtjeva"));
     }
 
     // Zahtjev za oglašivanje
     public Mono<Korisnik> requestAdvertiser(String email) {
-        System.out.println("[KorisnikService] Primljen zahtjev za oglašivanje od: " + email);
 
         return getKorisnikByEmail(email)
                 .flatMap(korisnik -> {
@@ -258,7 +237,6 @@ public class KorisnikService {
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("oglasivac", "ZAHTJEV");
 
-                    System.out.println("[KorisnikService] Ažuriram oglasivac na ZAHTJEV");
 
                     return webClient.patch()
                             .uri("/rest/v1/korisnik?email=eq." + email)
@@ -268,7 +246,7 @@ public class KorisnikService {
                             .bodyToMono(Korisnik[].class)
                             .doOnNext(niz -> {
                                 if (niz.length > 0) {
-                                    System.out.println("[KorisnikService] ✓ Zahtjev za oglašivanje je prihvaćen");
+                                    System.out.println("[KorisnikService] Zahtjev za oglašivanje je prihvaćen");
                                 }
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
@@ -277,7 +255,6 @@ public class KorisnikService {
 
     // Prihvati zahtjev za oglašivanje
     public Mono<Korisnik> approveAdvertiserRequest(Integer idKorisnika) {
-        System.out.println("[KorisnikService] Odobravanje zahtjeva za oglašivanje za ID: " + idKorisnika);
 
         return getKorisnikById(idKorisnika)
                 .flatMap(korisnik -> {
@@ -294,7 +271,6 @@ public class KorisnikService {
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("oglasivac", "DA");
 
-                    System.out.println("[KorisnikService] Ažuriram oglasivac na DA");
 
                     return webClient.patch()
                             .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
@@ -304,7 +280,7 @@ public class KorisnikService {
                             .bodyToMono(Korisnik[].class)
                             .doOnNext(niz -> {
                                 if (niz.length > 0) {
-                                    System.out.println("[KorisnikService] ✓ Zahtjev je odobren");
+                                    System.out.println("[KorisnikService] Zahtjev je odobren");
                                 }
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
@@ -313,7 +289,6 @@ public class KorisnikService {
 
     // Odbij zahtjev za oglašivanje
     public Mono<Korisnik> rejectAdvertiserRequest(Integer idKorisnika) {
-        System.out.println("[KorisnikService] Odbijanje zahtjeva za oglašivanje za ID: " + idKorisnika);
 
         return getKorisnikById(idKorisnika)
                 .flatMap(korisnik -> {
@@ -330,7 +305,6 @@ public class KorisnikService {
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("oglasivac", "NE");
 
-                    System.out.println("[KorisnikService] Ažuriram oglasivac na NE");
 
                     return webClient.patch()
                             .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
@@ -340,7 +314,7 @@ public class KorisnikService {
                             .bodyToMono(Korisnik[].class)
                             .doOnNext(niz -> {
                                 if (niz.length > 0) {
-                                    System.out.println("[KorisnikService] ✓ Zahtjev je odbijen");
+                                    System.out.println("[KorisnikService] Zahtjev je odbijen");
                                 }
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
@@ -349,7 +323,6 @@ public class KorisnikService {
 
     // Odblokiraj korisnika
     public Mono<Korisnik> unblockUser(Integer idKorisnika) {
-        System.out.println("[KorisnikService] Odblokiravanje korisnika sa ID: " + idKorisnika);
 
         return getKorisnikById(idKorisnika)
                 .flatMap(korisnik -> {
@@ -361,7 +334,6 @@ public class KorisnikService {
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("blokiran", false);
 
-                    System.out.println("[KorisnikService] Ažuriram blokiran na false");
 
                     return webClient.patch()
                             .uri("/rest/v1/korisnik?id_korisnika=eq." + idKorisnika)
@@ -371,7 +343,7 @@ public class KorisnikService {
                             .bodyToMono(Korisnik[].class)
                             .doOnNext(niz -> {
                                 if (niz.length > 0) {
-                                    System.out.println("[KorisnikService] ✓ Korisnik je odblokirан");
+                                    System.out.println("[KorisnikService] Korisnik je odblokirан");
                                 }
                             })
                             .map(niz -> niz.length > 0 ? niz[0] : null);
@@ -380,12 +352,11 @@ public class KorisnikService {
 
     // Dohvati sve blokirane korisnike
     public Mono<Korisnik[]> getBlockedUsers() {
-        System.out.println("[KorisnikService] Dohvaćam sve blokirane korisnike");
         return webClient.get()
                 .uri("/rest/v1/korisnik?blokiran=eq.true&select=*")
                 .retrieve()
                 .bodyToMono(Korisnik[].class)
-                .doOnNext(niz -> System.out.println("[KorisnikService] ✓ Pronađeno " + niz.length + " blokiranih korisnika"));
+                .doOnNext(niz -> System.out.println("[KorisnikService] Pronađeno " + niz.length + " blokiranih korisnika"));
     }
 
     public Mono<List<Rezervacija>> getRezervacijeByIdKorisnika(Integer idKorisnika) {

@@ -43,7 +43,6 @@ public class PaymentController {
     @PostMapping("/create-payment-intent")
     public Mono<ResponseEntity<?>> createPaymentIntent(@RequestBody Map<String, Object> request) {
         try {
-            // Prvo pokušaj s `amount` (za nove rezervacije)
             Object amountObj = request.get("amount");
             if (amountObj != null) {
                 Long amount = null;
@@ -56,7 +55,6 @@ public class PaymentController {
                 }
 
                 if (amount != null && amount > 0) {
-                    System.out.println("[PaymentController] Kreiram payment intent za iznos: " + amount + " centima");
 
                     try {
                         if (stripeSecretKey == null || stripeSecretKey.isEmpty()) {
@@ -76,7 +74,6 @@ public class PaymentController {
                         response.put("clientSecret", paymentIntent.getClientSecret());
                         response.put("paymentIntentId", paymentIntent.getId());
 
-                        System.out.println("[PaymentController] ✓ Payment intent kreiran: " + paymentIntent.getId());
                         return Mono.just(ResponseEntity.ok(response));
                     } catch (Exception e) {
                         System.err.println("[PaymentController] Greška: " + e.getMessage());
@@ -87,7 +84,6 @@ public class PaymentController {
                 }
             }
 
-            // Fallback na `oglasId` (stari pristup)
             Object oglasIdObj = request.get("oglasId");
             if (oglasIdObj == null) {
                 return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing amount or oglasId"));
@@ -106,8 +102,6 @@ public class PaymentController {
                 return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid oglasId type"));
             }
             
-            System.out.println("Creating payment intent for oglasId: " + oglasId);
-            System.out.println("Stripe secret key configured: " + (stripeSecretKey != null ? "YES" : "NO"));
             
             return oglasService.getOglasById(oglasId)
                     .flatMap(oglas -> {
@@ -122,7 +116,7 @@ public class PaymentController {
                             
                             Stripe.apiKey = stripeSecretKey;
 
-                            long amount = (long) (oglas.getCijena() * 100); // Convert to cents
+                            long amount = (long) (oglas.getCijena() * 100); // U centima
 
                             if (amount <= 0) {
                                 return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment amount"));
@@ -157,36 +151,29 @@ public class PaymentController {
     @PostMapping("/confirm-payment")
     public Mono<ResponseEntity<Object>> confirmPayment(@RequestBody PaymentConfirmationRequest request) {
         try {
-            System.out.println("=== Confirm Payment Request ===");
             if (request == null) {
                 System.err.println("Request is null!");
                 return Mono.just(new ResponseEntity<>((Object) "Request body is null", HttpStatus.BAD_REQUEST));
             }
             
-            System.out.println("Payment Intent ID: " + request.getPaymentIntentId());
-            System.out.println("Oglas ID: " + request.getOglasId());
-            System.out.println("Korisnik ID: " + request.getKorisnikId());
-            System.out.println("Iznos: " + request.getIznos());
-            System.out.println("Selected Slots: " + request.getSelectedSlots());
-            System.out.println("Cijena: " + request.getCijena());
+            // System.out.println("Payment Intent ID: " + request.getPaymentIntentId());
+            // System.out.println("Oglas ID: " + request.getOglasId());
+            // System.out.println("Korisnik ID: " + request.getKorisnikId());
+            // System.out.println("Iznos: " + request.getIznos());
+            // System.out.println("Selected Slots: " + request.getSelectedSlots());
+            // System.out.println("Cijena: " + request.getCijena());
             
             if (request.getPaymentIntentId() == null || request.getIznos() == null) {
-                System.out.println("Missing required fields!");
                 return Mono.just(new ResponseEntity<>((Object) "Missing paymentIntentId or iznos", HttpStatus.BAD_REQUEST));
             }
 
             if (request.getKorisnikId() == null || request.getOglasId() == null) {
-                System.out.println("Missing korisnikId or oglasId!");
                 return Mono.just(new ResponseEntity<>((Object) "Missing korisnikId or oglasId", HttpStatus.BAD_REQUEST));
             }
 
-            System.out.println("Confirming payment: " + request.getPaymentIntentId());
 
-            // Ako su dostupni vremenske slotove, kreiraj batch rezervacije
             if (request.getSelectedSlots() != null && !request.getSelectedSlots().isEmpty()) {
-                System.out.println("Processing batch reservations with " + request.getSelectedSlots().size() + " slots");
                 
-                // Grupiraj slotove po kontinuiranim periodima (kao frontend)
                 return createBatchReservationsAndTransaction(
                     request.getKorisnikId(),
                     request.getOglasId().longValue(),
@@ -195,8 +182,6 @@ public class PaymentController {
                     request.getIznos()
                 );
             } else {
-                // Stariji pristup - kreiraj default 1-satnu rezervaciju
-                System.out.println("Processing single reservation without time slots");
                 
                 return rezervacijaService.createRezervacija(request.getKorisnikId(), request.getOglasId().longValue())
                         .flatMap(rezervacija -> {
@@ -206,16 +191,12 @@ public class PaymentController {
                             }
 
                             Long reservationId = rezervacija.getIdRezervacije();
-                            System.out.println("Reservation created with ID: " + reservationId);
-                            System.out.println("Saving transaction with amount: " + request.getIznos());
 
-                            // Save the transaction with the valid reservation ID
                             return transakcijaService.saveTransakcija(
                                     request.getPaymentIntentId(),
                                     reservationId,
                                     request.getIznos()
                             ).flatMap(transakcija -> {
-                                System.out.println("Transaction saved successfully: " + transakcija.getIdTransakcija());
                                 Map<String, Object> response = new HashMap<>();
                                 response.put("success", true);
                                 response.put("transactionId", transakcija.getIdTransakcija());
@@ -249,14 +230,10 @@ public class PaymentController {
             String paymentIntentId, Double iznos) {
         
         try {
-            System.out.println("=== Creating Batch Reservations and Transaction ===");
-            System.out.println("Korisnik ID: " + korisnikId);
-            System.out.println("Oglas ID: " + oglasId);
-            System.out.println("Selected Slots Count: " + (selectedSlots != null ? selectedSlots.size() : 0));
-            if (selectedSlots != null && !selectedSlots.isEmpty()) {
-                System.out.println("First slot: " + selectedSlots.get(0));
-                System.out.println("Last slot: " + selectedSlots.get(selectedSlots.size() - 1));
-            }
+            // if (selectedSlots != null && !selectedSlots.isEmpty()) {
+            //     System.out.println("First slot: " + selectedSlots.get(0));
+            //     System.out.println("Last slot: " + selectedSlots.get(selectedSlots.size() - 1));
+            // }
             
             if (selectedSlots == null || selectedSlots.isEmpty()) {
                 Map<String, Object> errorResponse = new HashMap<>();
@@ -264,9 +241,7 @@ public class PaymentController {
                 return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Object) errorResponse));
             }
             
-            // Grupiraj slotove po kontinuiranim periodima
             java.util.List<java.util.List<java.util.Map<String, Object>>> groupedSlots = groupSlots(selectedSlots);
-            System.out.println("Created " + groupedSlots.size() + " groups");
             
             if (groupedSlots.isEmpty()) {
                 Map<String, Object> errorResponse = new HashMap<>();
@@ -283,7 +258,6 @@ public class PaymentController {
 
                     java.time.LocalDateTime datumOd = (java.time.LocalDateTime) firstSlot.get("dateTime");
                     java.time.LocalDateTime datumDo = (java.time.LocalDateTime) lastSlot.get("dateTime");
-                    // Dodaj 1 sat za datumDo
                     datumDo = datumDo.plusHours(1);
 
                     java.util.Map<String, Object> slotData = new java.util.HashMap<>();
@@ -295,7 +269,6 @@ public class PaymentController {
                 }
             }
 
-            System.out.println("Created " + slotsForBackend.size() + " reservation groups");
 
             // Kreiraj sve rezervacije
             java.util.List<reactor.core.publisher.Mono<com.sparkaj.model.Rezervacija>> reservationMonos = new java.util.ArrayList<>();
@@ -326,13 +299,10 @@ public class PaymentController {
                             return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Object) response));
                         }
 
-                        // Spremi transakciju s prvi rezervacije (ili aggregated)
                         Long firstReservationId = results.get(0).getIdRezervacije();
-                        System.out.println("Saving transaction for first reservation ID: " + firstReservationId);
 
                         return transakcijaService.saveTransakcija(paymentIntentId, firstReservationId, iznos)
                                 .flatMap(transakcija -> {
-                                    System.out.println("Transaction saved successfully: " + transakcija.getIdTransakcija());
                                     Map<String, Object> response = new HashMap<>();
                                     response.put("success", true);
                                     response.put("transactionId", transakcija.getIdTransakcija());
@@ -358,20 +328,15 @@ public class PaymentController {
     }
 
     private java.util.List<java.util.List<java.util.Map<String, Object>>> groupSlots(java.util.List<String> selectedSlots) {
-        // Parsiraj slotove u format: datum-sat -> datetime
-        // Format od frontendu je "Mon Jan 20 2026-10" gdje je datum.toDateString() i sat
         java.util.List<java.util.Map<String, Object>> parsedSlots = new java.util.ArrayList<>();
         
         for (String slot : selectedSlots) {
             try {
-                // Odjeli sat od datuma
                 int lastDashIndex = slot.lastIndexOf("-");
                 if (lastDashIndex > 0) {
-                    String dateStr = slot.substring(0, lastDashIndex);  // "Mon Jan 20 2026"
-                    String hourStr = slot.substring(lastDashIndex + 1);  // "10"
+                    String dateStr = slot.substring(0, lastDashIndex); 
+                    String hourStr = slot.substring(lastDashIndex + 1); 
                     
-                    // Parsiraj datum iz JavaScript toDateString() formata
-                    // "Mon Jan 20 2026" -> Date object
                     java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("EEE MMM dd yyyy", java.util.Locale.ENGLISH);
                     java.util.Date parsedDate = formatter.parse(dateStr);
                     java.time.LocalDate date = parsedDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
@@ -384,7 +349,6 @@ public class PaymentController {
                     slotData.put("dateTime", dateTime);
                     parsedSlots.add(slotData);
                     
-                    System.out.println("Parsed slot: " + dateStr + " hour " + hour + " -> " + dateTime);
                 }
             } catch (Exception e) {
                 System.err.println("Error parsing slot: " + slot + " - " + e.getMessage());
@@ -399,7 +363,6 @@ public class PaymentController {
             return timeA.compareTo(timeB);
         });
 
-        // Grupiraj kontinuirane slotove
         java.util.List<java.util.List<java.util.Map<String, Object>>> groups = new java.util.ArrayList<>();
         java.util.List<java.util.Map<String, Object>> currentGroup = new java.util.ArrayList<>();
 
@@ -413,18 +376,15 @@ public class PaymentController {
                 java.time.LocalDateTime lastTime = (java.time.LocalDateTime) lastSlot.get("dateTime");
                 java.time.LocalDateTime currentTime = (java.time.LocalDateTime) currentSlot.get("dateTime");
 
-                // Ako je razlika 1 sat, priklj očni trenutnom grupi
                 if (currentTime.equals(lastTime.plusHours(1))) {
                     currentGroup.add(currentSlot);
                 } else {
-                    // Inače kreni novu grupu
                     groups.add(new java.util.ArrayList<>(currentGroup));
                     currentGroup = new java.util.ArrayList<>();
                     currentGroup.add(currentSlot);
                 }
             }
 
-            // Dodaj zadnju grupu
             if (i == parsedSlots.size() - 1) {
                 groups.add(currentGroup);
             }
@@ -435,12 +395,10 @@ public class PaymentController {
 
     @GetMapping("/transaction-history/{userId}")
     public Mono<ResponseEntity<Object>> getTransactionHistory(@PathVariable Long userId) {
-        System.out.println("Fetching transaction history for userId: " + userId);
         
         return transakcijaService.getTransakcijeByUserId(userId)
                 .collectList()
                 .map(transakcije -> {
-                    System.out.println("Found " + transakcije.size() + " transactions");
                     Map<String, Object> response = new HashMap<>();
                     if (transakcije.isEmpty()) {
                         response.put("message", "Nema dostupnih transakcija");
@@ -462,7 +420,6 @@ public class PaymentController {
 
     @GetMapping("/transaction-history")
     public Mono<ResponseEntity<Object>> getMyTransactionHistory(Authentication authentication) {
-        System.out.println("Fetching current user transaction history");
         
         if (authentication == null || !authentication.isAuthenticated()) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -475,13 +432,9 @@ public class PaymentController {
             String email = oauth2User.getAttribute("email");
             String googleId = oauth2User.getAttribute("sub");
             
-            System.out.println("Getting transactions for user: " + email + " (Google ID: " + googleId + ")");
-            
-            // Look up user by email to get their database ID
             return korisnikService.getKorisnikByEmail(email)
                     .flatMap(korisnik -> {
                         if (korisnik == null) {
-                            System.out.println("User not found in database: " + email);
                             Map<String, Object> errorResponse = new HashMap<>();
                             errorResponse.put("error", "Korisnik nije pronađen u bazi podataka");
                             errorResponse.put("message", "Nema dostupnih transakcija");
@@ -490,13 +443,10 @@ public class PaymentController {
                         }
                         
                         Long korisnikId = (long) korisnik.getIdKorisnika();
-                        System.out.println("Found korisnik with ID: " + korisnikId);
                         
-                        // Get all transactions for this user
                         return transakcijaService.getTransakcijeByUserId(korisnikId)
                                 .collectList()
                                 .map(transakcije -> {
-                                    System.out.println("Found " + transakcije.size() + " transactions for user");
                                     Map<String, Object> response = new HashMap<>();
                                     response.put("transactions", transakcije);
                                     if (transakcije.isEmpty()) {

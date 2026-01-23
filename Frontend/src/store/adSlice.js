@@ -104,7 +104,6 @@ const adSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // fetchAllAds
             .addCase(fetchAllAds.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
@@ -120,7 +119,6 @@ const adSlice = createSlice({
                 state.status = "failed";
                 state.error = action.payload;
             })
-            // fetchAdsByUserId
             .addCase(fetchAdsByUserId.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
@@ -137,7 +135,6 @@ const adSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // searchAds
             .addCase(searchAds.pending, (state) => {
                 state.status = "loading";
                 state.error = null;

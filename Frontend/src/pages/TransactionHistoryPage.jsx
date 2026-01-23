@@ -15,7 +15,7 @@ function TransactionHistoryPage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -36,7 +36,7 @@ function TransactionHistoryPage() {
     const fetchTransactionHistory = async () => {
         try {
             const response = await fetch(
-                "http://localhost:8080/api/payments/transaction-history",
+                `${import.meta.env.VITE_API_URL}/api/payments/transaction-history`,
                 {
                     credentials: "include",
                 }
@@ -48,7 +48,7 @@ function TransactionHistoryPage() {
             
             const data = await response.json();
             
-            console.log("Transaction history response:", data);
+            // console.log("Transaction history response:", data);
             
             if (data.transactions && Array.isArray(data.transactions)) {
                 setTransactions(data.transactions);
@@ -94,7 +94,7 @@ function TransactionHistoryPage() {
 
     const handleLogout = async () => {
         try {
-            await fetch("http://localhost:8080/logout", {
+            await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
                 method: "POST",
                 credentials: "include",
             });

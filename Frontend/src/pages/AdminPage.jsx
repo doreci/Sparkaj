@@ -24,13 +24,13 @@ function AdminPage() {
 
     const checkAdminAccess = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
             
             if (data.authenticated && isAdmin(data)) {
-                console.log("✓ Admin pristup odobren:", data.email);
+                // console.log("Admin pristup odobren:", data.email);
                 setUser(data);
                 setIsAuthorized(true);
                 dispatch(fetchAllAds());
@@ -39,7 +39,7 @@ function AdminPage() {
                 fetchZahtjevi();
                 fetchBlokirani();
             } else {
-                console.warn("✗ Korisnik nije admin, redirekcija na home");
+                // console.warn("Korisnik nije admin, redirekcija na home");
                 navigate("/");
             }
         } catch (error) {
@@ -64,7 +64,7 @@ function AdminPage() {
 
     const fetchPrijave = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/oglasi/prijave/all", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/oglasi/prijave/all`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju prijava");
@@ -77,7 +77,7 @@ function AdminPage() {
 
     const fetchZahtjevi = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/admin/pending-advertisers", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/pending-advertisers`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju zahtjeva");
@@ -90,7 +90,7 @@ function AdminPage() {
 
     const fetchBlokirani = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/admin/blocked-users", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/blocked-users`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju blokiranih korisnika");
@@ -104,13 +104,13 @@ function AdminPage() {
     const deleteAd = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/oglasi/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/oglasi/${id}`,
                 {
                     method: "DELETE",
                 }
             );
             if (response.ok) {
-                dispatch(fetchAllAds()); // Refresh ads
+                dispatch(fetchAllAds());
             } else {
                 console.error("Failed to delete ad:", response.statusText);
             }
@@ -131,7 +131,7 @@ function AdminPage() {
                 .delete()
                 .eq("id_korisnika", id);
             if (error) throw error;
-            fetchUsers(); // Refresh users
+            fetchUsers(); 
             alert("Korisnik je obrisan");
         } catch (error) {
             console.error("Error deleting user:", error);
@@ -142,14 +142,14 @@ function AdminPage() {
     const blockUser = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/admin/block-user/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/admin/block-user/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
                 }
             );
             if (response.ok) {
-                fetchUsers(); // Refresh users
+                fetchUsers(); 
                 alert("Korisnik je blokiran");
             } else {
                 console.error("Failed to block user:", response.statusText);
@@ -162,7 +162,7 @@ function AdminPage() {
     const markPrijavaAsResolved = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/oglasi/prijave/${id}/status`,
+                `${import.meta.env.VITE_API_URL}/api/oglasi/prijave/${id}/status`,
                 {
                     method: "PUT",
                     headers: {
@@ -173,7 +173,7 @@ function AdminPage() {
                 }
             );
             if (response.ok) {
-                fetchPrijave(); // Refresh prijave
+                fetchPrijave(); 
                 alert("Prijava označena kao odrađena");
             } else {
                 console.error("Failed to update prijava:", response.statusText);
@@ -186,14 +186,14 @@ function AdminPage() {
     const approveAdvertiser = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/admin/approve-advertiser/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/admin/approve-advertiser/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
                 }
             );
             if (response.ok) {
-                fetchZahtjevi(); // Refresh zahtjevi
+                fetchZahtjevi(); 
                 alert("Zahtjev je odobren");
             } else {
                 console.error("Failed to approve advertiser:", response.statusText);
@@ -206,14 +206,14 @@ function AdminPage() {
     const rejectAdvertiser = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/admin/reject-advertiser/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/admin/reject-advertiser/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
                 }
             );
             if (response.ok) {
-                fetchZahtjevi(); // Refresh zahtjevi
+                fetchZahtjevi(); 
                 alert("Zahtjev je odbijen");
             } else {
                 console.error("Failed to reject advertiser:", response.statusText);
@@ -226,15 +226,15 @@ function AdminPage() {
     const unblockUser = async (id) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/api/admin/unblock-user/${id}`,
+                `${import.meta.env.VITE_API_URL}/api/admin/unblock-user/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
                 }
             );
             if (response.ok) {
-                fetchBlokirani(); // Refresh blokirani
-                fetchUsers(); // Refresh users lista
+                fetchBlokirani();
+                fetchUsers(); 
                 alert("Korisnik je odblokirаn");
             } else {
                 console.error("Failed to unblock user:", response.statusText);

@@ -7,13 +7,12 @@ function MyReservationsReviewsPage() {
     const [reservations, setReservations] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("reservations"); // "reservations" ili "reviews"
+    const [activeTab, setActiveTab] = useState("reservations");
     const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchReservationsAndReviews();
 
-        // Osvježi podatke kada korisnik dolazi na stranicu (visibility change)
         const handleVisibilityChange = () => {
             if (!document.hidden) {
                 fetchReservationsAndReviews();
@@ -34,7 +33,7 @@ function MyReservationsReviewsPage() {
         try {
             // Dohvati rezervacije
             const reservationsResponse = await fetch(
-                "http://localhost:8080/api/reservations/korisnik",
+                `${import.meta.env.VITE_API_URL}/api/reservations/korisnik`,
                 {
                     credentials: "include",
                     headers: {
@@ -51,14 +50,13 @@ function MyReservationsReviewsPage() {
             
             // Sortiraj rezervacije po id_rezervacije od najvećeg do najmanjeg
             const sortedReservations = (reservationsData || []).sort((a, b) => {
-                return b.id_rezervacije - a.id_rezervacije; // Descending order po id_rezervacije
+                return b.id_rezervacije - a.id_rezervacije; 
             });
             
             setReservations(sortedReservations);
 
-            // Dohvati recenzije
             const reviewsResponse = await fetch(
-                "http://localhost:8080/api/recenzije/korisnik/current",
+                `${import.meta.env.VITE_API_URL}/api/recenzije/korisnik/current`,
                 {
                     credentials: "include",
                     headers: {

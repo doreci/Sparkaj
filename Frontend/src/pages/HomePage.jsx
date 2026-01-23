@@ -48,12 +48,10 @@ function HomePage() {
         }
     }, [dispatch, status]);
 
-    // Provjeri autentifikaciju putem Spring Boot
     useEffect(() => {
         checkAuthentication();
     }, []);
 
-    // Dodaj effect koji osjetuje promjene u autentifikaciji
     useEffect(() => {
         if (userProfile === null) {
             setUser(null);
@@ -62,7 +60,7 @@ function HomePage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/user", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -93,7 +91,7 @@ function HomePage() {
             dispatch(clearUser());
 
             // Preusmjeri na logout endpoint na backendu
-            window.location.href = "http://localhost:8080/logout";
+            window.location.href = `${import.meta.env.VITE_API_URL}/logout`;
         } catch (error) {
             console.error("Greška pri odjavi:", error);
         }
@@ -105,7 +103,6 @@ function HomePage() {
         if (type === "datetime-local" && value) {
             // Fiksira minute na :00 - zamjenjuje zadnje :XX sa :00
             newValue = value.replace(/:\d{2}$/, ":00");
-            // Dodaj :00 za sekunde
             newValue = newValue + ":00";
         }
         setFilters((prev) => ({
@@ -116,7 +113,6 @@ function HomePage() {
 
     const handleSearchClick = async () => {
         try {
-            // Pripremi parametre za slanje backendu
             const searchParams = {
                 location: filters.location
                     ? filters.location.replace(/\s+/g, "*")
@@ -189,7 +185,6 @@ function HomePage() {
                             />
                         </button>
                     )}
-                    {/* Filter Dropdown */}
                     {showFilters && user != null && (
                         <div className="filter-dropdown">
                             <div className="filter-header">
@@ -318,7 +313,6 @@ function HomePage() {
             </div>
 
             <div className="content">
-                {/* Oglasi Grid */}
                 <div className="ads-section">
                     <h2 className="section-title">
                         {isFiltered ? "Rezultati pretrage" : "Popularni oglasi"}

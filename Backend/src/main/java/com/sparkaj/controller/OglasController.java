@@ -8,6 +8,7 @@ import com.sparkaj.model.Prijava;
 import com.sparkaj.service.OglasService;
 import com.sparkaj.service.KorisnikService;
 import com.sparkaj.service.PrijavaService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -19,7 +20,7 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/oglasi")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "http://localhost:10000", "https://sparkaj-g53p.onrender.com"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "${api.url}", "https://sparkaj-g53p.onrender.com"})
 public class OglasController {
 
     private final OglasService oglasService;
@@ -62,7 +63,6 @@ public class OglasController {
             String email = principal.getAttribute("email");
             System.out.println("[OglasController] Korisnik autentificiran, email: " + email);
             
-            // Pronađi id_korisnika po emailu
             return korisnikService.getKorisnikByEmail(email)
                     .flatMap(korisnik -> {
                         if (korisnik != null) {
@@ -108,7 +108,6 @@ public class OglasController {
         String email = principal.getAttribute("email");
         System.out.println("[OglasController] Email korisnika: " + email);
 
-        // Pronađi id_korisnika po emailu
         return korisnikService.getKorisnikByEmail(email)
                 .flatMap(korisnik -> {
                     if (korisnik == null) {
@@ -159,7 +158,6 @@ public class OglasController {
         String email = principal.getAttribute("email");
         System.out.println("[OglasController] Email korisnika: " + email);
 
-        // Pronađi id_korisnika po emailu
         return korisnikService.getKorisnikByEmail(email)
                 .flatMap(korisnik -> {
                     if (korisnik == null) {
@@ -211,7 +209,6 @@ public class OglasController {
         
         System.out.println("[OglasController] Email korisnika: " + email + ", opis: " + opis);
 
-        // Pronađi id_korisnika po emailu
         return korisnikService.getKorisnikByEmail(email)
                 .flatMap(korisnik -> {
                     if (korisnik == null) {
@@ -281,7 +278,6 @@ public class OglasController {
         
         System.out.println("[OglasController] Email: " + email + ", novi status: " + noviStatus);
 
-        // Pronađi id_korisnika po emailu i provjeri je li admin
         return korisnikService.getKorisnikByEmail(email)
                 .flatMap(korisnik -> {
                     if (korisnik == null) {
@@ -334,7 +330,7 @@ public class OglasController {
                             return Mono.just(ResponseEntity.status(404).body((Object) error));
                         }
 
-                        // Provjerit da li korisnik ima rezervaciju na ovaj oglas
+                        // Provjerit ima li korisnik rezervaciju za oglas
                         return oglasService.findReservation(korisnik.getIdKorisnika(), id)
                                 .flatMap(rezervacijaId -> {
                                     if (rezervacijaId == null) {

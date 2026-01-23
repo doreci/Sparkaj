@@ -9,13 +9,12 @@ function BlockedPage() {
         // Provjeri je li korisnik blokiran
         const checkBlockStatus = async () => {
             try {
-                const response = await fetch("http://localhost:8080/api/user", {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                     credentials: "include",
                 });
                 const data = await response.json();
                 
                 if (data.authenticated && !data.blokiran) {
-                    // Ako nije blokiran, redirekcija na home
                     navigate("/");
                 }
             } catch (error) {
@@ -27,8 +26,7 @@ function BlockedPage() {
     }, [navigate]);
 
     const handleLogout = () => {
-        // Odjava korisnika
-        window.location.href = "http://localhost:8080/logout";
+        window.location.href = `${import.meta.env.VITE_API_URL}/logout`;
     };
 
     return (

@@ -6,6 +6,7 @@ import com.sparkaj.model.Rezervacija;
 import com.sparkaj.model.UpdateProfileRequest;
 import com.sparkaj.service.KorisnikService;
 import com.sparkaj.service.OglasService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/korisnik")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "http://localhost:10000", "https://sparkaj-g53p.onrender.com"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "${api.url}", "https://sparkaj-g53p.onrender.com"})
 public class KorisnikController {
 
     private final KorisnikService korisnikService;
@@ -25,7 +26,6 @@ public class KorisnikController {
     public KorisnikController(KorisnikService korisnikService, OglasService oglasService) {
         this.korisnikService = korisnikService;
         this.oglasService = oglasService;
-        System.out.println("Napravljen Korisnik Controller");
     }
 
     // Prikaz profila korisnika po UUID
@@ -46,7 +46,7 @@ public class KorisnikController {
         return oglasService.getOglasiByIdKorisnika(idKorisnika);
     }
 
-    // Ažuriranje profila korisnika (bez slike)
+    // Ažuriranje profila korisnika
     @PutMapping("/profile/update")
     public Mono<Map<String, Object>> updateProfile(
             @AuthenticationPrincipal OAuth2User principal,

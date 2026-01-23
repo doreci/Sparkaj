@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
-const API_URL = "http://localhost:8080";
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
 function CreateAdPage() {
 
@@ -24,7 +24,6 @@ function CreateAdPage() {
     });
 
     useEffect(() => {
-        // Provjeri OAuth2 autentifikaciju
         checkAuthentication();
     }, []);
 
@@ -40,13 +39,13 @@ function CreateAdPage() {
                 // Provjeri je li korisnik oglašivač
                 const isAdvertiserStatus = data.oglasivac === "DA";
                 setIsAdvertiser(isAdvertiserStatus);
-                console.log("Oglašivač status:", data.oglasivac);
+                // console.log("Oglašivač status:", data.oglasivac);
             } else {
                 setIsAuthenticated(false);
                 setIsAdvertiser(false);
             }
         } catch (error) {
-            console.log("Korisnik nije autentificiran");
+            // console.log("Korisnik nije autentificiran");
             setIsAuthenticated(false);
             setIsAdvertiser(false);
         } finally {
@@ -135,13 +134,11 @@ function CreateAdPage() {
 
         setIsSubmitting(true);
 
-        // Safety timeout to reset button after 15 seconds
         const safetyTimeout = setTimeout(() => setIsSubmitting(false), 15000);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
 
-        // Parse lokacija: "Ulica broj, postanski, grad"
         const lokacijaParts = formData.lokacija.split(',').map(s => s.trim());
         if (lokacijaParts.length !== 3) {
             alert("Lokacija mora biti u formatu: Ulica broj, postanski broj, grad");
@@ -172,7 +169,6 @@ function CreateAdPage() {
 
         let imageUrl = null;
         if (formData.slika) {
-            // Upload image to Supabase storage
             const fileName = `ads/${Date.now()}_${formData.slika.name}`;
             const { data, error } = await supabase.storage
                 .from('slika_oglasa')
@@ -181,9 +177,7 @@ function CreateAdPage() {
             if (error) {
                 console.error("Error uploading image:", error);
                 alert("Greška pri uploadu slike: " + error.message + ". Slika neće biti spremljena.");
-                // Continue without image
             } else {
-                // Get public URL
                 const { data: urlData } = supabase.storage
                     .from('slika_oglasa')
                     .getPublicUrl(fileName);
@@ -191,7 +185,6 @@ function CreateAdPage() {
             }
         }
 
-        // Backend će preuzeti id_korisnika iz OAuth2 autentifikacije
         const payload = {
             naziv_oglasa: formData.naziv_oglasa.trim(),
             opis_oglasa: formData.opis_oglasa.trim(),
@@ -203,7 +196,7 @@ function CreateAdPage() {
             uuid: session?.id || session?.uuid || "",
         };
 
-        console.log("Oglas payload:", payload);
+        // console.log("Oglas payload:", payload);
 
         try {
             const response = await fetch(`${API_URL}/api/oglasi`, {
@@ -216,13 +209,12 @@ function CreateAdPage() {
                 signal: controller.signal,
             });
 
-            console.log("Response status:", response.status);
-            console.log("Response headers:", response.headers);
+            // console.log("Response status:", response.status);
+            // console.log("Response headers:", response.headers);
 
             if (response.ok) {
-                console.log("✓ Oglas uspješno kreiran!");
+                // console.log("Oglas uspješno kreiran!");
                 alert("Oglas uspješno spremljen!");
-                // Reset form or redirect
                 setFormData({
                     naziv_oglasa: "",
                     opis_oglasa: "",
@@ -234,7 +226,7 @@ function CreateAdPage() {
                 setImagePreview("./parking-placeholder.png");
             } else {
                 const errorText = await response.text();
-                console.error("✗ Greška pri spremanju oglasa:");
+                console.error("Greška pri spremanju oglasa:");
                 console.error("Status:", response.status);
                 console.error("Error text:", errorText);
                 alert("Greška pri spremanju oglasa [" + response.status + "]: " + errorText);

@@ -34,11 +34,11 @@ public class TransakcijaService {
                 true
         );
 
-        System.out.println("=== Saving Transakcija ===");
-        System.out.println("Payment Intent ID: " + transakcija.getIdTransakcija());
-        System.out.println("Reservation ID: " + transakcija.getIdRezervacije());
-        System.out.println("Amount: " + transakcija.getIznos());
-        System.out.println("Paid: " + transakcija.getPlaceno());
+        // System.out.println("=== Saving Transakcija ===");
+        // System.out.println("Payment Intent ID: " + transakcija.getIdTransakcija());
+        // System.out.println("Reservation ID: " + transakcija.getIdRezervacije());
+        // System.out.println("Amount: " + transakcija.getIznos());
+        // System.out.println("Paid: " + transakcija.getPlaceno());
 
         return webClient.post()
                 .uri("/rest/v1/Transakcija")
@@ -67,7 +67,6 @@ public class TransakcijaService {
     }
 
     public Flux<Transakcija> getTransakcijeByUserId(Long userId) {
-        // First get all reservations for this user
         return webClient.get()
                 .uri("/rest/v1/Rezervacija?id_korisnika=eq." + userId)
                 .retrieve()
@@ -80,14 +79,11 @@ public class TransakcijaService {
                     if (rezervacije == null || rezervacije.length == 0) {
                         return Flux.empty();
                     }
-                    // Build OR query for all reservation IDs
                     StringBuilder orQuery = new StringBuilder();
                     for (int i = 0; i < rezervacije.length; i++) {
                         if (i > 0) orQuery.append(",");
                         orQuery.append("id_rezervacije.eq.").append(rezervacije[i].getIdRezervacije());
                     }
-                    
-                    // Get all transactions for these reservations
                     return webClient.get()
                             .uri("/rest/v1/Transakcija?or=(" + orQuery.toString() + ")&order=datum_transakcije.desc")
                             .retrieve()
