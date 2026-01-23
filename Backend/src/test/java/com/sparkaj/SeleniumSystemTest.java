@@ -37,7 +37,7 @@ class SeleniumSystemTest {
         if (driver == null) {
             WebDriverManager.chromedriver().setup();
             var options = new ChromeOptions();
-            // Opcije da bi se izbegla Google sigurnosna ograničenja
+            // Opcije da bi se izbjegla Google sigurnosna ograničenja
             options.addArguments("--disable-web-security");
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
@@ -51,7 +51,6 @@ class SeleniumSystemTest {
             driver = new ChromeDriver(options);
             driver.manage().window().maximize();
             
-            // Prvo navigiraj na localhost
             driver.get(BASE_URL);
             
             // Čekaj da se stranica učita
@@ -66,7 +65,7 @@ class SeleniumSystemTest {
 
     @AfterEach
     void teardown() {
-        // Keep driver alive between tests, close only at the very end
+        // Ostavi sesiju upaljenu
     }
 
     @AfterAll
@@ -133,7 +132,7 @@ class SeleniumSystemTest {
         List<Dimension> dimensions = List.of(
             new Dimension(1920, 1080),
             new Dimension(768, 1024),
-            new Dimension(375, 667)  
+            new Dimension(360, 800)  
         );
 
         for (Dimension dimension : dimensions) {
