@@ -2,7 +2,7 @@ package com.sparkaj.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class Transakcija {
 
@@ -16,8 +16,8 @@ public class Transakcija {
     private Float iznos;
 
     @JsonProperty("datum_transakcije")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime datumTransakcije;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    private OffsetDateTime datumTransakcije;
 
     @JsonProperty("placeno")
     private Boolean placeno;
@@ -26,7 +26,7 @@ public class Transakcija {
     public Transakcija() {
     }
 
-    public Transakcija(String idTransakcija, Long idRezervacije, Float iznos, LocalDateTime datumTransakcije, Boolean placeno) {
+    public Transakcija(String idTransakcija, Long idRezervacije, Float iznos, OffsetDateTime datumTransakcije, Boolean placeno) {
         this.idTransakcija = idTransakcija;
         this.idRezervacije = idRezervacije;
         this.iznos = iznos;
@@ -59,11 +59,11 @@ public class Transakcija {
         this.iznos = iznos;
     }
 
-    public LocalDateTime getDatumTransakcije() {
+    public OffsetDateTime getDatumTransakcije() {
         return datumTransakcije;
     }
 
-    public void setDatumTransakcije(LocalDateTime datumTransakcije) {
+    public void setDatumTransakcije(OffsetDateTime datumTransakcije) {
         this.datumTransakcije = datumTransakcije;
     }
 
