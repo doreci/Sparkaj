@@ -24,7 +24,7 @@ function AdminPage() {
 
     const checkAdminAccess = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
+            const response = await fetch(`/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -64,7 +64,7 @@ function AdminPage() {
 
     const fetchPrijave = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/oglasi/prijave/all`, {
+            const response = await fetch(`/api/oglasi/prijave/all`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju prijava");
@@ -77,7 +77,7 @@ function AdminPage() {
 
     const fetchZahtjevi = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/pending-advertisers`, {
+            const response = await fetch(`/api/admin/pending-advertisers`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju zahtjeva");
@@ -90,7 +90,7 @@ function AdminPage() {
 
     const fetchBlokirani = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/blocked-users`, {
+            const response = await fetch(`/api/admin/blocked-users`, {
                 credentials: "include",
             });
             if (!response.ok) throw new Error("Greška pri dohvaćanju blokiranih korisnika");
@@ -104,7 +104,7 @@ function AdminPage() {
     const deleteAd = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/oglasi/${id}`,
+                `/api/oglasi/${id}`,
                 {
                     method: "DELETE",
                 }
@@ -142,7 +142,7 @@ function AdminPage() {
     const blockUser = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/admin/block-user/${id}`,
+                `/api/admin/block-user/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -162,7 +162,7 @@ function AdminPage() {
     const markPrijavaAsResolved = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/oglasi/prijave/${id}/status`,
+                `/api/oglasi/prijave/${id}/status`,
                 {
                     method: "PUT",
                     headers: {
@@ -186,7 +186,7 @@ function AdminPage() {
     const approveAdvertiser = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/admin/approve-advertiser/${id}`,
+                `/api/admin/approve-advertiser/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -206,7 +206,7 @@ function AdminPage() {
     const rejectAdvertiser = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/admin/reject-advertiser/${id}`,
+                `/api/admin/reject-advertiser/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -226,7 +226,7 @@ function AdminPage() {
     const unblockUser = async (id) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/admin/unblock-user/${id}`,
+                `/api/admin/unblock-user/${id}`,
                 {
                     method: "PUT",
                     credentials: "include",

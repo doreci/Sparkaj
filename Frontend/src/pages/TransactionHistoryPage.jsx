@@ -15,7 +15,7 @@ function TransactionHistoryPage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
+            const response = await fetch(`/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -36,7 +36,7 @@ function TransactionHistoryPage() {
     const fetchTransactionHistory = async () => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/payments/transaction-history`,
+                `/api/payments/transaction-history`, 
                 {
                     credentials: "include",
                 }
@@ -94,7 +94,7 @@ function TransactionHistoryPage() {
 
     const handleLogout = async () => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+            await fetch(`/logout`, {
                 method: "POST",
                 credentials: "include",
             });

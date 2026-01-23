@@ -12,7 +12,7 @@ function LoginPage() {
 
   const checkAuthentication = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
+      const response = await fetch(`/api/user`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -27,7 +27,7 @@ function LoginPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+      await fetch(`/logout`, {
         method: "POST",
         credentials: "include",
       });

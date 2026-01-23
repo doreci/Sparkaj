@@ -33,7 +33,7 @@ function MyReservationsReviewsPage() {
         try {
             // Dohvati rezervacije
             const reservationsResponse = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/reservations/korisnik`,
+                `/api/reservations/korisnik`, 
                 {
                     credentials: "include",
                     headers: {
@@ -56,7 +56,7 @@ function MyReservationsReviewsPage() {
             setReservations(sortedReservations);
 
             const reviewsResponse = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/recenzije/korisnik/current`,
+                `/api/recenzije/korisnik/current`, 
                 {
                     credentials: "include",
                     headers: {

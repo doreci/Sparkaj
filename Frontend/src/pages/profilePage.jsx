@@ -47,7 +47,7 @@ function ProfilePage() {
 
     const fetchUserProfile = async (userId) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/korisnik/${userId}`, {
+            const response = await fetch(`/api/korisnik/${userId}`, {
                 credentials: "include",
             });
             if (response.ok) {
@@ -64,7 +64,7 @@ function ProfilePage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
+            const response = await fetch(`/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -92,7 +92,7 @@ function ProfilePage() {
     const handleRequestAdvertiser = async () => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/user/request-advertiser`,
+                `/api/user/request-advertiser`, 
                 {
                     method: "PUT",
                     headers: {
@@ -117,7 +117,7 @@ function ProfilePage() {
     const handleDeleteAd = async (adId) => {
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/oglasi/${adId}`,
+                `/api/oglasi/${adId}`, 
                 {
                     method: "DELETE",
                     credentials: "include",

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}`;
+const API_BASE_URL = ''; 
 
 // Dohvati sve oglase
 export const fetchAllAds = createAsyncThunk(

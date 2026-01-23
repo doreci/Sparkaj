@@ -60,7 +60,7 @@ function HomePage() {
 
     const checkAuthentication = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
+            const response = await fetch(`/api/user`, {
                 credentials: "include",
             });
             const data = await response.json();
@@ -91,7 +91,7 @@ function HomePage() {
             dispatch(clearUser());
 
             // Preusmjeri na logout endpoint na backendu
-            window.location.href = `${import.meta.env.VITE_API_URL}/logout`;
+            window.location.href = `/logout`; 
         } catch (error) {
             console.error("Greška pri odjavi:", error);
         }
