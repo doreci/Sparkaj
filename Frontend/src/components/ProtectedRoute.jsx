@@ -8,7 +8,7 @@ function ProtectedRoute({ children }) {
     useEffect(() => {
         const checkUserStatus = async () => {
             try {
-                const response = await fetch(`/api/user`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                     credentials: "include",
                 });
                 const data = await response.json();

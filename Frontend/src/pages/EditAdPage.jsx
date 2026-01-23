@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link} from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
-const API_URL = ''; 
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
 function EditAdPage() {
     const { id } = useParams();

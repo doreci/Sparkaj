@@ -9,7 +9,7 @@ function BlockedPage() {
         // Provjeri je li korisnik blokiran
         const checkBlockStatus = async () => {
             try {
-                const response = await fetch(`/api/user`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
                     credentials: "include",
                 });
                 const data = await response.json();
@@ -26,7 +26,7 @@ function BlockedPage() {
     }, [navigate]);
 
     const handleLogout = () => {
-        window.location.href = `/logout`; 
+        window.location.href = `${import.meta.env.VITE_API_URL}/logout`;
     };
 
     return (

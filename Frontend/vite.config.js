@@ -8,10 +8,6 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 10000,
     allowedHosts: ['sparkaj-g53p.onrender.com'],
-    proxy: {
-      '/api': { target: 'http://localhost:8080', changeOrigin: true, secure: false },
-      '/oauth2': { target: 'http://localhost:8080', changeOrigin: true, secure: false }
-    },
   },
   build: {
     outDir: 'dist',

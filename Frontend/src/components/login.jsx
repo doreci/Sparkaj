@@ -2,9 +2,9 @@ import { useState } from "react";
 
 function Login() {
     const handleGoogleLogin = () => {
-        // Preusmeri na Spring Boot OAuth2 login endpoint (proxy)
-        window.location.href = '/oauth2/authorization/google';
-    }; 
+        // Preusmeri na Spring Boot OAuth2 login endpoint
+        window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
+    };
 
     return(
         <>

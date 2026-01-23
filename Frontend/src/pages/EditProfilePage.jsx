@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { isAdmin, getProfileRoute } from "../utils/authHelpers";
 
-const API_URL = ''; 
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
 const isValidImageUrl = (url) => {
     if (!url || typeof url !== 'string') return false;
