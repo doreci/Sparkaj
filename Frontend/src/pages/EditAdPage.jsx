@@ -1,6 +1,6 @@
 import "./createadpage.css";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link} from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
 const API_URL = `${import.meta.env.VITE_API_URL}`;
@@ -306,9 +306,9 @@ function EditAdPage() {
     return (
         <div className="container">
             <div className="header">
-                <div className="header-logo">
-                    <img name="logo" src="/logo.png" alt="logo" />
-                </div>
+                    <Link to="/" className="back-link">
+                    ← Nazad
+                </Link>
             </div>
 
             <div className="title">Uređivanje oglasa</div>

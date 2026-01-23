@@ -6,13 +6,14 @@
 }
 
 .container {
-    position: absolute;
-    left: -20px;
-    top: 100px;
+    position: relative;
+    left: 0;
+    top: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-top: 0;
 }
 
 .header {
@@ -24,6 +25,7 @@
     justify-content: space-between;
     background: rgb(0, 0, 61);
     width: 100%;
+    z-index: 100;
 }
 
 .header-logo {
@@ -103,6 +105,7 @@
     padding: none;
     min-height: 100vh;
     width: 100%;
+    margin-top: 110px;
 }
 
 /* Filter Dropdown */
@@ -273,13 +276,17 @@
 }
 
 .footer {
-    width: 100vw;
+    width: 100%;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
     height: 60px;
     background: rgb(0, 0, 61);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    margin-left: 0px !important;
 }
 
 /* Oglasi sekcija */
@@ -396,14 +403,122 @@
     .section-title {
         font-size: 24px;
     }
+
+    .footer {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+    }
 }
 
 /* Responsive za mobilne uređaje */
 @media (max-width: 768px) {
+    .header {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        gap: 0;
+        height: auto;
+        align-items: stretch;
+        background: rgb(0, 0, 61);
+        position: relative;
+    }
+
+    .header-logo {
+        width: 100%;
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 70px;
+        position: relative;
+        background: rgb(0, 0, 61);
+    }
+
+    #logo {
+        height: 55px;
+        padding: 0;
+        width: auto;
+        max-width: 60%;
+        object-fit: contain;
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: 12px;
+        justify-content: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        min-height: 55px;
+        align-items: center;
+        background: rgb(0, 0, 61);
+    }
+
+    #btn-filter {
+        width: 95%;
+        max-width: 100%;
+        height: 42px;
+        font-size: 14px;
+    }
+
+    .header-buttons {
+        width: 100%;
+        padding: 12px;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        min-height: 60px;
+        align-items: center;
+        position: relative;
+        background: rgb(0, 0, 61);
+    }
+
+    .header-buttons button {
+        padding: 10px 14px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .header-buttons .profile-icon-link {
+        display: flex;
+        align-items: center;
+        z-index: 200;
+    }
+
+    .profile-icon {
+        width: 70px;
+        height: 100px;
+        padding: 0px;
+        flex-shrink: 0;
+    }
+
+
+    .profile-icon img {
+        width: 100%;
+        height: 100%;
+        padding: 0px !important;
+        margin-left: 20vw !important;
+        object-fit: cover;
+    }
+
+    .profile-icon-placeholder {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
     .filter-dropdown {
         min-width: 90vw;
         max-height: 80vh;
         overflow-y: auto;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001;
     }
 
     @supports (display: flex) {
@@ -416,7 +531,7 @@
 
     .content {
         padding: 30px 15px;
-        margin-top: 80px;
+        margin-top: 200px;
     }
 
     .content h1 {
@@ -426,10 +541,6 @@
     .subtitle {
         font-size: 16px;
         margin-bottom: 30px;
-    }
-
-    .search-bar {
-        margin: 0 10px;
     }
 
     .search-bar input {
@@ -445,18 +556,116 @@
     .ads-grid {
         gap: 15px;
     }
-
-    .header {
-        flex-wrap: wrap;
-        height: auto;
-    }
 }
 
 /* Responsive za mali mobilni */
 @media (max-width: 480px) {
+    .header {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        gap: 0;
+        height: auto;
+        align-items: stretch;
+        background: rgb(0, 0, 61);
+        position: relative;
+    }
+
+    .header-logo {
+        width: 100%;
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 65px;
+        position: relative;
+        background: rgb(0, 0, 61);
+    }
+
+    #logo {
+        height: 50px;
+        padding: 0;
+        width: auto;
+        max-width: 60%;
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: 10px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        min-height: 50px;
+        align-items: center;
+        background: rgb(0, 0, 61);
+    }
+
+    #btn-filter {
+        width: 95%;
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .header-buttons {
+        width: 100%;
+        padding: 5px !important;
+        gap: 6px;
+        justify-content: center;
+        flex-wrap: wrap;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        min-height: 55px;
+        align-items: center;
+        position: relative;
+        background: rgb(0, 0, 61);
+    }
+
+    .header-buttons button {
+        padding: 8px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-buttons .profile-icon-link {
+        display: flex;
+        align-items: center;
+        z-index: 200;
+    }
+
+    .profile-icon {
+        width: 40px;
+        height: 30px !important;
+        flex-shrink: 0;
+        margin-bottom: 10px !important;
+    }
+
+    .profile-icon img {
+        width: 100%;
+        height: 100% ;
+        padding: 0px !important;
+        margin-left: 20vw !important;
+        object-fit: cover;
+    }
+
+    .profile-icon-placeholder {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
     .filter-dropdown {
         min-width: 85vw;
         padding: 12px 15px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001;
     }
 
     .filter-header h3 {
@@ -496,7 +705,7 @@
 
     .content {
         padding: 20px 10px;
-        margin-top: 100px;
+        margin-top: 175px;
     }
 
     .content h1 {
@@ -505,11 +714,6 @@
 
     .subtitle {
         font-size: 14px;
-    }
-
-    .search-bar {
-        gap: 5px;
-        margin: 0 5px;
     }
 
     .search-bar input {
@@ -525,16 +729,6 @@
         gap: 12px;
     }
 
-    .header-buttons {
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .header-buttons button {
-        padding: 8px 15px;
-        font-size: 12px;
-    }
-
     .btn-view-all {
         padding: 12px 30px;
         font-size: 14px;
@@ -547,5 +741,18 @@
     .filter-btn-search,
     .filter-btn-clear {
         width: 100%;
+    }
+
+    .header img{
+        height: 40px !important;
+    }
+
+    #filter {
+        height: 20px !important;
+    }
+
+    .footer {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
     }
 }
