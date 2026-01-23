@@ -27,8 +27,24 @@ public class RecenzijaController {
     }
 
     @GetMapping("/korisnik/{idKorisnika}")
-    public Mono<List<Recenzija>> getRecenzijeByIdKorisnika(@PathVariable Integer idKorisnika) {
-        return recenzijaService.getRecenzijeByIdKorisnika(idKorisnika);
+    public Mono<List<Recenzija>> getRecenzijeByIdKorisnika(
+            @PathVariable Integer idKorisnika,
+            @AuthenticationPrincipal OAuth2User principal) {
+        
+        if (principal == null) {
+            return Mono.just(new ArrayList<>());
+        }
+
+        String email = principal.getAttribute("email");
+        
+        return korisnikService.getKorisnikByEmail(email)
+                .flatMap(currentUser -> {
+                    if (currentUser == null || currentUser.getIdKorisnika() != idKorisnika) {
+                        return Mono.just(new ArrayList<>());
+                    }
+                    return recenzijaService.getRecenzijeByIdKorisnika(idKorisnika)
+                            .defaultIfEmpty(new ArrayList<>());
+                });
     }
 
     @GetMapping("/korisnik/current")

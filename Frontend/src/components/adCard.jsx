@@ -8,7 +8,7 @@ function AdCard({ ad, isOwned = false, onDelete = null }) {
     //console.log("ad.korisnik:", ad.korisnik);
     //console.log("ad.korisnik?.email:", ad.korisnik?.email);
 
-    const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
+    const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "0";
     const naziv = ad.naziv_oglasa || "Oglas bez naziva";
     const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} €` : "N/A";
 

@@ -105,7 +105,7 @@ function AdPage() {
 
     const korisnik = ad.korisnik || {};
     const cijena = ad.cijena ? `${ad.cijena.toFixed(2)} €` : "Nije dostupno";
-    const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "N/A";
+    const ocjena = ad.prosj_ocjena ? ad.prosj_ocjena.toFixed(1) : "0";
     const grad = ad.grad;
     const ulicaBroj = ad.ulica_broj;
     const postanskiBroj = ad.postanski_broj;
