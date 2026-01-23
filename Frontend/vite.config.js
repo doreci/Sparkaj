@@ -3,7 +3,16 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    babel: {
+      presets: ['@babel/preset-react'],
+      plugins: ['@babel/plugin-transform-react-display-name']
+    }
+  })],
+  build: {
+    minify: 'terser',
+    sourcemap: false
+  },
   server: {
     host: '0.0.0.0',
     port: 10000,
