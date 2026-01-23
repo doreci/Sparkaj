@@ -25,8 +25,11 @@ public class AuthController {
     public Map<String, Object> getUser(@AuthenticationPrincipal OAuth2User principal) {
         Map<String, Object> response = new HashMap<>();
         
+        System.out.println("[AuthController.getUser] Principal: " + principal);
+        
         if (principal != null) {
             String email = principal.getAttribute("email");
+            System.out.println("[AuthController.getUser] Authenticated user email: " + email);
             response.put("authenticated", true);
             response.put("email", email);
             
@@ -35,7 +38,7 @@ public class AuthController {
                 Korisnik korisnik = korisnikService.getKorisnikByEmail(email).block();
                 if (korisnik != null) {
                     // Vrati podatke iz baze
-                    // System.out.println("[AuthController] Pronađen korisnik u bazi, vraćam podatke iz baze");
+                    System.out.println("[AuthController] Pronađen korisnik u bazi");
                     response.put("id_korisnika", korisnik.getIdKorisnika());
                     response.put("uuid", korisnik.getUuid());
                     response.put("given_name", korisnik.getIme());
@@ -46,7 +49,7 @@ public class AuthController {
                     response.put("blokiran", korisnik.getBlokiran());
                 } else {
                     // Ako nema u bazi, vrati OAuth2 podatke kao fallback
-                    // System.out.println("[AuthController] Korisnik nije pronađen u bazi, vraćam OAuth2 podatke");
+                    System.out.println("[AuthController] Korisnik nije pronađen u bazi, vraćam OAuth2 podatke");
                     response.put("given_name", principal.getAttribute("given_name"));
                     response.put("family_name", principal.getAttribute("family_name"));
                     response.put("picture", principal.getAttribute("picture"));
@@ -54,6 +57,7 @@ public class AuthController {
                 }
             } catch (Exception e) {
                 System.err.println("[AuthController] Greška pri pronalaženju korisnika: " + e.getMessage());
+                e.printStackTrace();
                 // Ako ima greške, vrati OAuth2 podatke
                 response.put("given_name", principal.getAttribute("given_name"));
                 response.put("family_name", principal.getAttribute("family_name"));
@@ -64,6 +68,7 @@ public class AuthController {
             return response;
         }
         
+        System.out.println("[AuthController.getUser] Korisnik nije autentificiran");
         response.put("authenticated", false);
         return response;
     }

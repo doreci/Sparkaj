@@ -21,5 +21,8 @@ RUN ./mvnw clean package -DskipTests
 # Expose the port (Render injects $PORT)
 EXPOSE 8080
 
+# Set production profile by default
+ENV SPRING_PROFILES_ACTIVE=prod
+
 # Start the Spring Boot app
-CMD ["sh", "-c", "java -jar target/*.jar"]
+CMD ["sh", "-c", "java -Xmx512m -Duser.timezone=UTC -jar target/*.jar"]
